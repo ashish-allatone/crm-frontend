@@ -1,0 +1,258 @@
+// import React, { useEffect, useState } from "react";
+// import { useParams, useNavigate } from "react-router-dom";
+// import { createAppointment } from "../../services/appointmentService";
+// import { getPatientById } from "../../services/patientService";
+// import { getAllServiceProviders } from "../../services/serviceProviderService";
+
+// export default function CreateAppointment() {
+//   const { id } = useParams();
+//   const navigate = useNavigate();
+
+//   const [patient, setPatient] = useState(null);
+//   const [providers, setProviders] = useState([]);
+
+//   const [form, setForm] = useState({
+//     patientId: "",
+//     organizationId: "",
+//     serviceProviderId: "",
+//     visitDate: "",
+//     visitTime: "",
+//   });
+
+//   useEffect(() => {
+//     loadPatient();
+//     loadProviders();
+//   }, []);
+
+//   const loadPatient = async () => {
+//     const res = await getPatientById(id);
+//     const data = res.data.data;
+
+//     setPatient(data);
+
+//     setForm((prev) => ({
+//       ...prev,
+//       patientId: data.id,
+//       organizationId: data.organizationId,
+//     }));
+//   };
+
+//   const loadProviders = async () => {
+//     const res = await getAllServiceProviders();
+//     setProviders(res.data.data);
+//   };
+
+//   const handleSubmit = async () => {
+//     await createAppointment(form);
+//     navigate("/patients"); // back to list
+//   };
+
+//   return (
+//     <div className="container mt-3">
+//       <h4>Create Appointment</h4>
+
+//       <div className="card p-3">
+
+//         <div className="mb-2">
+//           <b>Patient:</b> {patient?.patientName}
+//         </div>
+
+//         <div className="mb-2">
+//           <label>Service Provider</label>
+//           <select
+//             className="form-control"
+//             value={form.serviceProviderId}
+//             onChange={(e) =>
+//               setForm({ ...form, serviceProviderId: e.target.value })
+//             }
+//           >
+//             <option value="">Select</option>
+//             {providers.map((p) => (
+//               <option key={p.id} value={p.id}>
+//                 {p.name}
+//               </option>
+//             ))}
+//           </select>
+//         </div>
+
+//         <div className="mb-2">
+//           <label>Date</label>
+//           <input
+//             type="date"
+//             className="form-control"
+//             value={form.visitDate}
+//             onChange={(e) =>
+//               setForm({ ...form, visitDate: e.target.value })
+//             }
+//           />
+//         </div>
+
+//         <div className="mb-2">
+//           <label>Time</label>
+//           <input
+//             type="time"
+//             className="form-control"
+//             value={form.visitTime}
+//             onChange={(e) =>
+//               setForm({ ...form, visitTime: e.target.value })
+//             }
+//           />
+//         </div>
+
+//         <button className="btn btn-success mt-2" onClick={handleSubmit}>
+//           Save Appointment
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
+import React, { useEffect, useState } from "react";
+import "../../styles/addPatient.css";
+import { useParams, useNavigate } from "react-router-dom";
+
+import { createAppointment } from "../../services/appointmentService";
+import { getPatientById } from "../../services/patientService";
+import { getAllServiceProviders } from "../../services/serviceProviderService";
+
+const CreateAppointment = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [patient, setPatient] = useState(null);
+  const [providers, setProviders] = useState([]);
+
+  const [form, setForm] = useState({
+    patientId: "",
+    organizationId: "",
+    serviceProviderId: "",
+    visitDate: "",
+    visitTime: "",
+  });
+
+  useEffect(() => {
+    loadPatient();
+    loadProviders();
+  }, []);
+
+  const loadPatient = async () => {
+    const res = await getPatientById(id);
+    const data = res.data.data;
+
+    setPatient(data);
+
+    setForm((prev) => ({
+      ...prev,
+      patientId: data.id,
+      organizationId: data.organizationId,
+    }));
+  };
+
+  const loadProviders = async () => {
+    const res = await getAllServiceProviders();
+    setProviders(res.data.data);
+  };
+
+  const handleSubmit = async () => {
+    await createAppointment(form);
+    navigate("/patients");
+  };
+
+  return (
+    <div className="container-fluid mt-3">
+      <div className="card">
+
+        {/* Header */}
+        <div className="card-header add-header">
+          Create Appointment
+        </div>
+
+        <div className="card-body">
+          <div className="row g-3">
+
+            {/* Patient Info */}
+            <div className="col-md-6">
+              <label>Patient Name</label>
+              <input
+                className="form-control"
+                value={patient?.patientName || ""}
+                readOnly
+              />
+            </div>
+
+            <div className="col-md-6">
+              <label>Organization</label>
+              <input
+                className="form-control"
+                value={patient?.organizationName || ""}
+                readOnly
+              />
+            </div>
+
+            {/* Service Provider */}
+            <div className="col-md-6">
+              <label>Service Provider</label>
+              <select
+                className="form-control"
+                value={form.serviceProviderId}
+                onChange={(e) =>
+                  setForm({ ...form, serviceProviderId: e.target.value })
+                }
+              >
+                <option value="">Select Provider</option>
+                {providers.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Date */}
+            <div className="col-md-3">
+              <label>Visit Date</label>
+              <input
+                type="date"
+                className="form-control"
+                value={form.visitDate}
+                onChange={(e) =>
+                  setForm({ ...form, visitDate: e.target.value })
+                }
+              />
+            </div>
+
+            {/* Time */}
+            <div className="col-md-3">
+              <label>Visit Time</label>
+              <input
+                type="time"
+                className="form-control"
+                value={form.visitTime}
+                onChange={(e) =>
+                  setForm({ ...form, visitTime: e.target.value })
+                }
+              />
+            </div>
+
+          </div>
+
+          {/* Buttons */}
+          <div className="mt-4">
+            <button className="btn btn-primary submit-btn" onClick={handleSubmit}>
+              Save Appointment
+            </button>
+
+            <button
+              className="btn btn-danger ms-3"
+              onClick={() => navigate("/patients")}
+            >
+              Cancel
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CreateAppointment;

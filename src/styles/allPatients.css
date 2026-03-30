@@ -1,0 +1,43 @@
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 2;
+  border-bottom: 2px solid #dee2e6;
+}
+.entries-select{
+padding:4px 6px;
+border-radius:4px;
+border:1px solid #ccc;
+}
+.search-box{
+padding:5px 8px;
+border:1px solid #ccc;
+border-radius:4px;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #6c63ff;
+  border-color: #6c63ff;
+}
+
+.pagination .page-link {
+  color: #6c63ff;
+}
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.all-table {
+  width: max-content;   /* table data ke according expand karega */
+  min-width: 100%;      /* screen se chhota nahi hoga */
+}
+
+.all-table th,
+.all-table td {
+  white-space: nowrap;  /* row height increase nahi hogi */
+}
+.modal{
+background: rgba(0,0,0,0.5);
+}
