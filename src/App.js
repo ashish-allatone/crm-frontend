@@ -40,13 +40,16 @@ import AddServiceProvider from "./pages/master/serviceProvider/AddServiceProvide
 import EditServiceProvider from "./pages/master/serviceProvider/EditServiceProvider";
 import SetPermission from "./pages/master/roles/SetPermission";
 import AddPackagePrice from "./pages/patients/AddPackagePrice";
-import TestResult from "./pages/TestResult";
-import TestReport from "./pages/TestReport";
-import Invoice from "./pages/Invoice";
-import TestReportUpload from "./pages/TestReportUpload";
+import TestResult from "./pages/testResult/TestResult";
+import TestReport from "./pages/testReport/TestReport";
+import Invoice from "./pages/invoice/Invoice";
+import TestReportUpload from "./pages/testReport/TestReportUpload";
 import Profile from "./components/profileDropdown/Profile";
 import CreateAppointment from "./pages/patients/CreateAppointment";
 import EditAppointment from "./pages/appointment/EditAppointment";
+import AddTestResult from "./pages/testResult/AddTestResult";
+import AddInvoice from "./pages/invoice/AddInvoice";
+
 
 function App() {
   const token = localStorage.getItem("token");
@@ -81,7 +84,7 @@ function App() {
         <Route path="/add-service-provider" element={<ProtectedRoute><AddServiceProvider /></ProtectedRoute>} />
         <Route path="/edit-service-provider/:id" element={<ProtectedRoute><EditServiceProvider /></ProtectedRoute>} />
 
-        <Route path="/set-permission" element={<ProtectedRoute><SetPermission /></ProtectedRoute>} />
+        <Route path="/set-permission/:roleId" element={<ProtectedRoute><SetPermission /></ProtectedRoute>} />
         <Route path="/add-package-price/:id" element={<ProtectedRoute><AddPackagePrice /></ProtectedRoute>} />
 
         {/* MASTER */}
@@ -105,10 +108,13 @@ function App() {
         <Route path="/report/payment" element={<ProtectedRoute><PaymentReport /></ProtectedRoute>} />
 
         <Route path="/test-result" element={<ProtectedRoute><TestResult /></ProtectedRoute>} />
+        <Route path="/add-test-result/:id" element={<ProtectedRoute><AddTestResult/></ProtectedRoute>} />
         <Route path="/test-report" element={<ProtectedRoute><TestReport /></ProtectedRoute>} />
         <Route path="/invoice" element={<ProtectedRoute><Invoice /></ProtectedRoute>} />
         <Route path="/test-report-upload/:id" element={<ProtectedRoute><TestReportUpload /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/add-invoice/:id" element={<ProtectedRoute><AddInvoice /></ProtectedRoute>} />
+
       </Routes>
     </Router>
   );

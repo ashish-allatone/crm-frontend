@@ -44,29 +44,70 @@ useEffect(() => {
   loadProvider();
 }, [id]);
 
-const handleSubmit = async () => {
-  const payload = {
-    providerType: form.providerType,
-    network: form.network,
-    effectiveDate: form.effectiveDate,
-    terminationDate: form.terminationDate,
-    licenseNumber: form.licenseNo,
-    name: form.name,
-    landlineNo: form.landline,
-    address: form.address,
-    country: form.country,
-    state: form.state,
-    city: form.city,
-    postalCode: form.postalCode,
-    aboutUs: form.about,
-    specialties: form.teams,
-    contactPersonName: form.contactPerson,
-    contactMobile: form.mobile,
-    contactEmail: form.contactEmail,
-  };
+// const handleSubmit = async () => {
+//   const payload = {
+//     providerType: form.providerType,
+//     network: form.network,
+//     effectiveDate: form.effectiveDate,
+//     terminationDate: form.terminationDate,
+//     licenseNumber: form.licenseNo,
+//     name: form.name,
+//     landlineNo: form.landline,
+//     address: form.address,
+//     country: form.country,
+//     state: form.state,
+//     city: form.city,
+//     postalCode: form.postalCode,
+//     aboutUs: form.about,
+//     specialties: form.teams,
+//     contactPersonName: form.contactPerson,
+//     contactMobile: form.mobile,
+//     contactEmail: form.contactEmail,
+//   };
 
-  await updateServiceProvider(id, payload);
-  navigate("/service-provider");
+//   await updateServiceProvider(id, payload);
+//   navigate("/service-provider");
+// };
+const handleSubmit = async () => {
+  try {
+    const payload = {
+      providerType: form.providerType,
+      network: form.network,
+      effectiveDate: form.effectiveDate,
+      terminationDate: form.terminationDate,
+      licenseNumber: form.licenseNo,
+      name: form.name,
+      landlineNo: form.landline,
+      address: form.address,
+      country: form.country,
+      state: form.state,
+      city: form.city,
+      postalCode: form.postalCode,
+      aboutUs: form.about,
+      specialties: form.teams,
+      contactPersonName: form.contactPerson,
+      contactMobile: form.mobile,
+      contactEmail: form.contactEmail,
+    };
+
+    const res = await updateServiceProvider(id, payload);
+
+    // ✅ Backend message
+    if (res.data.success) {
+      alert(res.data.message); // "Service Provider updated successfully"
+      navigate("/service-provider");
+    } else {
+      alert(res.data.message || "Something went wrong ❌");
+    }
+
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to update service provider ❌"
+    );
+  }
 };
 
   const handleChange = (e) => {

@@ -1,54 +1,36 @@
 import React from "react";
-import { FaUserCircle, FaKey, FaSignOutAlt } from "react-icons/fa";
-import "../../styles/profileDropdown.css";
-import {useNavigate} from "react-router-dom";
+import { FaEdit } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
-const ProfileDropdown = () => {
-    const navigate=useNavigate();
+const ProfileDropdown = ({ user }) => {
 
-    const handleLogout = () => {
-  localStorage.removeItem("token");
-  window.location.href = "/login";
-};
-    
+  const navigate = useNavigate();
 
-    
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
+
   return (
-    <div className="profile-dropdown">
+    <div className="dropdown-menu-modern">
 
-      <div className="profile-header">
-        <img
-          src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-          alt="admin"
-        />
-        <div>
-          <strong>CRM Admin</strong>
-          <p>Admin</p>
-        </div>
-      </div>
+      <FaEdit
+        className="dropdown-edit-icon"
+        title="Edit Profile"
+        onClick={() => navigate(`/profile`)}
+      />
 
-      <div className="profile-menu">
+      <p><strong>Name:</strong> {user?.firstName} {user?.lastName}</p>
+      <p><strong>Username:</strong> {user?.username}</p>
+      <p><strong>Email:</strong> {user?.email}</p>
+      <p><strong>Contact:</strong> {user?.mobile}</p>
+      <p><strong>Role:</strong> {user?.roles?.[0]?.name}</p>
 
-        <div
-className="profile-item"
-onClick={()=>navigate("/profile")}
->
-<FaUserCircle/> Profile
-</div>
+      <hr />
 
-        <div
-className="profile-item"
-onClick={()=>navigate("/profile?password=true")}
->
-<FaKey/> Change Password
-</div>
-
-        <div className="profile-item" onClick={handleLogout}>
-          <FaSignOutAlt /> Logout
-        </div>
-
-      </div>
-
+      <button className="logout-btn" onClick={handleLogout}>
+        Logout
+      </button>
     </div>
   );
 };

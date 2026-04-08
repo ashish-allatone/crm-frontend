@@ -90,24 +90,63 @@ const InsuranceCompany = () => {
     return sortDirection === "asc" ? "▲" : "▼";
   };
 
+  // const handleSubmit = async () => {
+  //   const formData = new FormData();
+
+  //   formData.append("insuranceName", form.insuranceName);
+  //   if (form.organizationId)
+  //     formData.append("organizationId", Number(form.organizationId));
+
+  //   if (form.file) formData.append("file", form.file);
+
+  //   if (editData) {
+  //     await updateInsurance(editData.id, formData);
+  //   } else {
+  //     await createInsurance(formData);
+  //   }
+
+  //   setShowModal(false);
+  //   loadInsurances();
+  // };
   const handleSubmit = async () => {
+  try {
     const formData = new FormData();
 
     formData.append("insuranceName", form.insuranceName);
+
     if (form.organizationId)
       formData.append("organizationId", Number(form.organizationId));
 
     if (form.file) formData.append("file", form.file);
 
+    let res;
+
     if (editData) {
-      await updateInsurance(editData.id, formData);
+      res = await updateInsurance(editData.id, formData);
     } else {
-      await createInsurance(formData);
+      res = await createInsurance(formData);
     }
 
-    setShowModal(false);
-    loadInsurances();
-  };
+    // ✅ Backend message show
+    if (res.data.success) {
+      alert(res.data.message); // "Insurance created successfully" / "updated successfully"
+
+      setShowModal(false);
+      loadInsurances();
+    } else {
+      alert(res.data.message || "Something went wrong ❌");
+    }
+
+  } catch (error) {
+    console.error(error);
+
+    // ❌ Error message
+    alert(
+      error.response?.data?.message ||
+      "Operation failed ❌"
+    );
+  }
+};
 
   return (
     <div className="container-fluid mt-3">

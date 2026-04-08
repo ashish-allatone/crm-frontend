@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../../styles/addPatient.css";
 import { useNavigate } from "react-router-dom";
 import { createOrganization } from "../../../services/organizationService";
+import { getAllCurrencies } from "../../../services/currencyService";
 
 const AddOrganization = () => {
   const navigate = useNavigate();
+  const [currencies, setCurrencies] = useState([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -25,34 +27,85 @@ const AddOrganization = () => {
     password: "",
     confirmPassword: "",
   });
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const handleSubmit = async () => {
-  if (form.password !== form.confirmPassword) {
-    alert("Passwords do not match");
-    return;
-  }
-
-  const payload = {
-    organizationName: form.name,
-    contact: form.contact,
-    creditLimit: form.creditLimit,
-    code: form.code,
-    address: form.address,
-    country: form.country,
-    state: form.state,
-    city: form.city,
-    paymentMode: form.paymentMode,
-    currency: form.currency,
-    source: form.source,
-    marketingPerson: form.marketingPerson,
-    turnAroundTime: form.tat,
-    username: form.username,
-    password: form.password,
+  const loadData = async () => {
+    try {
+      const res = await getAllCurrencies();
+      setCurrencies(res.data.data); // assuming {data: {data: [...]}}
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  await createOrganization(payload);
+  // const handleSubmit = async () => {
+  //   if (form.password !== form.confirmPassword) {
+  //     alert("Passwords do not match");
+  //     return;
+  //   }
 
-  navigate("/organization");
+  //   const payload = {
+  //     organizationName: form.name,
+  //     contact: form.contact,
+  //     creditLimit: form.creditLimit,
+  //     code: form.code,
+  //     address: form.address,
+  //     country: form.country,
+  //     state: form.state,
+  //     city: form.city,
+  //     paymentMode: form.paymentMode,
+  //     currency: form.currency,
+  //     source: form.source,
+  //     marketingPerson: form.marketingPerson,
+  //     turnAroundTime: form.tat,
+  //     username: form.username,
+  //     password: form.password,
+  //   };
+
+  //   await createOrganization(payload);
+
+  //   navigate("/organization");
+  // };
+  const handleSubmit = async () => {
+  try {
+    if (form.password !== form.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    const payload = {
+      organizationName: form.name,
+      contact: form.contact,
+      creditLimit: form.creditLimit,
+      code: form.code,
+      address: form.address,
+      country: form.country,
+      state: form.state,
+      city: form.city,
+      paymentMode: form.paymentMode,
+      currency: form.currency,
+      source: form.source,
+      marketingPerson: form.marketingPerson,
+      turnAroundTime: form.tat,
+      username: form.username,
+      password: form.password,
+    };
+
+    const res = await createOrganization(payload);
+
+    // ✅ Backend message show
+    alert(res.data.message);
+
+    navigate("/organization");
+
+  } catch (error) {
+    console.error(error);
+
+    // ❌ Error alert
+    alert(error.response?.data?.message || "Failed to create organization ❌");
+  }
 };
 
   const handleChange = (e) => {
@@ -176,8 +229,13 @@ const AddOrganization = () => {
                 value={form.currency}
                 onChange={handleChange}
               >
-                <option>INR</option>
-                <option>AED</option>
+                <option value="">Select</option>
+
+                {currencies.map((c) => (
+                  <option key={c.id} value={c.currencyCode}>
+                    {c.currencyCode}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -251,9 +309,12 @@ const AddOrganization = () => {
           </div>
 
           <div className="mt-3">
-            <button className="btn btn-primary submit-btn" onClick={handleSubmit}>
-  Submit
-</button>
+            <button
+              className="btn btn-primary submit-btn"
+              onClick={handleSubmit}
+            >
+              Submit
+            </button>
 
             <button
               className="btn btn-danger ms-2"

@@ -71,27 +71,70 @@ const Currency = () => {
     return sortDirection === "asc" ? "▲" : "▼";
   };
 
- const handleSubmit = async () => {
-  if (!form.currencyCode || !form.currencyName) {
-    alert("Currency Code and Name are required");
-    return;
+//  const handleSubmit = async () => {
+//   if (!form.currencyCode || !form.currencyName) {
+//     alert("Currency Code and Name are required");
+//     return;
+//   }
+
+//   const payload = {
+//     currencyCode: form.currencyCode.toUpperCase(), // 🔥 best practice
+//     currencyName: form.currencyName,
+//     rateToInr: Number(form.rateToInr),
+//     isActive: form.isActive,
+//   };
+
+//   if (editData) {
+//     await updateCurrency(editData.id, payload);
+//   } else {
+//     await createCurrency(payload);
+//   }
+
+//   setShowModal(false);
+//   loadCurrencies();
+// };
+const handleSubmit = async () => {
+  try {
+    if (!form.currencyCode || !form.currencyName) {
+      alert("Currency Code and Name are required");
+      return;
+    }
+
+    const payload = {
+      currencyCode: form.currencyCode.toUpperCase(),
+      currencyName: form.currencyName,
+      rateToInr: Number(form.rateToInr),
+      isActive: form.isActive,
+    };
+
+    let res;
+
+    if (editData) {
+      res = await updateCurrency(editData.id, payload);
+    } else {
+      res = await createCurrency(payload);
+    }
+
+    // ✅ Backend message show
+    if (res.data.success) {
+      alert(res.data.message); // "Currency created successfully" / "updated successfully"
+
+      setShowModal(false);
+      loadCurrencies();
+    } else {
+      alert(res.data.message || "Something went wrong ❌");
+    }
+
+  } catch (error) {
+    console.error(error);
+
+    // ❌ Backend error (important for duplicate case)
+    alert(
+      error.response?.data?.message ||
+      error.message ||
+      "Operation failed ❌"
+    );
   }
-
-  const payload = {
-    currencyCode: form.currencyCode.toUpperCase(), // 🔥 best practice
-    currencyName: form.currencyName,
-    rateToInr: Number(form.rateToInr),
-    isActive: form.isActive,
-  };
-
-  if (editData) {
-    await updateCurrency(editData.id, payload);
-  } else {
-    await createCurrency(payload);
-  }
-
-  setShowModal(false);
-  loadCurrencies();
 };
 
   return (

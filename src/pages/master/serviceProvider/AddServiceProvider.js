@@ -11,31 +11,74 @@ const AddServiceProvider = () => {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-  const handleSubmit = async () => {
-  const payload = {
-    providerType: form.providerType,
-    network: form.network,
-    effectiveDate: form.effectiveDate,
-    terminationDate: form.terminationDate,
-    licenseNumber: form.licenseNo,
-    name: form.name,
-    landlineNo: form.landline,
-    address: form.address,
-    country: form.country,
-    state: form.state,
-    city: form.city,
-    postalCode: form.postalCode,
-    aboutUs: form.about,
-    specialties: form.teams,
-    contactPersonName: form.contactPerson,
-    contactMobile: form.mobile,
-    contactEmail: form.contactEmail,
-    username: form.username,
-    password: form.password,
-  };
+//   const handleSubmit = async () => {
+//   const payload = {
+//     providerType: form.providerType,
+//     network: form.network,
+//     effectiveDate: form.effectiveDate,
+//     terminationDate: form.terminationDate,
+//     licenseNumber: form.licenseNo,
+//     name: form.name,
+//     landlineNo: form.landline,
+//     address: form.address,
+//     country: form.country,
+//     state: form.state,
+//     city: form.city,
+//     postalCode: form.postalCode,
+//     aboutUs: form.about,
+//     specialties: form.teams,
+//     contactPersonName: form.contactPerson,
+//     contactMobile: form.mobile,
+//     contactEmail: form.contactEmail,
+//     username: form.username,
+//     password: form.password,
+//   };
 
-  await createServiceProvider(payload);
-  navigate("/service-provider");
+//   await createServiceProvider(payload);
+//   navigate("/service-provider");
+// };
+const handleSubmit = async () => {
+  try {
+    const payload = {
+      providerType: form.providerType,
+      network: form.network,
+      effectiveDate: form.effectiveDate,
+      terminationDate: form.terminationDate,
+      licenseNumber: form.licenseNo,
+      name: form.name,
+      landlineNo: form.landline,
+      address: form.address,
+      country: form.country,
+      state: form.state,
+      city: form.city,
+      postalCode: form.postalCode,
+      aboutUs: form.about,
+      specialties: form.teams,
+      contactPersonName: form.contactPerson,
+      contactMobile: form.mobile,
+      contactEmail: form.contactEmail,
+      username: form.username,
+      password: form.password,
+    };
+
+    const res = await createServiceProvider(payload);
+
+    // ✅ Backend message show
+    if (res.data.success) {
+      alert(res.data.message); // "Service Provider created successfully"
+      navigate("/service-provider");
+    } else {
+      alert(res.data.message || "Something went wrong ❌");
+    }
+
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to create service provider ❌"
+    );
+  }
 };
 
   return (

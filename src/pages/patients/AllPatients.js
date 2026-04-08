@@ -1,4 +1,4 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import "../../styles/allPatients.css";
 import { useNavigate } from "react-router-dom";
 // import { useParams } from "react-router-dom";
@@ -15,18 +15,17 @@ const AllPatients = () => {
   const [sortDirection, setSortDirection] = useState("asc");
   const [patients, setPatients] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
-  
+
   const loadPatients = async () => {
-  const res = await getPatients(currentPage - 1, entries, search);
+    const res = await getPatients(currentPage - 1, entries, search);
 
-  setPatients(res.data.content);
-  setTotalPages(res.data.totalPages);
-};
+    setPatients(res.data.content);
+    setTotalPages(res.data.totalPages);
+  };
 
-useEffect(() => {
-  loadPatients();
-}, [currentPage, entries, search]);
-
+  useEffect(() => {
+    loadPatients();
+  }, [currentPage, entries, search]);
 
   const handleSort = (column) => {
     if (column === "insurance" || column === "approval") return;
@@ -41,13 +40,12 @@ useEffect(() => {
     setSortDirection(direction);
   };
 
-  
   const pageNumbers = [];
 
   for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i);
   }
-  
+
   const getArrow = (column) => {
     if (column === "insurance" || column === "approval") return "";
 
@@ -101,9 +99,9 @@ useEffect(() => {
                 className="ms-2 search-box"
                 value={search}
                 onChange={(e) => {
-  setSearch(e.target.value);
-  setCurrentPage(1);
-}}
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
             </div>
           </div>
@@ -167,7 +165,7 @@ useEffect(() => {
 
                   <th>Insurance</th>
 
-                  <th>Approval</th>
+                  {/* <th>Approval</th> */}
 
                   <th
                     onClick={() => handleSort("appointment")}
@@ -224,15 +222,17 @@ useEffect(() => {
                               Edit
                             </button>
                           </li>
-                          
+
                           <li>
-  <button
-    className="dropdown-item"
-    onClick={() => navigate(`/create-appointment/${p.id}`)}
-  >
-    Create Appointment
-  </button>
-</li>
+                            <button
+                              className="dropdown-item"
+                              onClick={() =>
+                                navigate(`/create-appointment/${p.id}`)
+                              }
+                            >
+                              Create Appointment
+                            </button>
+                          </li>
 
                           <li>
                             <button
@@ -244,7 +244,6 @@ useEffect(() => {
                               Add Package Price
                             </button>
                           </li>
-
                         </ul>
                       </div>
                     </td>
@@ -253,14 +252,16 @@ useEffect(() => {
                     <td>{p.id}</td>
                     <td className="text-primary">{p.patientName}</td>
                     <td>{p.mobileNumber}</td>
-                    <td>{p.age} / {p.gender}</td>
+                    <td>
+                      {p.age} / {p.gender}
+                    </td>
                     <td>{p.organizationName}</td>
                     <td>{p.serviceProviderName}</td>
                     <td>{p.insuranceName}</td>
-                    <td>{p.approval}</td>
+                    {/* <td>{p.approval}</td> */}
                     <td>{p.appointmentDate}</td>
-                    <td>{p.registered}</td>
-                    <td>{p.tat}</td>
+                    <td>{p.registered ? new Date(p.registered).toLocaleString() : "-"}</td>
+                    <td>{p.tat || "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -275,7 +276,7 @@ useEffect(() => {
             {/* Showing Entries */}
 
             <div>
-             Showing page {currentPage} of {totalPages}
+              Showing page {currentPage} of {totalPages}
             </div>
 
             {/* Pagination */}

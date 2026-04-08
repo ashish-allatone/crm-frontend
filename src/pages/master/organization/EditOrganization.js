@@ -41,26 +41,58 @@ const EditOrganization = () => {
   loadOrg();
 }, [id]);
 
+// const handleSubmit = async () => {
+//   const payload = {
+//     organizationName: form.name,
+//     contact: form.contact,
+//     creditLimit: form.creditLimit,
+//     code: form.code,
+//     address: form.address,
+//     country: form.country,
+//     state: form.state,
+//     city: form.city,
+//     paymentMode: form.paymentMode,
+//     currency: form.currency,
+//     source: form.source,
+//     marketingPerson: form.marketingPerson,
+//     turnAroundTime: form.tat,
+//   };
+
+//   await updateOrganization(id, payload);
+
+//   navigate("/organization");
+// };
 const handleSubmit = async () => {
-  const payload = {
-    organizationName: form.name,
-    contact: form.contact,
-    creditLimit: form.creditLimit,
-    code: form.code,
-    address: form.address,
-    country: form.country,
-    state: form.state,
-    city: form.city,
-    paymentMode: form.paymentMode,
-    currency: form.currency,
-    source: form.source,
-    marketingPerson: form.marketingPerson,
-    turnAroundTime: form.tat,
-  };
+  try {
+    const payload = {
+      organizationName: form.name,
+      contact: form.contact,
+      creditLimit: form.creditLimit,
+      code: form.code,
+      address: form.address,
+      country: form.country,
+      state: form.state,
+      city: form.city,
+      paymentMode: form.paymentMode,
+      currency: form.currency,
+      source: form.source,
+      marketingPerson: form.marketingPerson,
+      turnAroundTime: form.tat,
+    };
 
-  await updateOrganization(id, payload);
+    const res = await updateOrganization(id, payload);
 
-  navigate("/organization");
+    // ✅ Backend message
+    alert(res.data.message);
+
+    navigate("/organization");
+
+  } catch (error) {
+    console.error(error);
+
+    // ❌ Error message
+    alert(error.response?.data?.message || "Failed to update organization ❌");
+  }
 };
 
   const handleChange = (e) => {

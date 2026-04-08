@@ -1,6 +1,7 @@
-import React, { useState } from "react";
 import { Link } from "react-router-dom";
-
+import React, { useEffect, useState } from "react";
+import api from "../services/api";
+import { FaUserCircle } from "react-icons/fa";
 
 import {
   FaHome,
@@ -21,19 +22,30 @@ import ProfileDropdown from "./profileDropdown/ProfileDropdown";
 
 const Navbar = () => {
 
-  const [showProfile,setShowProfile] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    api.get("/users/me", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).then(res => {
+      setUser(res.data.data);
+    });
+  }, []);
+
   return (
     <nav className="navbar navbar-expand-lg navbar-dark crm-navbar">
       <div className="container-fluid">
 
-        <div
-  className="navbar-brand profile-wrapper"
-  onClick={()=>setShowProfile(!showProfile)}
->
-  CRM
-  {showProfile && <ProfileDropdown/>}
-</div>
+        {/* LOGO */}
+        <div className="navbar-brand">
+          CRM
+        </div>
 
+        {/* LEFT MENU */}
         <ul className="navbar-nav">
 
           <li className="nav-item">
@@ -42,12 +54,11 @@ const Navbar = () => {
             </Link>
           </li>
 
-          {/* MASTER */}
           <li className="nav-item dropdown-menu-wrapper">
             <span className="nav-link">
               <FaUsers className="nav-icon" /> Master ▼
             </span>
-            <MasterDropdown/>
+            <MasterDropdown />
           </li>
 
           <li className="nav-item">
@@ -56,7 +67,6 @@ const Navbar = () => {
             </Link>
           </li>
 
-          {/* APPOINTMENT */}
           <li className="nav-item dropdown-menu-wrapper">
             <span className="nav-link">
               <FaCalendarCheck className="nav-icon" /> Appointment ▼
@@ -82,15 +92,44 @@ const Navbar = () => {
             </Link>
           </li>
 
-          {/* REPORT */}
-          <li className="nav-item dropdown-menu-wrapper">
+          {/* <li className="nav-item dropdown-menu-wrapper">
             <span className="nav-link">
               <FaChartBar className="nav-icon" /> Reports ▼
             </span>
             <ReportsDropdown />
-          </li>
+          </li> */}
 
         </ul>
+
+        {/* RIGHT PROFILE */}
+        <div className="ms-auto profile-container">
+
+          <div className="profile-box">
+            <img
+              src={
+                user?.profilePhoto ||
+                "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+              }
+              className="profile-icon"
+              alt="profile"
+            />
+
+            <div className="profile-text">
+              <span className="username">
+                {user?.firstName} {user?.lastName}
+              </span>
+
+              <span className="role">
+                {user?.roles?.[0]?.name}
+              </span>
+            </div>
+          </div>
+
+          {/* HOVER DROPDOWN */}
+          {user && <ProfileDropdown user={user} />}
+
+        </div>
+
       </div>
     </nav>
   );

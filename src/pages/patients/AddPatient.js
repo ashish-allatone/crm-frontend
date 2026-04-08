@@ -58,15 +58,15 @@ const AddPatient = () => {
     loadTests();
   }, []);
 
-   const [currencies, setCurrencies] = useState([]);
-   useEffect(() => {
-  const loadCurrencies = async () => {
-    const res = await getAllCurrencies();
-    setCurrencies(res.data.data); // assuming {data: {data: [...]}}
-  };
+  const [currencies, setCurrencies] = useState([]);
+  useEffect(() => {
+    const loadCurrencies = async () => {
+      const res = await getAllCurrencies();
+      setCurrencies(res.data.data); // assuming {data: {data: [...]}}
+    };
 
-  loadCurrencies();
-}, []);
+    loadCurrencies();
+  }, []);
 
   const [tests, setTests] = useState([
     {
@@ -75,7 +75,6 @@ const AddPatient = () => {
       sampleType: "",
     },
   ]);
-  
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -103,7 +102,20 @@ const AddPatient = () => {
     setTests([...tests, { testId: "", testType: "", sampleType: "" }]);
   };
 
+  // const handleSubmit = async () => {
+  //   const payload = {
+  //     ...form,
+  //     organizationId: form.organizationId ? Number(form.organizationId) : null,
+  //     insuranceId: form.insuranceId ? Number(form.insuranceId) : null,
+  //     tests: tests,
+  //   };
+
+  //   await createPatient(payload);
+
+  //   navigate("/patients");
+  // };
   const handleSubmit = async () => {
+  try {
     const payload = {
       ...form,
       organizationId: form.organizationId ? Number(form.organizationId) : null,
@@ -111,10 +123,22 @@ const AddPatient = () => {
       tests: tests,
     };
 
-    await createPatient(payload);
+    const res = await createPatient(payload);
+
+    // ✅ Backend message
+    alert(res.data.message); // "Patient created successfully"
 
     navigate("/patients");
-  };
+
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to create patient ❌"
+    );
+  }
+};
 
   return (
     <div className="container-fluid mt-3">
@@ -242,11 +266,11 @@ const AddPatient = () => {
               <label>Country</label>
 
               <select
-  className="form-control"
-  name="country"
-  value={form.country}
-  onChange={handleChange}
->
+                className="form-control"
+                name="country"
+                value={form.country}
+                onChange={handleChange}
+              >
                 <option value="">Select Country</option>
                 <option value="India">India</option>
                 <option value="UAE">UAE</option>
@@ -257,12 +281,12 @@ const AddPatient = () => {
             <div className="col-md-3">
               <label>State</label>
 
-             <select
-  className="form-control"
-  name="state"
-  value={form.state}
-  onChange={handleChange}
->
+              <select
+                className="form-control"
+                name="state"
+                value={form.state}
+                onChange={handleChange}
+              >
                 <option value="">Select State</option>
                 <option value="Maharashtra">Maharashtra</option>
                 <option value="Delhi">Delhi</option>
@@ -273,12 +297,12 @@ const AddPatient = () => {
             <div className="col-md-3">
               <label>City</label>
 
-             <select
-  className="form-control"
-  name="city"
-  value={form.city}
-  onChange={handleChange}
->
+              <select
+                className="form-control"
+                name="city"
+                value={form.city}
+                onChange={handleChange}
+              >
                 <option value="">Select City</option>
                 <option value="Mumbai">Mumbai</option>
                 <option value="Delhi">Delhi</option>
@@ -301,44 +325,43 @@ const AddPatient = () => {
             <div className="col-md-4">
               <label>National ID Number</label>
 
-             <input
-  type="text"
-  className="form-control"
-  name="nationalIdNumber"
-  value={form.nationalIdNumber}
-  onChange={handleChange}
-/>
+              <input
+                type="text"
+                className="form-control"
+                name="nationalIdNumber"
+                value={form.nationalIdNumber}
+                onChange={handleChange}
+              />
             </div>
 
             <div className="col-md-4">
               <label>Passport No.</label>
 
-             <input
-  type="text"
-  className="form-control"
-  name="passportNumber"
-  value={form.passportNumber}
-  onChange={handleChange}
-/>
+              <input
+                type="text"
+                className="form-control"
+                name="passportNumber"
+                value={form.passportNumber}
+                onChange={handleChange}
+              />
             </div>
 
             <div className="col-md-4">
               <label>Currency</label>
 
               <select
-  className="form-control"
-  name="currency"
-  value={form.currency}
-  onChange={handleChange}
->
-                
- <option value="">Select Currency</option>
+                className="form-control"
+                name="currency"
+                value={form.currency}
+                onChange={handleChange}
+              >
+                <option value="">Select Currency</option>
 
-  {currencies.map((c) => (
-    <option key={c.id} value={c.currencyCode}>
-      {c.currencyCode}
-    </option>
-  ))}
+                {currencies.map((c) => (
+                  <option key={c.id} value={c.currencyCode}>
+                    {c.currencyCode}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -346,12 +369,12 @@ const AddPatient = () => {
               <label>Proposal Id</label>
 
               <input
-  type="text"
-  className="form-control"
-  name="proposalId"
-  value={form.proposalId}
-  onChange={handleChange}
-/>
+                type="text"
+                className="form-control"
+                name="proposalId"
+                value={form.proposalId}
+                onChange={handleChange}
+              />
             </div>
 
             <div className="col-md-6">

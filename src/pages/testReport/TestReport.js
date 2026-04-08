@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import "../styles/allPatients.css";
-import { patients } from "../data/patients";
+import React, { useState , useEffect } from "react";
+import "../../styles/allPatients.css";
+import { getAppointments } from "../../services/appointmentService";
 import { useNavigate} from "react-router-dom";
 
 const TestReport = () => {
@@ -14,6 +14,19 @@ const TestReport = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
+  const [appointments, setAppointments] = useState([]);
+const [totalPages, setTotalPages] = useState(0);
+
+useEffect(() => {
+  loadAppointments();
+}, [currentPage, entries, search]);
+
+const loadAppointments = async () => {
+  const res = await getAppointments(currentPage - 1, entries, search);
+
+  setAppointments(res.data.content);
+  setTotalPages(res.data.totalPages);
+};
 
   const handleSort = (column) => {
 
@@ -27,35 +40,7 @@ const TestReport = () => {
     setSortDirection(direction);
   };
 
-  // search
-
-  const filteredData = patients.filter((p) =>
-    Object.values(p).join(" ").toLowerCase().includes(search.toLowerCase())
-  );
-
-  // sorting
-
-  const sortedData = [...filteredData].sort((a, b) => {
-
-    if (!sortColumn) return 0;
-
-    let valA = a[sortColumn];
-    let valB = b[sortColumn];
-
-    if (valA < valB) return sortDirection === "asc" ? -1 : 1;
-    if (valA > valB) return sortDirection === "asc" ? 1 : -1;
-
-    return 0;
-  });
-
-  // pagination
-
-  const indexOfLast = currentPage * entries;
-  const indexOfFirst = indexOfLast - entries;
-
-  const currentData = sortedData.slice(indexOfFirst, indexOfLast);
-
-  const totalPages = Math.ceil(sortedData.length / entries);
+  
 
   const pageNumbers = [];
 
@@ -63,8 +48,7 @@ const TestReport = () => {
     pageNumbers.push(i);
   }
 
-  const startEntry = sortedData.length === 0 ? 0 : indexOfFirst + 1;
-  const endEntry = Math.min(indexOfLast, sortedData.length);
+ 
 
   const getArrow = (column) => {
 
@@ -115,7 +99,10 @@ const TestReport = () => {
                 type="text"
                 className="ms-2 search-box"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+  setSearch(e.target.value);
+  setCurrentPage(1);
+}}
               />
             </div>
 
@@ -205,7 +192,7 @@ const TestReport = () => {
 
               <tbody>
 
-                {currentData.length === 0 ? (
+                {appointments.length === 0 ? (
 
                   <tr>
                     <td colSpan="10" className="text-center">
@@ -215,28 +202,29 @@ const TestReport = () => {
 
                 ) : (
 
-                  currentData.map((p, index) => (
+                 appointments.map((a) => (
 
-                    <tr key={index}>
+                    <tr key={a.appointmentId}>
 
                       <td>
                         <button
 className="btn btn-info btn-sm"
-onClick={()=>navigate(`/test-report-upload/${p.id}`)}
+onClick={() =>
+  navigate(`/test-report-upload/${a.appointmentId}`)
+}
 >
 View Test Report
 </button>
                       </td>
 
-                      <td>{p.lm}</td>
-                      <td className="text-primary">{p.name}</td>
-                      <td>{p.mobile}</td>
-                      <td>{p.age}</td>
-                      <td>{p.organization}</td>
-                      <td>{p.provider}</td>
-                      <td>{p.insurance}</td>
-                      <td>{p.registered}</td>
-                      <td>{p.status}</td>
+                     <td>{a.appointmentId}</td>
+<td>{a.patientName}</td>
+<td>{a.mobile}</td>
+<td>{a.ageGender}</td>
+<td>{a.organizationName}</td>
+<td>{a.serviceProviderName}</td>
+<td>{a.insuranceName}</td>
+<td>{a.visitDate}</td>
 
                     </tr>
 
@@ -255,7 +243,7 @@ View Test Report
           <div className="d-flex justify-content-between align-items-center mt-3">
 
             <div>
-              Showing {startEntry} to {endEntry} of {sortedData.length} entries
+              Showing page {currentPage} of {totalPages}
             </div>
 
             <nav>

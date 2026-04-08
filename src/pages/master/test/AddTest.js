@@ -41,8 +41,20 @@ const AddTest = () => {
   description: form.description,
 };
 const handleSubmit = async () => {
-  await createTest(payload);
-  navigate("/test-master");
+  try {
+    const res = await createTest(payload);
+
+    // ✅ Backend se message show karo
+    alert(res.data.message);
+
+    navigate("/test-master");
+
+  } catch (error) {
+    console.error(error);
+
+    // ❌ Backend error message show karo
+    alert(error.response?.data?.message || "Something went wrong ❌");
+  }
 };
 
   const handleChange = (e) => {
@@ -139,6 +151,7 @@ const handleSubmit = async () => {
               >
                 <option>Pathology</option>
                 <option>Radiology</option>
+                <option>File Report</option>
               </select>
             </div>
 

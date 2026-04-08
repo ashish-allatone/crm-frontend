@@ -94,15 +94,36 @@ const EditPatient = () => {
   loadPatient();
 }, [id]);
 
+  // const handleUpdate = async () => {
+  //   const payload = {
+  //     ...patient,
+  //     organizationId: patient.organizationId
+  //       ? Number(patient.organizationId)
+  //       : null,
+  //     insuranceId: patient.insuranceId ? Number(patient.insuranceId) : null,
+
+  //     // ✅ IMPORTANT FIX
+  //     tests: packageTests.map((t) => ({
+  //       testId: t.testId,
+  //       testType: t.testType,
+  //       sampleType: t.sampleType,
+  //     })),
+  //   };
+
+  //   await updatePatient(id, payload);
+
+  //   navigate("/patients");
+  // };
   const handleUpdate = async () => {
+  try {
     const payload = {
       ...patient,
       organizationId: patient.organizationId
         ? Number(patient.organizationId)
         : null,
-      insuranceId: patient.insuranceId ? Number(patient.insuranceId) : null,
-
-      // ✅ IMPORTANT FIX
+      insuranceId: patient.insuranceId
+        ? Number(patient.insuranceId)
+        : null,
       tests: packageTests.map((t) => ({
         testId: t.testId,
         testType: t.testType,
@@ -110,10 +131,22 @@ const EditPatient = () => {
       })),
     };
 
-    await updatePatient(id, payload);
+    const res = await updatePatient(id, payload);
+
+    // ✅ Backend message
+    alert(res.data.message); // "Patient updated successfully"
 
     navigate("/patients");
-  };
+
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to update patient ❌"
+    );
+  }
+};
 
   const [packageTests, setPackageTests] = useState([
     {

@@ -54,15 +54,42 @@ const EditAppointment = () => {
 //     await updateAppointment(id, form);
 //     navigate("/today-appointments"); // or upcoming
 //   };
+
+
+// const handleSubmit = async () => {
+//   await updateAppointment(id, form);
+
+//   const today = new Date().toISOString().split("T")[0];
+
+//   if (form.visitDate === today) {
+//     navigate("/appointment/today");
+//   } else {
+//     navigate("/appointment/upcoming");
+//   }
+// };
+
 const handleSubmit = async () => {
-  await updateAppointment(id, form);
+  try {
+    const res = await updateAppointment(id, form);
 
-  const today = new Date().toISOString().split("T")[0];
+    // ✅ Backend message
+    alert(res.data.message); // "Appointment updated successfully"
 
-  if (form.visitDate === today) {
-    navigate("/appointment/today");
-  } else {
-    navigate("/appointment/upcoming");
+    const today = new Date().toISOString().split("T")[0];
+
+    if (form.visitDate === today) {
+      navigate("/appointment/today");
+    } else {
+      navigate("/appointment/upcoming");
+    }
+
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to update appointment ❌"
+    );
   }
 };
 

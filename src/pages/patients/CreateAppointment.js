@@ -152,10 +152,28 @@ const CreateAppointment = () => {
     setProviders(res.data.data);
   };
 
+  // const handleSubmit = async () => {
+  //   await createAppointment(form);
+  //   navigate("/patients");
+  // };
   const handleSubmit = async () => {
-    await createAppointment(form);
+  try {
+    const res = await createAppointment(form);
+
+    // ✅ Backend message
+    alert(res.data.message); // "Appointment created successfully"
+
     navigate("/patients");
-  };
+
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to create appointment ❌"
+    );
+  }
+};
 
   return (
     <div className="container-fluid mt-3">

@@ -44,23 +44,34 @@ useEffect(() => {
 }, [id]);
 
 const handleSubmit = async () => {
-  const payload = {
-    organizationId: form.organization
-      ? Number(form.organization)
-      : null,
-    testName: form.testName,
-    shortName: form.shortName,
-    testCode: form.testCode,
-    profileTest: form.profileTest === "Yes",
-    testType: form.testType,
-    sampleType: form.sampleType,
-    testCategory: form.testCategory,
-    description: form.description,
-  };
+  try {
+    const payload = {
+      organizationId: form.organization
+        ? Number(form.organization)
+        : null,
+      testName: form.testName,
+      shortName: form.shortName,
+      testCode: form.testCode,
+      profileTest: form.profileTest === "Yes",
+      testType: form.testType,
+      sampleType: form.sampleType,
+      testCategory: form.testCategory,
+      description: form.description,
+    };
 
-  await updateTest(id, payload);
+    const res = await updateTest(id, payload);
 
-  navigate("/test-master");
+    // ✅ Backend message show
+    alert(res.data.message);
+
+    navigate("/test-master");
+
+  } catch (error) {
+    console.error(error);
+
+    // ❌ Backend error show
+    alert(error.response?.data?.message || "Failed to update test ❌");
+  }
 };
 
   const handleChange = (e) => {
