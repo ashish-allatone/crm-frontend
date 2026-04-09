@@ -10,6 +10,12 @@ export const getUsers = (page, size, search) =>
 export const getRoles = () =>
   api.get(`/users/roles`);
 
+export const createRole = (data) =>
+  api.post("/users/roles", data);
+
+export const updateRole = (id, data) =>
+  api.put(`/users/roles/${id}`, data)
+
 // CREATE user
 export const createUser = (data) =>
   api.post(`/users`, data);

@@ -43,10 +43,10 @@ Service Provider
 Currency
 </Link>
 
-<Link to="/configuration" className="dropdown-item">
+{/* <Link to="/configuration" className="dropdown-item">
 <FaCog className="icon"/>
 Configuration
-</Link>
+</Link> */}
 
 <Link to="/users" className="dropdown-item">
 <FaUsers className="icon"/>

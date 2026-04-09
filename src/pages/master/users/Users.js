@@ -33,8 +33,10 @@ const Users = () => {
 
   const loadUsers = async () => {
     const res = await getUsers(currentPage - 1, entries, search);
-    setUsers(res.data.content);
-    setTotalPages(res.data.totalPages);
+    // setUsers(res.data.content);
+    // setTotalPages(res.data.totalPages);
+    setUsers(res.data?.content || []);
+    setTotalPages(res.data?.totalPages || 0);
     console.log("API RESPONSE 👉", res.data);
     // setUsers(res.data.content);
     // setTotalPages(res.data.data?.totalPages || 0); // ✅ FIX
@@ -57,7 +59,9 @@ const Users = () => {
     mobile: "",
     gender: "",
     dob: "",
-    role: "",
+    // role: "",
+    // roleId: "",
+    roleName: "",
     address: "",
     password: "",
   });
@@ -97,7 +101,8 @@ const Users = () => {
       mobile: "",
       gender: "",
       dob: "",
-      role: "",
+      // role: "",
+      roleId: "",
       address: "",
       password: "",
     });
@@ -117,7 +122,9 @@ const Users = () => {
       mobile: user.mobile || "",
       gender: user.gender || "",
       dob: user.dob || "",
-      role: user.roles?.[0]?.name || "", // ✅ IMPORTANT
+      // role: user.roles?.[0]?.name || "", // ✅ IMPORTANT
+      // roleId: user.roles?.[0]?.id,
+      roleName: user.roles?.[0]?.name || "",
       address: user.address || "",
       password: "", // blank
     });
@@ -143,31 +150,31 @@ const Users = () => {
   //   loadUsers();
   // };
   const handleSubmit = async () => {
-  try {
-    let res;
-
-    if (editData) {
-      res = await updateUser(editData.id, form);
-    } else {
-      res = await createUser(form);
-    }
-
-    // ✅ Backend message
-    alert(res.data.message);
-
-    setShowModal(false);
-    setCurrentPage(1);
-    loadUsers();
-
-  } catch (error) {
-    console.error(error);
-
-    alert(
-      error.response?.data?.message ||
-      "Operation failed ❌"
-    );
-  }
+    try {
+      let res;
+      const payload = {
+  ...form,
+  role: form.roleName   // 🔥 IMPORTANT
 };
+
+      if (editData) {
+        res = await updateUser(editData.id, payload);
+      } else {
+        res = await createUser(payload);
+      }
+
+      // ✅ Backend message
+      alert(res.data.message);
+
+      setShowModal(false);
+      setCurrentPage(1);
+      loadUsers();
+    } catch (error) {
+      console.error(error);
+
+      alert(error.response?.data?.message || "Operation failed ❌");
+    }
+  };
 
   // const handleChangePassword = async () => {
   //   if (password !== confirmPassword) {
@@ -181,31 +188,27 @@ const Users = () => {
   // };
 
   const handleChangePassword = async () => {
-  try {
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
-      return;
+    try {
+      if (password !== confirmPassword) {
+        alert("Passwords do not match");
+        return;
+      }
+
+      const res = await changePassword(editData.id, {
+        password,
+        confirmPassword,
+      });
+
+      // ✅ Backend message
+      alert(res.data.message);
+
+      setShowPasswordModal(false);
+    } catch (error) {
+      console.error(error);
+
+      alert(error.response?.data?.message || "Password change failed ❌");
     }
-
-    const res = await changePassword(editData.id, {
-      password,
-      confirmPassword,
-    });
-
-    // ✅ Backend message
-    alert(res.data.message);
-
-    setShowPasswordModal(false);
-
-  } catch (error) {
-    console.error(error);
-
-    alert(
-      error.response?.data?.message ||
-      "Password change failed ❌"
-    );
-  }
-};
+  };
 
   // const handleStatusToggle = async (id) => {
   //   await toggleStatus(id);
@@ -216,21 +219,18 @@ const Users = () => {
   // };
 
   const handleStatusToggle = async (id) => {
-  try {
-    const res = await toggleStatus(id);
+    try {
+      const res = await toggleStatus(id);
 
-    alert(res.data.message); // ✅ NEW
+      alert(res.data.message); // ✅ NEW
 
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === id ? { ...u, status: !u.status } : u
-      )
-    );
-
-  } catch (error) {
-    alert(error.response?.data?.message || "Status update failed ❌");
-  }
-};
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, status: !u.status } : u)),
+      );
+    } catch (error) {
+      alert(error.response?.data?.message || "Status update failed ❌");
+    }
+  };
 
   return (
     <div className="container-fluid mt-3">
@@ -324,7 +324,7 @@ const Users = () => {
               </thead>
 
               <tbody>
-                {users.map((u) => (
+                {users?.map((u) => (
                   <tr key={u.id}>
                     <td>
                       <button
@@ -541,7 +541,7 @@ const Users = () => {
                   <div className="col-md-6 mb-3">
                     <label>Role</label>
 
-                    <select
+                    {/* <select
                       name="role"
                       value={form.role}
                       onChange={handleChange}
@@ -553,7 +553,21 @@ const Users = () => {
                           {r.name}
                         </option>
                       ))}
-                    </select>
+                    </select> */}
+                    <select className="form-control"
+  value={form.roleName}
+  onChange={(e) =>
+    setForm({ ...form, roleName: e.target.value })
+  }
+>
+  <option value="">Select Role</option>
+
+  {roles.map((r) => (
+    <option key={r.id} value={r.name}>
+      {r.name}
+    </option>
+  ))}
+</select>
                   </div>
 
                   <div className="col-md-12 mb-3">
@@ -1629,4 +1643,3 @@ export default Users;
 // };
 
 // export default Users;
-

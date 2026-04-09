@@ -88,16 +88,39 @@ const loadRoles = async () => {
     return sortDirection === "asc" ? "▲" : "▼";
   };
 
-  const handleSaveRole = async () => {
+//   const handleSaveRole = async () => {
+//   try {
+//     if (editData) {
+//       await api.put(`/roles/${editData.id}`, {
+//         name: roleName,
+//       });
+
+//       alert("Role updated successfully");
+//     } else {
+//       await api.post("/roles", {
+//         name: roleName,
+//       });
+
+//       alert("Role created successfully");
+//     }
+
+//     setShowModal(false);
+//     loadRoles();
+
+//   } catch (err) {
+//     alert(err.response?.data?.message || "Error saving role");
+//   }
+// };
+const handleSaveRole = async () => {
   try {
     if (editData) {
-      await api.put(`/roles/${editData.id}`, {
+      await api.put(`/users/roles/${editData.id}`, {
         name: roleName,
       });
 
       alert("Role updated successfully");
     } else {
-      await api.post("/roles", {
+      await api.post("/users/roles", {
         name: roleName,
       });
 
@@ -110,6 +133,21 @@ const loadRoles = async () => {
   } catch (err) {
     alert(err.response?.data?.message || "Error saving role");
   }
+};
+
+const hasPermission = (module, action) => {
+  const perms = JSON.parse(localStorage.getItem("permissions") || "[]");
+  console.log("Perms is"+ perms);
+
+  const p = perms.find((x) => x.module === module);
+
+  if (!p) return false;
+
+  if (action === "VIEW") return p.canView;
+  if (action === "ADD") return p.canAdd;
+  if (action === "EDIT") return p.canEdit;
+
+  return false;
 };
 
   return (
@@ -193,7 +231,7 @@ const loadRoles = async () => {
               </thead>
 
               <tbody>
-                {currentRoles.map((r) => (
+                {currentRoles?.map((r) => (
                   <tr key={r.id}>
                     <td>
                       <button
@@ -228,6 +266,14 @@ const loadRoles = async () => {
                       >
                         ⚙ Set Permission
                       </button>
+                      {/* {hasPermission("Roles", "EDIT") && (
+  <button
+    className="btn btn-primary btn-sm"
+    onClick={() => navigate(`/set-permission/${r.id}`)}
+  >
+    ⚙ Set Permission
+  </button>
+)} */}
                     </td>
                   </tr>
                 ))}

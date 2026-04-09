@@ -15,13 +15,33 @@ const SetPermission = () => {
  const loadPermissions = async () => {
   try {
     const res = await api.get(`/permissions/${roleId}`);
-    if (res.data.data.length === 0) {
+    if (!res.data.data || res.data.data.length === 0) {
+  // setPermissions([
+  //   { module: "Dashboard", canView: false, canAdd: false, canEdit: false },
+  //   { module: "Test Master", canView: false, canAdd: false, canEdit: false },
+  //   { module: "Organization", canView: false, canAdd: false, canEdit: false },
+  //   { module: "Patients", canView: false, canAdd: false, canEdit: false },
+  //   { module: "Appointment", canView: false, canAdd: false, canEdit: false },
+  //   { module: "Test Result", canView: false, canAdd: false, canEdit: false },
+  //   { module: "Test Report", canView: false, canAdd: false, canEdit: false },
+  //   { module: "Invoice", canView: false, canAdd: false, canEdit: false },
+  // ]);
   setPermissions([
-    { id: 1, module: "Test Master", canView: false, canAdd: false, canEdit: false },
-    { id: 2, module: "Patient", canView: false, canAdd: false, canEdit: false },
-  ]);
+  { module: "Dashboard", canView: false, canAdd: false, canEdit: false },
+  { module: "Test Master", canView: false, canAdd: false, canEdit: false },
+  { module: "Organization", canView: false, canAdd: false, canEdit: false },
+  { module: "Service Provider", canView: false, canAdd: false, canEdit: false },
+  { module: "Users", canView: false, canAdd: false, canEdit: false }, 
+  { module: "Roles", canView: false, canAdd: false, canEdit: false },
+  { module: "Patients", canView: false, canAdd: false, canEdit: false },
+  { module: "Appointment", canView: false, canAdd: false, canEdit: false },
+  { module: "Test Result", canView: false, canAdd: false, canEdit: false },
+  { module: "Test Report", canView: false, canAdd: false, canEdit: false },
+  { module: "Invoice", canView: false, canAdd: false, canEdit: false },
+]);
+} else {
+  setPermissions(res.data.data);
 }
-    setPermissions(res.data.data || []);
     console.log(res.data);
   } catch (err) {
     console.error("Permission load error:", err);
