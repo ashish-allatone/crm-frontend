@@ -3,6 +3,7 @@ import "../../../styles/allPatients.css";
 import { useNavigate } from "react-router-dom";
 // import { tests } from "../../../data/tests";
 import { getTests, deleteTest } from "../../../services/testService";
+import { hasPermission } from "../../permissionUtil";
 
 const TestMaster = () => {
   const [search, setSearch] = useState("");
@@ -15,11 +16,22 @@ const TestMaster = () => {
   const [tests, setTests] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
 
-  const loadTests = async () => {
-  const res = await getTests(currentPage - 1, entries, search);
+//   const loadTests = async () => {
+//   const res = await getTests(currentPage - 1, entries, search);
 
-  setTests(res.data.content);
-  setTotalPages(res.data.totalPages);
+//   setTests(res.data.content);
+//   setTotalPages(res.data.totalPages);
+// };
+const loadTests = async () => {
+  try {
+    const res = await getTests(currentPage - 1, entries, search);
+    setTests(res.data.content);
+    setTotalPages(res.data.totalPages);
+  } catch (err) {
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
+    }
+  }
 };
 
 useEffect(() => {
@@ -98,12 +110,20 @@ useEffect(() => {
         >
           <h5>Test Master</h5>
 
-          <button
+          {/* <button
             className="btn btn-light"
             onClick={() => navigate("/add-test")}
           >
             + Add New Test
-          </button>
+          </button> */}
+          {hasPermission("Test Master", "ADD") && (
+  <button
+    className="btn btn-light"
+    onClick={() => navigate("/add-test")}
+  >
+    + Add New Test
+  </button>
+)}
         </div>
 
         <div className="card-body">
@@ -147,12 +167,12 @@ useEffect(() => {
                 <tr>
                   <th>Action</th>
 
-                  <th
+                  {/* <th
                     onClick={() => handleSort("status")}
                     style={{ cursor: "pointer" }}
                   >
                     Status {getArrow("status")}
-                  </th>
+                  </th> */}
 
                   <th
                     onClick={() => handleSort("organization")}
@@ -188,15 +208,23 @@ useEffect(() => {
                 {tests.map((t) => (
                   <tr key={t.id}>
                     <td>
-                      <button
+                      {/* <button
                         className="btn btn-info btn-sm"
                         onClick={() => navigate(`/edit-test/${t.id}`)}
                       >
                         Edit
-                      </button>
+                      </button> */}
+                      {hasPermission("Test Master", "EDIT") && (
+  <button
+    className="btn btn-info btn-sm"
+    onClick={() => navigate(`/edit-test/${t.id}`)}
+  >
+    Edit
+  </button>
+)}
                     </td>
 
-                    <td>
+                    {/* <td>
                       <div className="form-check form-switch">
                         <input
                           className="form-check-input"
@@ -205,7 +233,7 @@ useEffect(() => {
                           readOnly
                         />
                       </div>
-                    </td>
+                    </td> */}
 
                     <td>{t.organizationName}</td>
 

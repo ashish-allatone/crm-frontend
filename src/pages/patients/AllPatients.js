@@ -3,6 +3,7 @@ import "../../styles/allPatients.css";
 import { useNavigate } from "react-router-dom";
 // import { useParams } from "react-router-dom";
 import { getPatients } from "../../services/patientService";
+import { hasPermission } from "../permissionUtil";
 
 const AllPatients = () => {
   const navigate = useNavigate();
@@ -16,12 +17,23 @@ const AllPatients = () => {
   const [patients, setPatients] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
 
-  const loadPatients = async () => {
-    const res = await getPatients(currentPage - 1, entries, search);
+  // const loadPatients = async () => {
+  //   const res = await getPatients(currentPage - 1, entries, search);
 
+  //   setPatients(res.data.content);
+  //   setTotalPages(res.data.totalPages);
+  // };
+  const loadPatients = async () => {
+  try {
+    const res = await getPatients(currentPage - 1, entries, search);
     setPatients(res.data.content);
     setTotalPages(res.data.totalPages);
-  };
+  } catch (err) {
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
+    }
+  }
+};
 
   useEffect(() => {
     loadPatients();
@@ -63,12 +75,20 @@ const AllPatients = () => {
         >
           <h5>All Patient List</h5>
 
-          <button
+          {/* <button
             className="btn btn-light"
             onClick={() => navigate("/add-patient")}
           >
             👤 New Patient Registration
-          </button>
+          </button> */}
+          {hasPermission("Patients", "ADD") && (
+  <button
+    className="btn btn-light"
+    onClick={() => navigate("/add-patient")}
+  >
+    👤 New Patient Registration
+  </button>
+)}
         </div>
 
         <div className="card-body">
@@ -114,12 +134,12 @@ const AllPatients = () => {
               <thead>
                 <tr>
                   <th>Action</th>
-                  <th
+                  {/* <th
                     onClick={() => handleSort("status")}
                     style={{ cursor: "pointer" }}
                   >
                     Status {getArrow("status")}
-                  </th>
+                  </th> */}
 
                   <th
                     onClick={() => handleSort("lm")}
@@ -203,7 +223,7 @@ const AllPatients = () => {
                         </button>
 
                         <ul className="dropdown-menu">
-                          <li>
+                          {/* <li>
                             <button
                               className="dropdown-item"
                               onClick={() =>
@@ -212,18 +232,38 @@ const AllPatients = () => {
                             >
                               View Details
                             </button>
-                          </li>
+                          </li> */}
+                          {hasPermission("Patients", "VIEW") && (
+  <li>
+    <button
+      className="dropdown-item"
+      onClick={() => navigate(`/patient-details/${p.id}`)}
+    >
+      View Details
+    </button>
+  </li>
+)}
 
-                          <li>
+                          {/* <li>
                             <button
                               className="dropdown-item"
                               onClick={() => navigate(`/edit-patient/${p.id}`)}
                             >
                               Edit
                             </button>
-                          </li>
+                          </li> */}
+                          {hasPermission("Patients", "EDIT") && (
+  <li>
+    <button
+      className="dropdown-item"
+      onClick={() => navigate(`/edit-patient/${p.id}`)}
+    >
+      Edit
+    </button>
+  </li>
+)}
 
-                          <li>
+                          {/* <li>
                             <button
                               className="dropdown-item"
                               onClick={() =>
@@ -232,9 +272,20 @@ const AllPatients = () => {
                             >
                               Create Appointment
                             </button>
-                          </li>
+                          </li> */}
+                          {/* {hasPermission("Patients", "ADD") && ( */}
+                          {hasPermission("Appointment", "ADD") && (
+  <li>
+    <button
+      className="dropdown-item"
+      onClick={() => navigate(`/create-appointment/${p.id}`)}
+    >
+      Create Appointment
+    </button>
+  </li>
+)}
 
-                          <li>
+                          {/* <li>
                             <button
                               className="dropdown-item"
                               onClick={() =>
@@ -243,12 +294,22 @@ const AllPatients = () => {
                             >
                               Add Package Price
                             </button>
-                          </li>
+                          </li> */}
+                          {hasPermission("Patients", "EDIT") && (
+  <li>
+    <button
+      className="dropdown-item"
+      onClick={() => navigate(`/add-package-price/${p.id}`)}
+    >
+      Add Package Price
+    </button>
+  </li>
+)}
                         </ul>
                       </div>
                     </td>
 
-                    <td>{p.status}</td>
+                    {/* <td>{p.status}</td> */}
                     <td>{p.id}</td>
                     <td className="text-primary">{p.patientName}</td>
                     <td>{p.mobileNumber}</td>

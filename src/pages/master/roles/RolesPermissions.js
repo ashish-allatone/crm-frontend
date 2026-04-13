@@ -4,6 +4,7 @@ import "../../../styles/allPatients.css";
 import { useNavigate } from "react-router-dom";
 import api from "../../../services/api";
 import { useEffect } from "react";
+import { hasPermission } from "../../permissionUtil";
 
 const RolesPermissions = () => {
   const navigate = useNavigate();
@@ -24,9 +25,23 @@ const RolesPermissions = () => {
   loadRoles();
 }, []);
 
+// const loadRoles = async () => {
+//   const res = await api.get("/users/roles"); // ✅ backend endpoint
+//   setRoles(res.data.data || []);
+// };
 const loadRoles = async () => {
-  const res = await api.get("/users/roles"); // ✅ backend endpoint
-  setRoles(res.data.data || []);
+  try {
+    const res = await api.get("/users/roles");
+    setRoles(res.data.data || []);
+  } catch (err) {
+    console.error(err);
+
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
+    } else {
+      alert("Failed to load roles");
+    }
+  }
 };
 
   /* Sorting */
@@ -112,6 +127,15 @@ const loadRoles = async () => {
 //   }
 // };
 const handleSaveRole = async () => {
+   if (editData && !hasPermission("Roles", "EDIT")) {
+    alert("Access Denied ❌");
+    return;
+  }
+
+  if (!editData && !hasPermission("Roles", "ADD")) {
+    alert("Access Denied ❌");
+    return;
+  }
   try {
     if (editData) {
       await api.put(`/users/roles/${editData.id}`, {
@@ -159,7 +183,7 @@ const hasPermission = (module, action) => {
         >
           <h5>Roles Master</h5>
 
-          <button
+          {/* <button
             className="btn btn-light"
             onClick={() => {
               setEditData(null);
@@ -168,7 +192,19 @@ const hasPermission = (module, action) => {
             }}
           >
             + Add New Roles
-          </button>
+          </button> */}
+          {hasPermission("Roles", "ADD") && (
+  <button
+    className="btn btn-light"
+    onClick={() => {
+      setEditData(null);
+      setRoleName("");
+      setShowModal(true);
+    }}
+  >
+    + Add New Roles
+  </button>
+)}
         </div>
 
         <div className="card-body">
@@ -212,12 +248,12 @@ const hasPermission = (module, action) => {
                 <tr>
                   <th>Actions</th>
 
-                  <th
+                  {/* <th
                     onClick={() => handleSort("status")}
                     style={{ cursor: "pointer" }}
                   >
                     Status {getArrow("status")}
-                  </th>
+                  </th> */}
 
                   <th
                     onClick={() => handleSort("name")}
@@ -234,7 +270,7 @@ const hasPermission = (module, action) => {
                 {currentRoles?.map((r) => (
                   <tr key={r.id}>
                     <td>
-                      <button
+                      {/* <button
                         className="btn btn-info btn-sm"
                         onClick={() => {
                           setEditData(r);
@@ -243,10 +279,22 @@ const hasPermission = (module, action) => {
                         }}
                       >
                         Edit
-                      </button>
+                      </button> */}
+                      {hasPermission("Roles", "EDIT") && (
+  <button
+    className="btn btn-info btn-sm"
+    onClick={() => {
+      setEditData(r);
+      setRoleName(r.name);
+      setShowModal(true);
+    }}
+  >
+    Edit
+  </button>
+)}
                     </td>
 
-                    <td>
+                    {/* <td>
                       <div className="form-check form-switch">
                         <input
                           className="form-check-input"
@@ -255,17 +303,25 @@ const hasPermission = (module, action) => {
                           readOnly
                         />
                       </div>
-                    </td>
+                    </td> */}
 
                     <td>{r.name}</td>
 
                     <td>
-                      <button
+                      {/* <button
                         className="btn btn-primary btn-sm"
                         onClick={() => navigate(`/set-permission/${r.id}`)}
                       >
                         ⚙ Set Permission
-                      </button>
+                      </button> */}
+                      {hasPermission("Roles", "EDIT") && (
+  <button
+    className="btn btn-primary btn-sm"
+    onClick={() => navigate(`/set-permission/${r.id}`)}
+  >
+    ⚙ Set Permission
+  </button>
+)}
                       {/* {hasPermission("Roles", "EDIT") && (
   <button
     className="btn btn-primary btn-sm"
@@ -361,9 +417,17 @@ const hasPermission = (module, action) => {
               </div>
 
               <div className="modal-footer">
-                <button className="btn btn-primary submit-btn" onClick={handleSaveRole}>
+                {/* <button className="btn btn-primary submit-btn" onClick={handleSaveRole}>
                   {editData ? "Update" : "Submit"}
-                </button>
+                </button> */}
+                {hasPermission("Roles", editData ? "EDIT" : "ADD") && (
+  <button
+    className="btn btn-primary submit-btn"
+    onClick={handleSaveRole}
+  >
+    {editData ? "Update" : "Submit"}
+  </button>
+)}
 
                 <button
                   className="btn btn-danger"

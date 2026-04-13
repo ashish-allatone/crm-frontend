@@ -6,8 +6,11 @@ import {
   getServiceProviderById,
   updateServiceProvider,
 } from "../../../services/serviceProviderService";
+import { useLocation } from "../../../hooks/useLocation";
 
 const EditServiceProvider = () => {
+
+  const { countries, states, cities, loadStates, loadCities } = useLocation();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -39,6 +42,14 @@ useEffect(() => {
       mobile: data.contactMobile,
       contactEmail: data.contactEmail,
     });
+
+     if (data.country) {
+      await loadStates(data.country);
+    }
+
+    if (data.country && data.state) {
+      await loadCities(data.country, data.state);
+    }
   };
 
   loadProvider();
@@ -114,6 +125,22 @@ const handleSubmit = async () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+
+  const handleCountryChange = (e) => {
+  const countryCode = e.target.value;
+
+  setForm({ ...form, country: countryCode, state: "", city: "" });
+
+  loadStates(countryCode);
+};
+
+const handleStateChange = (e) => {
+  const stateCode = e.target.value;
+
+  setForm({ ...form, state: stateCode, city: "" });
+
+  loadCities(form.country, stateCode);
+};
   
 
   return (
@@ -236,34 +263,73 @@ const handleSubmit = async () => {
             <div className="col-md-3">
               <label>Country</label>
 
-              <input
+              {/* <input
                 className="form-control"
                 name="country"
                 value={form.country}
                 onChange={handleChange}
-              />
+              /> */}
+              <select
+  className="form-control"
+  name="country"
+  value={form.country || ""}
+  onChange={handleCountryChange}
+>
+  <option value="">Select Country</option>
+  {countries.map((c) => (
+    <option key={c.iso2} value={c.iso2}>
+      {c.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-3">
               <label>State</label>
 
-              <input
+              {/* <input
                 className="form-control"
                 name="state"
                 value={form.state}
                 onChange={handleChange}
-              />
+              /> */}
+              <select
+  className="form-control"
+  name="state"
+  value={form.state || ""}
+  onChange={handleStateChange}
+>
+  <option value="">Select State</option>
+  {states.map((s) => (
+    <option key={s.iso2} value={s.iso2}>
+      {s.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-3">
               <label>City</label>
 
-              <input
+              {/* <input
                 className="form-control"
                 name="city"
                 value={form.city}
                 onChange={handleChange}
-              />
+              /> */}
+              <select
+  className="form-control"
+  name="city"
+  value={form.city || ""}
+  onChange={handleChange}
+>
+  <option value="">Select City</option>
+  {cities.map((c) => (
+    <option key={c.id} value={c.name}>
+      {c.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-3">

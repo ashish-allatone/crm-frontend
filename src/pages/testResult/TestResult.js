@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
+import { hasPermission } from "../permissionUtil";
 
 const TestResult = () => {
   //   const testResults = [];
@@ -26,11 +27,23 @@ useEffect(() => {
   loadAppointments();
 }, [currentPage, entries, search]);
 
-const loadAppointments = async () => {
-  const res = await getAppointments(currentPage - 1, entries, search);
+// const loadAppointments = async () => {
+//   const res = await getAppointments(currentPage - 1, entries, search);
 
-  setAppointments(res.data.content);
-  setTotalPages(res.data.totalPages);
+//   setAppointments(res.data.content);
+//   setTotalPages(res.data.totalPages);
+// };
+const loadAppointments = async () => {
+  try {
+    const res = await getAppointments(currentPage - 1, entries, search);
+
+    setAppointments(res.data.content);
+    setTotalPages(res.data.totalPages);
+  } catch (err) {
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
+    }
+  }
 };
 
   const handleSort = (column) => {
@@ -60,14 +73,29 @@ const loadAppointments = async () => {
     return sortDirection === "asc" ? "▲" : "▼";
   };
 
-  const handleView = async (appointmentId) => {
+//   const handleView = async (appointmentId) => {
+//   try {
+//     const res = await getTestResult(appointmentId);
+//     setSelectedResult(res.data.data);
+//     setShowModal(true); // 🔥 open modal
+//   } catch (err) {
+//     console.error(err);
+//     alert("No test result found for this appointment");
+//   }
+// };
+const handleView = async (appointmentId) => {
+
+  if (!hasPermission("Test Result", "VIEW")) {
+    alert("Access Denied ❌");
+    return;
+  }
+
   try {
     const res = await getTestResult(appointmentId);
     setSelectedResult(res.data.data);
-    setShowModal(true); // 🔥 open modal
+    setShowModal(true);
   } catch (err) {
-    console.error(err);
-    alert("No test result found for this appointment");
+    alert("No test result found");
   }
 };
 
@@ -208,7 +236,7 @@ const handleExportPDF = async () => {
   {appointments.length === 0 ? (
     <tr>
       <td colSpan="10" className="text-center">
-        No data found
+        No data found for the appoitnments
       </td>
     </tr>
   ) : (
@@ -226,14 +254,24 @@ const handleExportPDF = async () => {
 
               {/* 🔥 ADD TEST RESULT */}
               <li>
-                <button
+                {/* <button
                   className="dropdown-item"
                   onClick={() =>
                     navigate(`/add-test-result/${a.appointmentId}`)
                   }
                 >
                   Add Test Result
-                </button>
+                </button> */}
+                {hasPermission("Test Result", "ADD") && (
+  <button
+    className="dropdown-item"
+    onClick={() =>
+      navigate(`/add-test-result/${a.appointmentId}`)
+    }
+  >
+    Add Test Result
+  </button>
+)}
               </li>
 
             </ul>

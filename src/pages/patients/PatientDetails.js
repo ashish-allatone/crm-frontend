@@ -267,12 +267,12 @@ const PatientDetails = () => {
             LM No.: <b>{patient.id}</b>
           </div>
 
-          <button
+          {/* <button
             className="btn edit-btn"
             onClick={() => navigate(`/edit-patient/${id}`)}
           >
             ✏ Edit Patient Details
-          </button>
+          </button> */}
         </div>
       </div>
 

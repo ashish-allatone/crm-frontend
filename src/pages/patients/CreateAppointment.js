@@ -113,8 +113,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { createAppointment } from "../../services/appointmentService";
 import { getPatientById } from "../../services/patientService";
 import { getAllServiceProviders } from "../../services/serviceProviderService";
+import { hasPermission } from "../permissionUtil";
 
 const CreateAppointment = () => {
+  const canAdd = hasPermission("Appointment", "ADD");
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -128,6 +130,8 @@ const CreateAppointment = () => {
     visitDate: "",
     visitTime: "",
   });
+
+  
 
   useEffect(() => {
     loadPatient();
@@ -174,7 +178,9 @@ const CreateAppointment = () => {
     );
   }
 };
-
+if (!canAdd) {
+  return <h3>Access Denied ❌</h3>;
+}
   return (
     <div className="container-fluid mt-3">
       <div className="card">

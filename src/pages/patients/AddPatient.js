@@ -6,9 +6,16 @@ import { getOrganizationsAll } from "../../services/organizationService";
 import { getAllInsurances } from "../../services/insuranceService";
 import { getAllTests } from "../../services/testService";
 import { getAllCurrencies } from "../../services/currencyService";
+import { hasPermission } from "../permissionUtil";
+import { useLocation } from "../../hooks/useLocation";
 
 const AddPatient = () => {
+  const canViewOrg = hasPermission("Organization", "VIEW");
+  const canViewCurrency = hasPermission("Currency", "VIEW");
+  const canViewTest = hasPermission("Test Master", "VIEW");
+  const canViewInsurance = hasPermission("Insurance", "VIEW");
   const navigate = useNavigate();
+  const { countries, states, cities, loadStates, loadCities } = useLocation();
 
   const [form, setForm] = useState({
     title: "",
@@ -33,40 +40,104 @@ const AddPatient = () => {
   });
 
   const [organizations, setOrganizations] = useState([]);
+  // useEffect(() => {
+  //   const loadOrgs = async () => {
+  //     const res = await getOrganizationsAll();
+  //     setOrganizations(res.data.data);
+  //   };
+  //   loadOrgs();
+  // }, []);
   useEffect(() => {
-    const loadOrgs = async () => {
+     if (!canViewOrg) {
+    setOrganizations([]);
+    return;
+  }
+  const loadOrgs = async () => {
+    try {
       const res = await getOrganizationsAll();
-      setOrganizations(res.data.data);
-    };
-    loadOrgs();
-  }, []);
+      setOrganizations(res.data.data || []);
+    } catch (err) {
+      console.warn("Organization access denied");
+      setOrganizations([]); // fallback
+    }
+  };
+  loadOrgs();
+}, [canViewOrg]);
   const [insurances, setInsurances] = useState([]);
+  // useEffect(() => {
+  //   const loadInsurance = async () => {
+  //     const res = await getAllInsurances();
+  //     setInsurances(res.data.data);
+  //   };
+  //   loadInsurance();
+  // }, []);
   useEffect(() => {
-    const loadInsurance = async () => {
+     if (!canViewInsurance) {
+    setInsurances([]);
+    return;
+  }
+  const loadInsurance = async () => {
+    try {
       const res = await getAllInsurances();
-      setInsurances(res.data.data);
-    };
-    loadInsurance();
-  }, []);
+      setInsurances(res.data.data || []);
+    } catch (err) {
+      console.warn("Insurance access denied");
+      setInsurances([]);
+    }
+  };
+  loadInsurance();
+}, [canViewInsurance]);
 
   const [allTests, setAllTests] = useState([]);
+  // useEffect(() => {
+  //   const loadTests = async () => {
+  //     const res = await getAllTests();
+  //     setAllTests(res.data.data);
+  //   };
+  //   loadTests();
+  // }, []);
   useEffect(() => {
-    const loadTests = async () => {
+     if (!canViewTest) {
+    setAllTests([]);
+    return;
+  }
+  const loadTests = async () => {
+    try {
       const res = await getAllTests();
-      setAllTests(res.data.data);
-    };
-    loadTests();
-  }, []);
+      setAllTests(res.data.data || []);
+    } catch (err) {
+      console.warn("Test access denied");
+      setAllTests([]);
+    }
+  };
+  loadTests();
+}, [canViewTest]);
 
   const [currencies, setCurrencies] = useState([]);
-  useEffect(() => {
-    const loadCurrencies = async () => {
-      const res = await getAllCurrencies();
-      setCurrencies(res.data.data); // assuming {data: {data: [...]}}
-    };
+  // useEffect(() => {
+  //   const loadCurrencies = async () => {
+  //     const res = await getAllCurrencies();
+  //     setCurrencies(res.data.data); // assuming {data: {data: [...]}}
+  //   };
 
-    loadCurrencies();
-  }, []);
+  //   loadCurrencies();
+  // }, []);
+  useEffect(() => {
+     if (!canViewCurrency) {
+    setCurrencies([]);
+    return;
+  }
+  const loadCurrencies = async () => {
+    try {
+      const res = await getAllCurrencies();
+      setCurrencies(res.data.data || []);
+    } catch (err) {
+      console.warn("Currency access denied");
+      setCurrencies([]);
+    }
+  };
+  loadCurrencies();
+}, [canViewCurrency]);
 
   const [tests, setTests] = useState([
     {
@@ -138,6 +209,22 @@ const AddPatient = () => {
       "Failed to create patient ❌"
     );
   }
+};
+
+const handleCountryChange = (e) => {
+  const countryCode = e.target.value;
+
+  setForm({ ...form, country: countryCode, state: "", city: "" });
+
+  loadStates(countryCode);
+};
+
+const handleStateChange = (e) => {
+  const stateCode = e.target.value;
+
+  setForm({ ...form, state: stateCode, city: "" });
+
+  loadCities(form.country, stateCode);
 };
 
   return (
@@ -265,7 +352,7 @@ const AddPatient = () => {
             <div className="col-md-3">
               <label>Country</label>
 
-              <select
+              {/* <select
                 className="form-control"
                 name="country"
                 value={form.country}
@@ -275,13 +362,25 @@ const AddPatient = () => {
                 <option value="India">India</option>
                 <option value="UAE">UAE</option>
                 <option value="England">England</option>
-              </select>
+              </select> */}
+              <select
+  className="form-control"
+  value={form.country}
+  onChange={handleCountryChange}
+>
+  <option value="">Select Country</option>
+  {countries.map((c) => (
+    <option key={c.iso2} value={c.iso2}>
+      {c.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-3">
               <label>State</label>
 
-              <select
+              {/* <select
                 className="form-control"
                 name="state"
                 value={form.state}
@@ -291,13 +390,25 @@ const AddPatient = () => {
                 <option value="Maharashtra">Maharashtra</option>
                 <option value="Delhi">Delhi</option>
                 <option value="Gujarat">Gujarat</option>
-              </select>
+              </select> */}
+              <select
+  className="form-control"
+  value={form.state}
+  onChange={handleStateChange}
+>
+  <option value="">Select State</option>
+  {states.map((s) => (
+    <option key={s.iso2} value={s.iso2}>
+      {s.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-3">
               <label>City</label>
 
-              <select
+              {/* <select
                 className="form-control"
                 name="city"
                 value={form.city}
@@ -307,7 +418,20 @@ const AddPatient = () => {
                 <option value="Mumbai">Mumbai</option>
                 <option value="Delhi">Delhi</option>
                 <option value="Ahmedabad">Ahmedabad</option>
-              </select>
+              </select> */}
+              <select
+  className="form-control"
+  value={form.city}
+   name="city"
+  onChange={handleChange}
+>
+  <option value="">Select City</option>
+  {cities.map((c) => (
+    <option key={c.id} value={c.name}>
+      {c.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-3">
@@ -348,6 +472,13 @@ const AddPatient = () => {
 
             <div className="col-md-4">
               <label>Currency</label>
+              {!canViewCurrency ? (
+  <input
+    className="form-control"
+    value="No Currency Access"
+    disabled
+  />
+) : (
 
               <select
                 className="form-control"
@@ -362,7 +493,7 @@ const AddPatient = () => {
                     {c.currencyCode}
                   </option>
                 ))}
-              </select>
+              </select>)}
             </div>
 
             <div className="col-md-6">
@@ -379,6 +510,13 @@ const AddPatient = () => {
 
             <div className="col-md-6">
               <label>Select Organization</label>
+              {!canViewOrg ? (
+  <input
+    className="form-control"
+    value="No Organization Access"
+    disabled
+  />
+) : (
 
               <select
                 className="form-control"
@@ -393,11 +531,18 @@ const AddPatient = () => {
                     {o.organizationName}
                   </option>
                 ))}
-              </select>
+              </select>)}
             </div>
 
             <div className="col-md-6">
               <label>Insurance Company</label>
+              {!canViewInsurance ? (
+  <input
+    className="form-control"
+    value="No Insurance Access"
+    disabled
+  />
+) : (
 
               <select
                 className="form-control"
@@ -412,7 +557,7 @@ const AddPatient = () => {
                     {i.insuranceName}
                   </option>
                 ))}
-              </select>
+              </select>)}
             </div>
           </div>
 
@@ -437,6 +582,13 @@ const AddPatient = () => {
                   <td>{index + 1}</td>
 
                   <td>
+                    {!canViewTest ? (
+  <input
+    className="form-control"
+    value="No Test Access"
+    disabled
+  />
+) : (
                     <select
                       className="form-control"
                       value={item.testId}
@@ -450,7 +602,7 @@ const AddPatient = () => {
                           {t.testName}
                         </option>
                       ))}
-                    </select>
+                    </select>)}
                   </td>
 
                   <td>

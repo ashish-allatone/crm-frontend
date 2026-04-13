@@ -7,7 +7,8 @@ import {
   deleteCurrency,
 } from "../../../services/currencyService";
 
-// import { currencies } from "../../../data/currencies";
+
+import { hasPermission } from "../../permissionUtil";
 
 const Currency = () => {
   const [search, setSearch] = useState("");
@@ -29,12 +30,24 @@ const Currency = () => {
     isActive: true,
   });
 
+  // const loadCurrencies = async () => {
+  //   const res = await getCurrencies(currentPage - 1, entries, search);
+
+  //   setCurrencies(res.data.content);
+  //   setTotalPages(res.data.totalPages);
+  // };
   const loadCurrencies = async () => {
+  try {
     const res = await getCurrencies(currentPage - 1, entries, search);
 
     setCurrencies(res.data.content);
     setTotalPages(res.data.totalPages);
-  };
+  } catch (err) {
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
+    }
+  }
+};
 
   useEffect(() => {
     loadCurrencies();
@@ -149,7 +162,7 @@ const handleSubmit = async () => {
         >
           <h5>Currency Master</h5>
 
-          <button
+          {/* <button
             className="btn btn-light"
             onClick={() => {
               setEditData(null);
@@ -157,7 +170,18 @@ const handleSubmit = async () => {
             }}
           >
             + Add New Currency
-          </button>
+          </button> */}
+          {hasPermission("Currency", "ADD") && (
+  <button
+    className="btn btn-light"
+    onClick={() => {
+      setEditData(null);
+      setShowModal(true);
+    }}
+  >
+    + Add New Currency
+  </button>
+)}
         </div>
 
         <div className="card-body">
@@ -204,12 +228,12 @@ const handleSubmit = async () => {
                 <tr>
                   <th>ACTIONS</th>
 
-                  <th
+                  {/* <th
                     onClick={() => handleSort("status")}
                     style={{ cursor: "pointer" }}
                   >
                     STATUS {getArrow("status")}
-                  </th>
+                  </th> */}
 
                   <th
                     onClick={() => handleSort("currency")}
@@ -231,7 +255,7 @@ const handleSubmit = async () => {
                 {currencies.map((c) => (
                   <tr key={c.id}>
                     <td>
-                      <button
+                      {/* <button
                         className="btn btn-info btn-sm"
                         onClick={() => {
                           setEditData(c);
@@ -245,10 +269,27 @@ const handleSubmit = async () => {
                         }}
                       >
                         Edit
-                      </button>
+                      </button> */}
+                      {hasPermission("Currency", "EDIT") && (
+  <button
+    className="btn btn-info btn-sm"
+    onClick={() => {
+      setEditData(c);
+      setForm({
+        currencyCode: c.currencyCode,
+        currencyName: c.currencyName,
+        rateToInr: c.rateToInr,
+        isActive: c.isActive,
+      });
+      setShowModal(true);
+    }}
+  >
+    Edit
+  </button>
+)}
                     </td>
 
-                    <td>
+                    {/* <td>
                       <div className="form-check form-switch">
                         <input
                           className="form-check-input"
@@ -257,7 +298,7 @@ const handleSubmit = async () => {
                           readOnly
                         />
                       </div>
-                    </td>
+                    </td> */}
 
                     <td>
                       {c.currencyCode} - {c.currencyName}

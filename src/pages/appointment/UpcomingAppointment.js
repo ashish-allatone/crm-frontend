@@ -4,6 +4,7 @@ import "../../styles/allPatients.css";
 import { getTodayAppointments } from "../../services/appointmentService";
 import { getAppointments } from "../../services/appointmentService";
 import { useNavigate } from "react-router-dom";
+import { hasPermission } from "../permissionUtil";
 const UpcommingAppointment = () => {
 
   
@@ -33,17 +34,34 @@ const UpcommingAppointment = () => {
       setSortColumn(column);
       setSortDirection(direction);
     };
-  const loadAppointments = async () => {
-    const res = await getAppointments(
-      currentPage - 1,
-      entries,
-      search,
-      "UPCOMING"
-    );
+  // const loadAppointments = async () => {
+  //   const res = await getAppointments(
+  //     currentPage - 1,
+  //     entries,
+  //     search,
+  //     "UPCOMING"
+  //   );
   
-    setAppointments(res.data.content);
-    setTotalPages(res.data.totalPages);
-  };  
+  //   setAppointments(res.data.content);
+  //   setTotalPages(res.data.totalPages);
+  // };  
+  const loadAppointments = async () => {
+    try {
+      const res = await getAppointments(
+        currentPage - 1,
+        entries,
+        search,
+        "UPCOMING"
+      );
+  
+      setAppointments(res.data.content);
+      setTotalPages(res.data.totalPages);
+    } catch (err) {
+      if (err.response?.status === 403) {
+        alert("Access Denied ❌");
+      }
+    }
+  };
   
     // search filter
   useEffect(() => {
@@ -209,14 +227,24 @@ const UpcommingAppointment = () => {
   
               <ul className="dropdown-menu">
                 <li>
-                  <button
+                  {/* <button
                     className="dropdown-item"
                     onClick={() =>
                       navigate(`/edit-appointment/${a.appointmentId}`)
                     }
                   >
                     Edit Appointment
-                  </button>
+                  </button> */}
+                {hasPermission("Appointment", "EDIT") && (
+  <button
+    className="dropdown-item"
+    onClick={() =>
+      navigate(`/edit-appointment/${a.appointmentId}`)
+    }
+  >
+    Edit Appointment
+  </button>
+)}
                 </li>
               </ul>
             </div>

@@ -6,8 +6,10 @@ import { getOrganizationById } from "../../services/organizationService";
 import { getAppointments } from "../../services/appointmentService";
 import { getAllCurrencies } from "../../services/currencyService";
 import { createInvoice } from "../../services/invoiceService";
+import { hasPermission } from "../permissionUtil";
 
 const AddInvoice = () => {
+  const canAdd = hasPermission("Invoice", "ADD");
   const { id } = useParams(); // organizationId
   const navigate = useNavigate();
 
@@ -49,15 +51,14 @@ const AddInvoice = () => {
           currencyId: orgData.currencyId,
         }));
       }
-      const inr = currRes.data.data.find(c => c.currencyCode === "INR");
+      const inr = currRes.data.data.find((c) => c.currencyCode === "INR");
 
-if (inr) {
-  setForm(prev => ({
-    ...prev,
-    currencyId: inr.id   // ✅ IMPORTANT
-  }));
-}
-
+      if (inr) {
+        setForm((prev) => ({
+          ...prev,
+          currencyId: inr.id, // ✅ IMPORTANT
+        }));
+      }
     } catch (err) {
       console.error(err);
     }
@@ -68,14 +69,16 @@ if (inr) {
     if (checked) {
       setSelected([...selected, appointment]);
     } else {
-      setSelected(selected.filter((a) => a.appointmentId !== appointment.appointmentId));
+      setSelected(
+        selected.filter((a) => a.appointmentId !== appointment.appointmentId),
+      );
     }
   };
 
   // 🔥 TOTAL CALCULATION
   const totalAmount = selected.reduce(
     (sum, a) => sum + (a.packageAmount || 0),
-    0
+    0,
   );
 
   // 🔥 SUBMIT
@@ -106,51 +109,45 @@ if (inr) {
   //   }
   // };
   const handleSubmit = async () => {
-  try {
-    const payload = {
-       organizationId: Number(form.organizationId), // ✅ FIX
-  currencyId: Number(form.currencyId),         // ✅ FIX
-      invoiceDate: form.invoiceDate,
-      dueDate: form.dueDate,
-      remark: form.remark,
-      items: selected.map((a) => ({
-        appointmentId: a.appointmentId,
-        packageAmount: a.packageAmount || 0,
-      })),
-    };
+    try {
+      const payload = {
+        organizationId: Number(form.organizationId), // ✅ FIX
+        currencyId: Number(form.currencyId), // ✅ FIX
+        invoiceDate: form.invoiceDate,
+        dueDate: form.dueDate,
+        remark: form.remark,
+        items: selected.map((a) => ({
+          appointmentId: a.appointmentId,
+          packageAmount: a.packageAmount || 0,
+        })),
+      };
 
-    console.log("🔥 INVOICE PAYLOAD:", payload);
+      console.log("🔥 INVOICE PAYLOAD:", payload);
 
-    const res = await createInvoice(payload);
+      const res = await createInvoice(payload);
 
-    // ✅ Backend message
-    alert(res.data.message); // "Invoice created"
+      // ✅ Backend message
+      alert(res.data.message); // "Invoice created"
 
-    navigate("/invoice");
+      navigate("/invoice");
+    } catch (err) {
+      console.error(err);
 
-  } catch (err) {
-    console.error(err);
-
-    alert(
-      err.response?.data?.message ||
-      "Failed to create invoice ❌"
-    );
-  }
-};
+      alert(err.response?.data?.message || "Failed to create invoice ❌");
+    }
+  };
+  if (!canAdd) {
+  return <h3>Access Denied ❌</h3>;
+}
 
   return (
     <div className="container-fluid mt-3">
       <div className="card">
-
-        <div className="card-header add-header">
-          Add Invoice
-        </div>
+        <div className="card-header add-header">Add Invoice</div>
 
         <div className="card-body">
-
           {/* HEADER FIELDS */}
           <div className="row mb-3">
-
             <div className="col-md-4">
               <label>Organization</label>
               <input
@@ -177,11 +174,7 @@ if (inr) {
     </option>
   ))}
 </select> */}
-<input
-  className="form-control"
-  value="INR"
-  readOnly
-/>
+              <input className="form-control" value="INR" readOnly />
             </div>
 
             <div className="col-md-4">
@@ -192,11 +185,9 @@ if (inr) {
                 readOnly
               />
             </div>
-
           </div>
 
           <div className="row mb-3">
-
             <div className="col-md-4">
               <label>Invoice Date</label>
               <input
@@ -215,21 +206,14 @@ if (inr) {
                 type="date"
                 className="form-control"
                 value={form.dueDate}
-                onChange={(e) =>
-                  setForm({ ...form, dueDate: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
               />
             </div>
 
             <div className="col-md-4">
               <label>Invoice No</label>
-              <input
-                className="form-control"
-                value="Auto Generated"
-                readOnly
-              />
+              <input className="form-control" value="Auto Generated" readOnly />
             </div>
-
           </div>
 
           {/* TABLE */}
@@ -257,9 +241,7 @@ if (inr) {
                       <td>
                         <input
                           type="checkbox"
-                          onChange={(e) =>
-                            handleSelect(a, e.target.checked)
-                          }
+                          onChange={(e) => handleSelect(a, e.target.checked)}
                         />
                       </td>
 
@@ -284,17 +266,20 @@ if (inr) {
             <textarea
               className="form-control"
               value={form.remark}
-              onChange={(e) =>
-                setForm({ ...form, remark: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, remark: e.target.value })}
             />
           </div>
 
           {/* BUTTONS */}
           <div className="mt-3">
-            <button className="btn btn-primary" onClick={handleSubmit}>
+            {/* <button className="btn btn-primary" onClick={handleSubmit}>
               Submit
-            </button>
+            </button> */}
+            {canAdd && (
+  <button className="btn btn-primary" onClick={handleSubmit}>
+    Submit
+  </button>
+)}
 
             <button
               className="btn btn-danger ms-2"
@@ -303,7 +288,6 @@ if (inr) {
               Cancel
             </button>
           </div>
-
         </div>
       </div>
     </div>

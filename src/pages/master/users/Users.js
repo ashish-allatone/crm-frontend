@@ -10,7 +10,10 @@ import {
   toggleStatus,
 } from "../../../services/userService";
 
+import { hasPermission } from "../../permissionUtil";
+
 const Users = () => {
+   
   const [search, setSearch] = useState("");
   const [entries, setEntries] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -233,7 +236,9 @@ const Users = () => {
   };
 
   return (
+    
     <div className="container-fluid mt-3">
+      
       <div className="card">
         <div
           className="card-header d-flex justify-content-between align-items-center"
@@ -241,9 +246,14 @@ const Users = () => {
         >
           <h5>User List</h5>
 
-          <button className="btn btn-light" onClick={openAdd}>
+          {/* <button className="btn btn-light" onClick={openAdd}>
             + Add New User
-          </button>
+          </button> */}
+          {hasPermission("Users", "ADD") && (
+  <button className="btn btn-light" onClick={openAdd}>
+    + Add New User
+  </button>
+)}
         </div>
 
         <div className="card-body">
@@ -291,12 +301,12 @@ const Users = () => {
                 <tr>
                   <th>Actions</th>
 
-                  <th
+                  {/* <th
                     onClick={() => handleSort("status")}
                     style={{ cursor: "pointer" }}
                   >
                     Status {getArrow("status")}
-                  </th>
+                  </th> */}
 
                   <th
                     onClick={() => handleSort("username")}
@@ -327,14 +337,19 @@ const Users = () => {
                 {users?.map((u) => (
                   <tr key={u.id}>
                     <td>
-                      <button
+                      {/* <button
                         className="btn btn-info btn-sm me-2"
                         onClick={() => openEdit(u)}
                       >
                         Edit
-                      </button>
+                      </button> */}
+                      {hasPermission("Users", "EDIT") && (
+  <button className="btn btn-info btn-sm me-2" onClick={() => openEdit(u)}>
+    Edit
+  </button>
+)}
 
-                      <button
+                      {/* <button
                         className="btn btn-primary btn-sm"
                         onClick={() => {
                           setEditData(u); // ✅ yahan sahi hai
@@ -342,10 +357,21 @@ const Users = () => {
                         }}
                       >
                         🔒 Change Password
-                      </button>
+                      </button> */}
+                      {hasPermission("Users", "EDIT") && (
+  <button
+    className="btn btn-primary btn-sm"
+    onClick={() => {
+      setEditData(u);
+      setShowPasswordModal(true);
+    }}
+  >
+    🔒 Change Password
+  </button>
+)}
                     </td>
 
-                    <td>
+                    {/* <td>
                       <div className="form-check form-switch">
                         <input
                           className="form-check-input"
@@ -354,7 +380,7 @@ const Users = () => {
                           onChange={() => handleStatusToggle(u.id)}
                         />
                       </div>
-                    </td>
+                    </td> */}
 
                     <td>{u.username}</td>
 
@@ -583,12 +609,20 @@ const Users = () => {
               </div>
 
               <div className="modal-footer">
-                <button
+                {/* <button
                   className="btn btn-primary submit-btn"
                   onClick={handleSubmit}
                 >
                   {editData ? "Update" : "Submit"}
-                </button>
+                </button> */}
+                {hasPermission("Users", editData ? "EDIT" : "ADD") && (
+  <button
+    className="btn btn-primary submit-btn"
+    onClick={handleSubmit}
+  >
+    {editData ? "Update" : "Submit"}
+  </button>
+)}
 
                 <button
                   className="btn btn-danger"

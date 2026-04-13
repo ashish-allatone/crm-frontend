@@ -3,8 +3,10 @@ import "../../../styles/allPatients.css";
 import { useNavigate } from "react-router-dom";
 // import { organizations } from "../../../data/organizations";
 import { getOrganizations, deleteOrganization } from "../../../services/organizationService";
+import { hasPermission } from "../../permissionUtil";
 
 const Organization = () => {
+  
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
@@ -18,11 +20,23 @@ const Organization = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   /* Sorting */
-  const loadOrganizations = async () => {
-  const res = await getOrganizations(currentPage - 1, entries, search);
+//   const loadOrganizations = async () => {
+//   const res = await getOrganizations(currentPage - 1, entries, search);
 
-  setOrganizations(res.data.content);
-  setTotalPages(res.data.totalPages);
+//   setOrganizations(res.data.content);
+//   setTotalPages(res.data.totalPages);
+// };
+const loadOrganizations = async () => {
+  try {
+    const res = await getOrganizations(currentPage - 1, entries, search);
+
+    setOrganizations(res.data.content);
+    setTotalPages(res.data.totalPages);
+  } catch (err) {
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
+    }
+  }
 };
 
 useEffect(() => {
@@ -103,12 +117,20 @@ const endEntry = Math.min(currentPage * entries, totalPages * entries);
         >
           <h5>Organization Master</h5>
 
-          <button
+          {/* <button
             className="btn btn-light"
             onClick={() => navigate("/add-organization")}
           >
             Add New Organization
-          </button>
+          </button> */}
+          {hasPermission("Organization", "ADD") && (
+  <button
+    className="btn btn-light"
+    onClick={() => navigate("/add-organization")}
+  >
+    Add New Organization
+  </button>
+)}
         </div>
 
         <div className="card-body">
@@ -155,12 +177,12 @@ const endEntry = Math.min(currentPage * entries, totalPages * entries);
                 <tr>
                   <th>Actions</th>
 
-                  <th
+                  {/* <th
                     onClick={() => handleSort("status")}
                     style={{ cursor: "pointer" }}
                   >
                     Status {getArrow("status")}
-                  </th>
+                  </th> */}
 
                   <th
                     onClick={() => handleSort("name")}
@@ -190,12 +212,12 @@ const endEntry = Math.min(currentPage * entries, totalPages * entries);
                     Code {getArrow("code")}
                   </th>
 
-                  <th
+                  {/* <th
                     onClick={() => handleSort("email")}
                     style={{ cursor: "pointer" }}
                   >
                     Email {getArrow("email")}
-                  </th>
+                  </th> */}
 
                   <th
                     onClick={() => handleSort("address")}
@@ -267,15 +289,23 @@ const endEntry = Math.min(currentPage * entries, totalPages * entries);
                 {organizations.map((o) => (
                   <tr key={o.id}>
                     <td>
-                      <button
+                      {/* <button
                         className="btn btn-info btn-sm"
                         onClick={() => navigate(`/edit-organization/${o.id}`)}
                       >
                         Edit
-                      </button>
+                      </button> */}
+                      {hasPermission("Organization", "EDIT") && (
+  <button
+    className="btn btn-info btn-sm"
+    onClick={() => navigate(`/edit-organization/${o.id}`)}
+  >
+    Edit
+  </button>
+)}
                     </td>
 
-                    <td>
+                    {/* <td>
                       <div className="form-check form-switch">
                         <input
                           className="form-check-input"
@@ -284,13 +314,13 @@ const endEntry = Math.min(currentPage * entries, totalPages * entries);
                           readOnly
                         />
                       </div>
-                    </td>
+                    </td> */}
 
                     <td>{o.organizationName}</td>
                     <td>{o.contact}</td>
                     <td>{o.creditLimit}</td>
                     <td>{o.code}</td>
-                    <td>{o.email}</td>
+                    {/* <td>{o.email}</td> */}
                     <td>{o.address}</td>
                     <td>{o.city}</td>
                     <td>{o.state}</td>

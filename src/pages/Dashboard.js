@@ -2,23 +2,38 @@ import React , {useState,useEffect} from "react";
 import "../styles/dashboard.css";
 import { getDashboard } from "../services/dashboardService";
 import { FaUserInjured, FaFlask, FaFileAlt, FaClock } from "react-icons/fa";
+import { hasPermission } from "./permissionUtil";
 
 const Dashboard = () => {
+  const canView = hasPermission("Dashboard", "VIEW");
 
     const [data, setData] = useState({});
     useEffect(() => {
   loadDashboard();
 }, []);
 
+if (!canView) {
+  return <h3>Access Denied ❌</h3>;
+}
+// const loadDashboard = async () => {
+//   try {
+//     const res = await getDashboard();
+
+//     console.log("🔥 DASHBOARD:", res.data);
+
+//     setData(res.data.data || {});
+//   } catch (err) {
+//     console.error(err);
+//   }
+// };
 const loadDashboard = async () => {
   try {
     const res = await getDashboard();
-
-    console.log("🔥 DASHBOARD:", res.data);
-
     setData(res.data.data || {});
   } catch (err) {
-    console.error(err);
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
+    }
   }
 };
   return (

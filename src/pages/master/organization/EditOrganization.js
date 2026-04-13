@@ -6,10 +6,36 @@ import {
   getOrganizationById,
   updateOrganization,
 } from "../../../services/organizationService";
+import { hasPermission } from "../../permissionUtil";
+import { getAllCurrencies } from "../../../services/currencyService";
+import { useLocation } from "../../../hooks/useLocation";
+
 
 const EditOrganization = () => {
+
+  const { countries, states, cities, loadStates, loadCities } = useLocation();
+  const canViewCurrency = hasPermission("Currency", "VIEW");
   const { id } = useParams();
   const navigate = useNavigate();
+  const [currencies, setCurrencies] = useState([]);
+
+  useEffect(() => {
+  if (!canViewCurrency) {
+    setCurrencies([]);
+    return;
+  }
+
+  const loadCurrencies = async () => {
+    try {
+      const res = await getAllCurrencies();
+      setCurrencies(res.data.data || []);
+    } catch {
+      setCurrencies([]);
+    }
+  };
+
+  loadCurrencies();
+}, [canViewCurrency]);
 
   
 
@@ -36,6 +62,14 @@ const EditOrganization = () => {
       marketingPerson: data.marketingPerson,
       tat: data.turnAroundTime,
     });
+
+     if (data.country) {
+      await loadStates(data.country);
+    }
+
+    if (data.country && data.state) {
+      await loadCities(data.country, data.state);
+    }
   };
 
   loadOrg();
@@ -103,6 +137,22 @@ const handleSubmit = async () => {
 //     return <h3 className="text-center mt-5">Organization not found</h3>;
 //   }
 
+const handleCountryChange = (e) => {
+  const countryCode = e.target.value;
+
+  setForm({ ...form, country: countryCode, state: "", city: "" });
+
+  loadStates(countryCode);
+};
+
+const handleStateChange = (e) => {
+  const stateCode = e.target.value;
+
+  setForm({ ...form, state: stateCode, city: "" });
+
+  loadCities(form.country, stateCode);
+};
+
   return (
     <div className="container-fluid mt-3">
       <div className="card">
@@ -150,7 +200,7 @@ const handleSubmit = async () => {
               />
             </div>
 
-            <div className="col-md-6">
+            {/* <div className="col-md-6">
               <label>Email</label>
               <input
                 className="form-control"
@@ -158,7 +208,7 @@ const handleSubmit = async () => {
                 value={form.email}
                 onChange={handleChange}
               />
-            </div>
+            </div> */}
 
             <div className="col-md-6">
               <label>Address</label>
@@ -172,42 +222,97 @@ const handleSubmit = async () => {
 
             <div className="col-md-6">
               <label>Country</label>
-              <input
+              {/* <input
                 className="form-control"
                 name="country"
                 value={form.country}
                 onChange={handleChange}
-              />
+              /> */}
+              <select
+  className="form-control"
+  name="country"
+  value={form.country || ""}
+  onChange={handleCountryChange}
+>
+  <option value="">Select Country</option>
+  {countries.map((c) => (
+    <option key={c.iso2} value={c.iso2}>
+      {c.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-6">
               <label>State</label>
-              <input
+              {/* <input
                 className="form-control"
                 name="state"
                 value={form.state}
                 onChange={handleChange}
-              />
+              /> */}
+              <select
+  className="form-control"
+  name="state"
+  value={form.state || ""}
+  onChange={handleStateChange}
+>
+  <option value="">Select State</option>
+  {states.map((s) => (
+    <option key={s.iso2} value={s.iso2}>
+      {s.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-6">
               <label>City</label>
-              <input
+              {/* <input
                 className="form-control"
                 name="city"
                 value={form.city}
                 onChange={handleChange}
-              />
+              /> */}
+              <select
+  className="form-control"
+  name="city"
+  value={form.city || ""}
+  onChange={handleChange}
+>
+  <option value="">Select City</option>
+  {cities.map((c) => (
+    <option key={c.id} value={c.name}>
+      {c.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-6">
               <label>Currency</label>
-              <input
-                className="form-control"
-                name="currency"
-                value={form.currency}
-                onChange={handleChange}
-              />
+             {!canViewCurrency ? (
+  <input
+    className="form-control"
+    value={"No Currency Access"}
+    disabled
+  />
+) : (
+  <select
+    className="form-control"
+    name="currency"
+    value={form.currency || ""}
+    onChange={handleChange}
+  >
+    <option value="">Select Currency</option>
+
+    {currencies.map((c) => (
+      <option key={c.id} value={c.currencyCode}>
+        {c.currencyCode}
+      </option>
+    ))}
+  </select>
+)}
             </div>
 
             <div className="col-md-6">

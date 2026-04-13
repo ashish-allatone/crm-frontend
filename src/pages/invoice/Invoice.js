@@ -1,4 +1,4 @@
-import React, { useState , useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import "../../styles/allPatients.css";
 import { getInvoices } from "../../services/invoiceService";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,7 @@ import { getOrganizationsAll } from "../../services/organizationService";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
+import { hasPermission } from "../permissionUtil";
 
 const Invoice = () => {
   const [search, setSearch] = useState("");
@@ -18,34 +19,44 @@ const Invoice = () => {
   const [organizations, setOrganizations] = useState([]);
 
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-const [showInvoiceModal, setShowInvoiceModal] = useState(false);
-const pdfRef = useRef();
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const pdfRef = useRef();
   const navigate = useNavigate();
 
   useEffect(() => {
-  loadInvoices();
-  loadOrganizations();
-}, []);
+    loadInvoices();
+    loadOrganizations();
+  }, []);
 
-const loadInvoices = async () => {
+  // const loadInvoices = async () => {
+  //   try {
+  //     const res = await getInvoices();
+
+  //     console.log("🔥 INVOICES:", res.data);
+
+  //     setInvoiceList(res.data.data || []);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
+  const loadInvoices = async () => {
   try {
     const res = await getInvoices();
-
-    console.log("🔥 INVOICES:", res.data);
-
     setInvoiceList(res.data.data || []);
   } catch (err) {
-    console.error(err);
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
+    }
   }
 };
-const loadOrganizations = async () => {
-  try {
-    const res = await getOrganizationsAll();
-    setOrganizations(res.data.data || []);
-  } catch (err) {
-    console.error(err);
-  }
-};
+  const loadOrganizations = async () => {
+    try {
+      const res = await getOrganizationsAll();
+      setOrganizations(res.data.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleSort = (column) => {
     let direction = "asc";
@@ -59,8 +70,8 @@ const loadOrganizations = async () => {
   };
 
   const filteredData = invoiceList.filter((p) =>
-  Object.values(p).join(" ").toLowerCase().includes(search.toLowerCase())
-);
+    Object.values(p).join(" ").toLowerCase().includes(search.toLowerCase()),
+  );
 
   const sortedData = [...filteredData].sort((a, b) => {
     if (!sortColumn) return 0;
@@ -97,22 +108,22 @@ const loadOrganizations = async () => {
   };
 
   const handleExportPDF = async () => {
-  const input = pdfRef.current;
+    const input = pdfRef.current;
 
-  const canvas = await html2canvas(input);
-  const imgData = canvas.toDataURL("image/png");
+    const canvas = await html2canvas(input);
+    const imgData = canvas.toDataURL("image/png");
 
-  const pdf = new jsPDF("p", "mm", "a4");
+    const pdf = new jsPDF("p", "mm", "a4");
 
-  const imgWidth = 210;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const imgWidth = 210;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
 
-  const fileName = `${selectedInvoice.organizationName}_Invoice_${selectedInvoice.invoiceNo}.pdf`;
+    const fileName = `${selectedInvoice.organizationName}_Invoice_${selectedInvoice.invoiceNo}.pdf`;
 
-  pdf.save(fileName);
-};
+    pdf.save(fileName);
+  };
 
   return (
     <div className="container-fluid mt-3">
@@ -123,12 +134,14 @@ const loadOrganizations = async () => {
         >
           <h5>Invoice List</h5>
 
-          <button
-  className="btn btn-light"
-  onClick={() => setShowModal(true)}
->
-  ➕ Add New Invoice
-</button>
+          {/* <button className="btn btn-light" onClick={() => setShowModal(true)}>
+            ➕ Add New Invoice
+          </button> */}
+          {hasPermission("Invoice", "ADD") && (
+  <button className="btn btn-light" onClick={() => setShowModal(true)}>
+    ➕ Add New Invoice
+  </button>
+)}
         </div>
 
         <div className="card-body">
@@ -240,17 +253,28 @@ const loadOrganizations = async () => {
                     const dueAmount = p.dueAmount;
 
                     return (
-                     <tr key={p.invoiceId}>
+                      <tr key={p.invoiceId}>
                         <td>
-                          <button
-  className="btn btn-info btn-sm"
-  onClick={() => {
-    setSelectedInvoice(p);
-    setShowInvoiceModal(true);
-  }}
->
-  View
-</button>
+                          {/* <button
+                            className="btn btn-info btn-sm"
+                            onClick={() => {
+                              setSelectedInvoice(p);
+                              setShowInvoiceModal(true);
+                            }}
+                          >
+                            View
+                          </button> */}
+                          {hasPermission("Invoice", "VIEW") && (
+  <button
+    className="btn btn-info btn-sm"
+    onClick={() => {
+      setSelectedInvoice(p);
+      setShowInvoiceModal(true);
+    }}
+  >
+    View
+  </button>
+)}
                         </td>
 
                         <td>{p.status}</td>
@@ -276,89 +300,83 @@ const loadOrganizations = async () => {
             </table>
           </div>
           {showInvoiceModal && selectedInvoice && (
-  <div className="modal fade show d-block">
-    <div className="modal-dialog modal-lg">
-      <div className="modal-content">
+            <div className="modal fade show d-block">
+              <div className="modal-dialog modal-lg">
+                <div className="modal-content">
+                  {/* HEADER */}
+                  <div
+                    className="modal-header"
+                    style={{ background: "#3fb4b6", color: "white" }}
+                  >
+                    <h5 className="modal-title">
+                      Invoice - {selectedInvoice.invoiceNo}
+                    </h5>
 
-        {/* HEADER */}
-        <div
-          className="modal-header"
-          style={{ background: "#3fb4b6", color: "white" }}
-        >
-          <h5 className="modal-title">
-            Invoice - {selectedInvoice.invoiceNo}
-          </h5>
+                    <button
+                      className="btn-close"
+                      onClick={() => setShowInvoiceModal(false)}
+                    ></button>
+                  </div>
 
-          <button
-            className="btn-close"
-            onClick={() => setShowInvoiceModal(false)}
-          ></button>
-        </div>
+                  {/* BODY */}
+                  <div className="modal-body" ref={pdfRef}>
+                    <div className="mb-3">
+                      <b>Organization:</b> {selectedInvoice.organizationName}
+                    </div>
 
-        {/* BODY */}
-        <div className="modal-body" ref={pdfRef}>
+                    <div className="mb-3">
+                      <b>Status:</b> {selectedInvoice.status}
+                    </div>
 
-          <div className="mb-3">
-            <b>Organization:</b> {selectedInvoice.organizationName}
-          </div>
+                    <div className="mb-3">
+                      <b>Invoice Date:</b> {selectedInvoice.invoiceDate}
+                    </div>
 
-          <div className="mb-3">
-            <b>Status:</b> {selectedInvoice.status}
-          </div>
+                    <div className="mb-3">
+                      <b>Due Date:</b> {selectedInvoice.dueDate}
+                    </div>
 
-          <div className="mb-3">
-            <b>Invoice Date:</b> {selectedInvoice.invoiceDate}
-          </div>
+                    <hr />
 
-          <div className="mb-3">
-            <b>Due Date:</b> {selectedInvoice.dueDate}
-          </div>
+                    <table className="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Total Amount</th>
+                          <th>Paid Amount</th>
+                          <th>Due Amount</th>
+                        </tr>
+                      </thead>
 
-          <hr />
+                      <tbody>
+                        <tr>
+                          <td>₹ {selectedInvoice.totalAmount}</td>
+                          <td>₹ {selectedInvoice.paidAmount}</td>
+                          <td>₹ {selectedInvoice.dueAmount}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
 
-          <table className="table table-bordered">
-            <thead>
-              <tr>
-                <th>Total Amount</th>
-                <th>Paid Amount</th>
-                <th>Due Amount</th>
-              </tr>
-            </thead>
+                  {/* FOOTER */}
+                  <div className="modal-footer">
+                    <button
+                      className="btn btn-success"
+                      onClick={handleExportPDF}
+                    >
+                      Export as PDF
+                    </button>
 
-            <tbody>
-              <tr>
-                <td>₹ {selectedInvoice.totalAmount}</td>
-                <td>₹ {selectedInvoice.paidAmount}</td>
-                <td>₹ {selectedInvoice.dueAmount}</td>
-              </tr>
-            </tbody>
-          </table>
-
-        </div>
-
-        {/* FOOTER */}
-        <div className="modal-footer">
-
-          <button
-            className="btn btn-success"
-            onClick={handleExportPDF}
-          >
-            Export as PDF
-          </button>
-
-          <button
-            className="btn btn-danger"
-            onClick={() => setShowInvoiceModal(false)}
-          >
-            Close
-          </button>
-
-        </div>
-
-      </div>
-    </div>
-  </div>
-)}
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => setShowInvoiceModal(false)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="d-flex justify-content-between align-items-center mt-3">
             <div>
@@ -408,69 +426,75 @@ const loadOrganizations = async () => {
         </div>
       </div>
       {showModal && (
-  <div className="modal fade show d-block">
-    <div className="modal-dialog">
-      <div className="modal-content">
-
-        {/* ✅ HEADER SAME STYLE */}
-        <div
-          className="modal-header"
-          style={{ background: "#3fb4b6", color: "white" }}
-        >
-          <h5 className="modal-title">Select Organization</h5>
-
-          <button
-            className="btn-close"
-            onClick={() => setShowModal(false)}
-          ></button>
-        </div>
-
-        {/* ✅ BODY CLEAN UI */}
-        <div className="modal-body">
-
-          {organizations.length === 0 ? (
-            <div className="text-center text-muted">
-              No organization found
-            </div>
-          ) : (
-            organizations.map((org) => (
+        <div className="modal fade show d-block">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              {/* ✅ HEADER SAME STYLE */}
               <div
-                key={org.id}
-                className="d-flex justify-content-between align-items-center mb-3 p-2 border rounded"
+                className="modal-header"
+                style={{ background: "#3fb4b6", color: "white" }}
               >
-                <div>
-                  <div><b>{org.organizationName}</b></div>
-                  {/* <small className="text-muted">
-                    Currency: {org.currencyCode}
-                  </small> */}
-                </div>
+                <h5 className="modal-title">Select Organization</h5>
 
                 <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => navigate(`/add-invoice/${org.id}`)}
+                  className="btn-close"
+                  onClick={() => setShowModal(false)}
+                ></button>
+              </div>
+
+              {/* ✅ BODY CLEAN UI */}
+              <div className="modal-body">
+                {organizations.length === 0 ? (
+                  <div className="text-center text-muted">
+                    No organization found
+                  </div>
+                ) : (
+                  organizations.map((org) => (
+                    <div
+                      key={org.id}
+                      className="d-flex justify-content-between align-items-center mb-3 p-2 border rounded"
+                    >
+                      <div>
+                        <div>
+                          <b>{org.organizationName}</b>
+                        </div>
+                        {/* <small className="text-muted">
+                    Currency: {org.currencyCode}
+                  </small> */}
+                      </div>
+
+                      {/* <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => navigate(`/add-invoice/${org.id}`)}
+                      >
+                        + Add Invoice
+                      </button> */}
+                      {hasPermission("Invoice", "ADD") && (
+  <button
+    className="btn btn-primary btn-sm"
+    onClick={() => navigate(`/add-invoice/${org.id}`)}
+  >
+    + Add Invoice
+  </button>
+)}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* ✅ FOOTER ADD (like Insurance modal) */}
+              <div className="modal-footer">
+                <button
+                  className="btn btn-danger"
+                  onClick={() => setShowModal(false)}
                 >
-                  + Add Invoice
+                  Cancel
                 </button>
               </div>
-            ))
-          )}
-
+            </div>
+          </div>
         </div>
-
-        {/* ✅ FOOTER ADD (like Insurance modal) */}
-        <div className="modal-footer">
-          <button
-            className="btn btn-danger"
-            onClick={() => setShowModal(false)}
-          >
-            Cancel
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </div>
   );
 };

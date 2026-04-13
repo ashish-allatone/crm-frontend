@@ -8,8 +8,15 @@ import { getOrganizationsAll } from "../../services/organizationService";
 import { getAllInsurances } from "../../services/insuranceService";
 import { getAllTests } from "../../services/testService";
 import { getAllCurrencies } from "../../services/currencyService";
+import { hasPermission } from "../permissionUtil";
+import { useLocation } from "../../hooks/useLocation";
 
 const EditPatient = () => {
+  const { countries, states, cities, loadStates, loadCities } = useLocation();
+  const canViewOrg = hasPermission("Organization", "VIEW");
+  const canViewInsurance = hasPermission("Insurance", "VIEW");
+  const canViewTest = hasPermission("Test Master", "VIEW");
+  const canViewCurrency = hasPermission("Currency", "VIEW");
   const navigate = useNavigate();
 
   const { id } = useParams();
@@ -17,38 +24,100 @@ const EditPatient = () => {
   const [insurances, setInsurances] = useState([]);
   const [testMaster, setTestMaster] = useState([]);
 
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     const orgRes = await getOrganizationsAll();
+  //     const insRes = await getAllInsurances();
+
+  //     setOrganizations(orgRes.data.data);
+  //     setInsurances(insRes.data.data);
+  //   };
+
+  //   loadData();
+  // }, []);
   useEffect(() => {
     const loadData = async () => {
-      const orgRes = await getOrganizationsAll();
-      const insRes = await getAllInsurances();
+      // 🔥 ORGANIZATION
+      if (canViewOrg) {
+        try {
+          const orgRes = await getOrganizationsAll();
+          setOrganizations(orgRes.data.data || []);
+        } catch {
+          setOrganizations([]);
+        }
+      } else {
+        setOrganizations([]);
+      }
 
-      setOrganizations(orgRes.data.data);
-      setInsurances(insRes.data.data);
+      // 🔥 INSURANCE
+      if (canViewInsurance) {
+        try {
+          const insRes = await getAllInsurances();
+          setInsurances(insRes.data.data || []);
+        } catch {
+          setInsurances([]);
+        }
+      } else {
+        setInsurances([]);
+      }
     };
 
     loadData();
-  }, []);
+  }, [canViewOrg, canViewInsurance]);
 
+  // useEffect(() => {
+  //   const loadTests = async () => {
+  //     const res = await getAllTests();
+  //     setTestMaster(res.data.data);
+  //   };
+
+  //   loadTests();
+  // }, []);
   useEffect(() => {
+    if (!canViewTest) {
+      setTestMaster([]);
+      return;
+    }
+
     const loadTests = async () => {
-      const res = await getAllTests();
-      setTestMaster(res.data.data);
+      try {
+        const res = await getAllTests();
+        setTestMaster(res.data.data || []);
+      } catch {
+        setTestMaster([]);
+      }
     };
 
     loadTests();
-  }, []);
+  }, [canViewTest]);
 
   const [currencies, setCurrencies] = useState([]);
+  // useEffect(() => {
+  //   const loadCurrencies = async () => {
+  //     const res = await getAllCurrencies();
+  //     console.log("Currencies API 👉", res.data.data);  // ✅ YAHAN LAGAO
+  //     setCurrencies(res.data.data); // assuming {data: {data: [...]}}
+  //   };
+
+  //   loadCurrencies();
+  // }, []);
   useEffect(() => {
+    if (!canViewCurrency) {
+      setCurrencies([]);
+      return;
+    }
+
     const loadCurrencies = async () => {
-      const res = await getAllCurrencies();
-      console.log("Currencies API 👉", res.data.data);  // ✅ YAHAN LAGAO
-      setCurrencies(res.data.data); // assuming {data: {data: [...]}}
+      try {
+        const res = await getAllCurrencies();
+        setCurrencies(res.data.data || []);
+      } catch {
+        setCurrencies([]);
+      }
     };
 
     loadCurrencies();
-  }, []);
-  
+  }, [canViewCurrency]);
 
   const [patient, setPatient] = useState({
     title: "",
@@ -72,27 +141,35 @@ const EditPatient = () => {
     insuranceId: "", // ✅ FIX
   });
   useEffect(() => {
-  const loadPatient = async () => {
-    const res = await getPatientById(id);
-    const data = res.data.data;
+    const loadPatient = async () => {
+      const res = await getPatientById(id);
+      const data = res.data.data;
 
-    // ✅ FIX HERE
-    setPatient({
-      ...data,
-      currency: data.currency ? data.currency.trim() : ""
-    });
+      // ✅ FIX HERE
+      setPatient({
+        ...data,
+        currency: data.currency ? data.currency.trim() : "",
+      });
 
-    setPackageTests(
-      data.tests.map((t) => ({
-        testId: t.testId,
-        testType: t.testType,
-        sampleType: t.sampleType,
-      }))
-    );
-  };
+       if (data.country) {
+      await loadStates(data.country);
+    }
 
-  loadPatient();
-}, [id]);
+    if (data.country && data.state) {
+      await loadCities(data.country, data.state);
+    }
+
+      setPackageTests(
+        data.tests.map((t) => ({
+          testId: t.testId,
+          testType: t.testType,
+          sampleType: t.sampleType,
+        })),
+      );
+    };
+
+    loadPatient();
+  }, [id]);
 
   // const handleUpdate = async () => {
   //   const payload = {
@@ -115,38 +192,32 @@ const EditPatient = () => {
   //   navigate("/patients");
   // };
   const handleUpdate = async () => {
-  try {
-    const payload = {
-      ...patient,
-      organizationId: patient.organizationId
-        ? Number(patient.organizationId)
-        : null,
-      insuranceId: patient.insuranceId
-        ? Number(patient.insuranceId)
-        : null,
-      tests: packageTests.map((t) => ({
-        testId: t.testId,
-        testType: t.testType,
-        sampleType: t.sampleType,
-      })),
-    };
+    try {
+      const payload = {
+        ...patient,
+        organizationId: patient.organizationId
+          ? Number(patient.organizationId)
+          : null,
+        insuranceId: patient.insuranceId ? Number(patient.insuranceId) : null,
+        tests: packageTests.map((t) => ({
+          testId: t.testId,
+          testType: t.testType,
+          sampleType: t.sampleType,
+        })),
+      };
 
-    const res = await updatePatient(id, payload);
+      const res = await updatePatient(id, payload);
 
-    // ✅ Backend message
-    alert(res.data.message); // "Patient updated successfully"
+      // ✅ Backend message
+      alert(res.data.message); // "Patient updated successfully"
 
-    navigate("/patients");
+      navigate("/patients");
+    } catch (error) {
+      console.error(error);
 
-  } catch (error) {
-    console.error(error);
-
-    alert(
-      error.response?.data?.message ||
-      "Failed to update patient ❌"
-    );
-  }
-};
+      alert(error.response?.data?.message || "Failed to update patient ❌");
+    }
+  };
 
   const [packageTests, setPackageTests] = useState([
     {
@@ -185,10 +256,26 @@ const EditPatient = () => {
   };
   console.log("Selected Currency 👉", patient.currency);
 
+  const handleCountryChange = (e) => {
+  const countryCode = e.target.value;
+
+  setPatient({ ...patient, country: countryCode, state: "", city: "" });
+
+  loadStates(countryCode);
+};
+
+const handleStateChange = (e) => {
+  const stateCode = e.target.value;
+
+  setPatient({ ...patient, state: stateCode, city: "" });
+
+  loadCities(patient.country, stateCode);
+};
+
   return (
     <div className="container-fluid mt-3">
       <div className="card">
-        <div className="card-header add-header">New Patient Registration</div>
+        <div className="card-header add-header">Edit Patient Registration</div>
 
         <div className="card-body">
           <div className="row g-3">
@@ -320,7 +407,7 @@ const EditPatient = () => {
             <div className="col-md-3">
               <label>Country</label>
 
-              <select
+              {/* <select
                 className="form-control"
                 value={patient.country}
                 onChange={(e) =>
@@ -331,13 +418,25 @@ const EditPatient = () => {
                 <option value="India">India</option>
                 <option value="UAE">UAE</option>
                 <option value="England">England</option>
-              </select>
+              </select> */}
+              <select
+  className="form-control"
+  value={patient.country}
+  onChange={handleCountryChange}
+>
+  <option value="">Select Country</option>
+  {countries.map((c) => (
+    <option key={c.iso2} value={c.iso2}>
+      {c.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-3">
               <label>State</label>
 
-              <select
+              {/* <select
                 className="form-control"
                 value={patient.state}
                 onChange={(e) =>
@@ -348,13 +447,25 @@ const EditPatient = () => {
                 <option value="Maharashtra">Maharashtra</option>
                 <option value="Delhi">Delhi</option>
                 <option value="Gujarat">Gujarat</option>
-              </select>
+              </select> */}
+              <select
+  className="form-control"
+  value={patient.state}
+  onChange={handleStateChange}
+>
+  <option value="">Select State</option>
+  {states.map((s) => (
+    <option key={s.iso2} value={s.iso2}>
+      {s.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-3">
               <label>City</label>
 
-              <select
+              {/* <select
                 className="form-control"
                 value={patient.city}
                 onChange={(e) =>
@@ -365,7 +476,21 @@ const EditPatient = () => {
                 <option value="Mumbai">Mumbai</option>
                 <option value="Delhi">Delhi</option>
                 <option value="Ahmedabad">Ahmedabad</option>
-              </select>
+              </select> */}
+              <select
+  className="form-control"
+  value={patient.city}
+  onChange={(e) =>
+    setPatient({ ...patient, city: e.target.value })
+  }
+>
+  <option value="">Select City</option>
+  {cities.map((c) => (
+    <option key={c.id} value={c.name}>
+      {c.name}
+    </option>
+  ))}
+</select>
             </div>
 
             <div className="col-md-3">
@@ -389,6 +514,7 @@ const EditPatient = () => {
                 type="text"
                 className="form-control"
                 placeholder="National ID Number"
+                value={patient.nationalIdNumber || ""} 
                 onChange={(e) =>
                   setPatient({ ...patient, nationalIdNumber: e.target.value })
                 }
@@ -402,6 +528,7 @@ const EditPatient = () => {
                 type="text"
                 className="form-control"
                 placeholder="Passport Number"
+                value={patient.passportNumber || ""}
                 onChange={(e) =>
                   setPatient({ ...patient, passportNumber: e.target.value })
                 }
@@ -424,22 +551,29 @@ const EditPatient = () => {
                   </option>
                 ))}
               </select>{" "} */}
-             <select
-  className="form-control"
-  value={patient.currency || ""}
-  onChange={(e) =>
-    setPatient({ ...patient, currency: e.target.value })
-  }
->
-  <option value="">Select Currency</option>
+              {!canViewCurrency ? (
+                <input
+                  className="form-control"
+                  value="No Currency Access"
+                  disabled
+                />
+              ) : (
+                <select
+                  className="form-control"
+                  value={patient.currency || ""}
+                  onChange={(e) =>
+                    setPatient({ ...patient, currency: e.target.value })
+                  }
+                >
+                  <option value="">Select Currency</option>
 
-  {currencies.map((c) => (
-    <option key={c.id} value={c.currencyCode}>
-      {c.currencyCode}
-    </option>
-  ))}
-</select>
-
+                  {currencies.map((c) => (
+                    <option key={c.id} value={c.currencyCode}>
+                      {c.currencyCode}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div className="col-md-6">
@@ -457,41 +591,56 @@ const EditPatient = () => {
 
             <div className="col-md-6">
               <label>Select Organization</label>
-
-              <select
-                className="form-control"
-                value={patient.organizationId}
-                onChange={(e) =>
-                  setPatient({ ...patient, organizationId: e.target.value })
-                }
-              >
-                <option value="">Select Organization</option>
-                {organizations.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.organizationName}
-                  </option>
-                ))}
-              </select>
+              {!canViewOrg ? (
+                <input
+                  className="form-control"
+                  value="No Organization Access"
+                  disabled
+                />
+              ) : (
+                <select
+                  className="form-control"
+                  value={patient.organizationId}
+                  onChange={(e) =>
+                    setPatient({ ...patient, organizationId: e.target.value })
+                  }
+                >
+                  <option value="">Select Organization</option>
+                  {organizations.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.organizationName}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div className="col-md-6">
               <label>Insurance Company</label>
 
-              <select
-                className="form-control"
-                value={patient.insuranceId}
-                onChange={(e) =>
-                  setPatient({ ...patient, insuranceId: e.target.value })
-                }
-              >
-                <option value="">Select Insurance</option>
+              {!canViewInsurance ? (
+                <input
+                  className="form-control"
+                  value="No Insurance Access"
+                  disabled
+                />
+              ) : (
+                <select
+                  className="form-control"
+                  value={patient.insuranceId}
+                  onChange={(e) =>
+                    setPatient({ ...patient, insuranceId: e.target.value })
+                  }
+                >
+                  <option value="">Select Insurance</option>
 
-                {insurances.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.insuranceName}
-                  </option>
-                ))}
-              </select>
+                  {insurances.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.insuranceName}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
 
@@ -516,21 +665,29 @@ const EditPatient = () => {
                   <td>{index + 1}</td>
 
                   <td>
-                    <select
-                      className="form-control"
-                      value={item.testId}
-                      onChange={(e) =>
-                        handleTestChange(index, "testId", e.target.value)
-                      }
-                    >
-                      <option value="">--Select--</option>
+                    {!canViewTest ? (
+                      <input
+                        className="form-control"
+                        value="No Test Access"
+                        disabled
+                      />
+                    ) : (
+                      <select
+                        className="form-control"
+                        value={item.testId}
+                        onChange={(e) =>
+                          handleTestChange(index, "testId", e.target.value)
+                        }
+                      >
+                        <option value="">--Select--</option>
 
-                      {testMaster.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.testName}
-                        </option>
-                      ))}
-                    </select>
+                        {testMaster.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.testName}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </td>
 
                   <td>

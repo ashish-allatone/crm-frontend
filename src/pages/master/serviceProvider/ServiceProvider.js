@@ -6,6 +6,7 @@ import {
   getServiceProviders,
   deleteServiceProvider,
 } from "../../../services/serviceProviderService";
+import { hasPermission } from "../../permissionUtil";
 
 const ServiceProvider = () => {
   const navigate = useNavigate();
@@ -19,12 +20,24 @@ const ServiceProvider = () => {
   const [providers, setProviders] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
 
+  // const loadProviders = async () => {
+  //   const res = await getServiceProviders(currentPage - 1, entries, search);
+
+  //   setProviders(res.data.content);
+  //   setTotalPages(res.data.totalPages);
+  // };
   const loadProviders = async () => {
+  try {
     const res = await getServiceProviders(currentPage - 1, entries, search);
 
     setProviders(res.data.content);
     setTotalPages(res.data.totalPages);
-  };
+  } catch (err) {
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
+    }
+  }
+};
 
   useEffect(() => {
     loadProviders();
@@ -73,12 +86,20 @@ const ServiceProvider = () => {
         >
           <h5>Service Provider (Labs) Master</h5>
 
-          <button
+          {/* <button
             className="btn btn-light"
             onClick={() => navigate("/add-service-provider")}
           >
             Add New Service Provider
-          </button>
+          </button> */}
+          {hasPermission("Service Provider", "ADD") && (
+  <button
+    className="btn btn-light"
+    onClick={() => navigate("/add-service-provider")}
+  >
+    Add New Service Provider
+  </button>
+)}
         </div>
 
         <div className="card-body">
@@ -125,12 +146,12 @@ const ServiceProvider = () => {
                 <tr>
                   <th>Actions</th>
 
-                  <th
+                  {/* <th
                     onClick={() => handleSort("status")}
                     style={{ cursor: "pointer" }}
                   >
                     Status {getArrow("status")}
-                  </th>
+                  </th> */}
 
                   {/* <th
                     onClick={() => handleSort("sno")}
@@ -215,17 +236,27 @@ const ServiceProvider = () => {
                 {providers.map((p) => (
                   <tr key={p.id}>
                     <td>
-                      <button
+                      {/* <button
                         className="btn btn-info btn-sm"
                         onClick={() =>
                           navigate(`/edit-service-provider/${p.id}`)
                         }
                       >
                         Edit
-                      </button>
+                      </button> */}
+                      {hasPermission("Service Provider", "EDIT") && (
+  <button
+    className="btn btn-info btn-sm"
+    onClick={() =>
+      navigate(`/edit-service-provider/${p.id}`)
+    }
+  >
+    Edit
+  </button>
+)}
                     </td>
 
-                    <td>
+                    {/* <td>
                       <div className="form-check form-switch">
                         <input
                           className="form-check-input"
@@ -234,7 +265,7 @@ const ServiceProvider = () => {
                           readOnly
                         />
                       </div>
-                    </td>
+                    </td> */}
 
                     {/* <td>{p.sno}</td> */}
                     <td>{p.name}</td>

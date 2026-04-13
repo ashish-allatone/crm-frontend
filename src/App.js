@@ -64,8 +64,24 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* PROTECTED ROUTES */}
-        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/patients" element={<ProtectedRoute><AllPatients /></ProtectedRoute>} />
+        {/* <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} /> */}
+        <Route
+  path="/"
+  element={
+    <ProtectedRoute module="Dashboard" action="VIEW">
+      <Dashboard />
+    </ProtectedRoute>
+  }
+/>
+        {/* <Route path="/patients" element={<ProtectedRoute><AllPatients /></ProtectedRoute>} /> */}
+        <Route
+  path="/patients"
+  element={
+    <ProtectedRoute module="Patients" action="VIEW">
+      <AllPatients />
+    </ProtectedRoute>
+  }
+/>
         <Route path="/add-patient" element={<ProtectedRoute><AddPatient /></ProtectedRoute>} />
         <Route path="/patient-details/:id" element={<ProtectedRoute><PatientDetails /></ProtectedRoute>} />
         <Route path="/edit-patient/:id" element={<ProtectedRoute><EditPatient /></ProtectedRoute>} />
@@ -88,18 +104,90 @@ function App() {
         <Route path="/add-package-price/:id" element={<ProtectedRoute><AddPackagePrice /></ProtectedRoute>} />
 
         {/* MASTER */}
-        <Route path="/test-master" element={<ProtectedRoute><TestMaster /></ProtectedRoute>} />
-        <Route path="/organization" element={<ProtectedRoute><Organization /></ProtectedRoute>} />
-        <Route path="/insurance-company" element={<ProtectedRoute><InsuranceCompany /></ProtectedRoute>} />
-        <Route path="/service-provider" element={<ProtectedRoute><ServiceProvider /></ProtectedRoute>} />
-        <Route path="/currency" element={<ProtectedRoute><Currency /></ProtectedRoute>} />
+        {/* <Route path="/test-master" element={<ProtectedRoute><TestMaster /></ProtectedRoute>} /> */}
+        <Route
+  path="/test-master"
+  element={
+    <ProtectedRoute module="Test Master" action="VIEW">
+      <TestMaster />
+    </ProtectedRoute>
+  }
+/>
+        {/* <Route path="/organization" element={<ProtectedRoute><Organization /></ProtectedRoute>} /> */}
+        <Route
+  path="/organization"
+  element={
+    <ProtectedRoute module="Organization" action="VIEW">
+      <Organization />
+    </ProtectedRoute>
+  }
+/>
+        {/* <Route path="/insurance-company" element={<ProtectedRoute><InsuranceCompany /></ProtectedRoute>} /> */}
+        <Route
+  path="/insurance-company"
+  element={
+    <ProtectedRoute module="Insurance" action="VIEW">
+      <InsuranceCompany />
+    </ProtectedRoute>
+  }
+/>
+        {/* <Route path="/service-provider" element={<ProtectedRoute><ServiceProvider /></ProtectedRoute>} /> */}
+        <Route
+  path="/service-provider"
+  element={
+    <ProtectedRoute module="Service Provider" action="VIEW">
+      <ServiceProvider />
+    </ProtectedRoute>
+  }
+/>
+        {/* <Route path="/currency" element={<ProtectedRoute><Currency /></ProtectedRoute>} /> */}
+        <Route
+  path="/currency"
+  element={
+    <ProtectedRoute module="Currency" action="VIEW">
+      <Currency />
+    </ProtectedRoute>
+  }
+/>
         <Route path="/configuration" element={<ProtectedRoute><Configuration /></ProtectedRoute>} />
-        <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
-        <Route path="/roles-permissions" element={<ProtectedRoute><RolesPermissions /></ProtectedRoute>} />
+        {/* <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} /> */}
+        <Route
+  path="/users"
+  element={
+    <ProtectedRoute module="Users" action="VIEW">
+      <Users />
+    </ProtectedRoute>
+  }
+/>
+        {/* <Route path="/roles-permissions" element={<ProtectedRoute><RolesPermissions /></ProtectedRoute>} /> */}
+        <Route
+  path="/roles-permissions"
+  element={
+    <ProtectedRoute module="Roles" action="VIEW">
+      <RolesPermissions />
+    </ProtectedRoute>
+  }
+/>
 
         {/* APPOINTMENT */}
-        <Route path="/appointment/today" element={<ProtectedRoute><TodayAppointment /></ProtectedRoute>} />
-        <Route path="/appointment/upcoming" element={<ProtectedRoute><UpcomingAppointment /></ProtectedRoute>} />
+        {/* <Route path="/appointment/today" element={<ProtectedRoute><TodayAppointment /></ProtectedRoute>} /> */}
+        <Route
+  path="/appointment/today"
+  element={
+    <ProtectedRoute module="Appointment" action="VIEW">
+      <TodayAppointment />
+    </ProtectedRoute>
+  }
+/>
+        {/* <Route path="/appointment/upcoming" element={<ProtectedRoute><UpcomingAppointment /></ProtectedRoute>} /> */}
+         <Route
+  path="/appointment/upcoming"
+  element={
+    <ProtectedRoute module="Appointment" action="VIEW">
+      <UpcomingAppointment />
+    </ProtectedRoute>
+  }
+/>
 
         {/* REPORT */}
         <Route path="/report/patients" element={<ProtectedRoute><PatientsReport /></ProtectedRoute>} />
@@ -107,10 +195,34 @@ function App() {
         <Route path="/report/collection" element={<ProtectedRoute><CollectionReport /></ProtectedRoute>} />
         <Route path="/report/payment" element={<ProtectedRoute><PaymentReport /></ProtectedRoute>} />
 
-        <Route path="/test-result" element={<ProtectedRoute><TestResult /></ProtectedRoute>} />
+        {/* <Route path="/test-result" element={<ProtectedRoute><TestResult /></ProtectedRoute>} /> */}
+        <Route
+  path="/test-result"
+  element={
+    <ProtectedRoute module="Test Result" action="VIEW">
+      <TestResult />
+    </ProtectedRoute>
+  }
+/>
         <Route path="/add-test-result/:id" element={<ProtectedRoute><AddTestResult/></ProtectedRoute>} />
-        <Route path="/test-report" element={<ProtectedRoute><TestReport /></ProtectedRoute>} />
-        <Route path="/invoice" element={<ProtectedRoute><Invoice /></ProtectedRoute>} />
+        {/* <Route path="/test-report" element={<ProtectedRoute><TestReport /></ProtectedRoute>} /> */}
+        <Route
+  path="/test-report"
+  element={
+    <ProtectedRoute module="Test Report" action="VIEW">
+      <TestReport />
+    </ProtectedRoute>
+  }
+/>
+        {/* <Route path="/invoice" element={<ProtectedRoute><Invoice /></ProtectedRoute>} /> */}
+        <Route
+  path="/invoice"
+  element={
+    <ProtectedRoute module="Invoice" action="VIEW">
+      <Invoice />
+    </ProtectedRoute>
+  }
+/>
         <Route path="/test-report-upload/:id" element={<ProtectedRoute><TestReportUpload /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/add-invoice/:id" element={<ProtectedRoute><AddInvoice /></ProtectedRoute>} />

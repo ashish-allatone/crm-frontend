@@ -1,5 +1,5 @@
 // import React, { useState } from "react";
-
+// import "../styles/allPatients.css";
 // export default function Login() {
 //   const [form, setForm] = useState({
 //     username: "",
@@ -11,24 +11,58 @@
 //   };
 
 //   const handleLogin = async () => {
-//     try {
-//       const res = await fetch("http://localhost:8080/api/auth/login", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify(form),
-//       });
+//   try {
+//     const res = await fetch("http://localhost:8080/api/auth/login", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify(form),
+//     });
 
-//       const token = await res.text();
-
-//       localStorage.setItem("token", token);
-
-//       window.location.href = "/"; // dashboard
-//     } catch (err) {
-//       alert("Login failed");
+//     if (!res.ok) {
+//       const errorMsg = await res.text();
+//       alert(errorMsg || "Invalid username or password");
+//       return;
 //     }
-//   };
+
+//     const token = await res.text();
+
+//     // ✅ SAVE TOKEN
+//     localStorage.setItem("token", token);
+
+//     // 🔥 STEP 1: Get current user
+//     const userRes = await fetch("http://localhost:8080/api/users/me", {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     });
+
+//     const userData = await userRes.json();
+
+//     const roleId = userData.data.roles[0].id;
+
+//     // 🔥 STEP 2: Get permissions
+//     const permRes = await fetch(`http://localhost:8080/api/permissions/${roleId}`, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     });
+
+//     const permData = await permRes.json();
+
+//     // 🔥 STEP 3: SAVE permissions
+//     localStorage.setItem("permissions", JSON.stringify(permData.data));
+
+//     // optional: save user also
+//     localStorage.setItem("user", JSON.stringify(userData.data));
+
+//     window.location.href = "/";
+
+//   } catch (err) {
+//     alert("Server error. Please try again.");
+//   }
+// };
 
 //   return (
 //     <div style={{ width: "300px", margin: "100px auto" }}>
@@ -54,7 +88,33 @@
 //     setForm({ ...form, [e.target.name]: e.target.value });
 //   };
 
-//   const handleLogin = async () => {
+// //   const handleLogin = async () => {
+// //   try {
+// //     const res = await fetch("http://localhost:8080/api/auth/login", {
+// //       method: "POST",
+// //       headers: {
+// //         "Content-Type": "application/json",
+// //       },
+// //       body: JSON.stringify(form),
+// //     });
+
+// //     // 🔥 IMPORTANT: check status
+// //     if (!res.ok) {
+// //       const errorMsg = await res.text(); // backend se message
+// //       alert(errorMsg || "Invalid username or password");
+// //       return;
+// //     }
+
+// //     const token = await res.text();
+
+// //     localStorage.setItem("token", token);
+
+// //     window.location.href = "/";
+// //   } catch (err) {
+// //     alert("Server error. Please try again.");
+// //   }
+// // };
+// const handleLogin = async () => {
 //   try {
 //     const res = await fetch("http://localhost:8080/api/auth/login", {
 //       method: "POST",
@@ -64,18 +124,49 @@
 //       body: JSON.stringify(form),
 //     });
 
-//     // 🔥 IMPORTANT: check status
 //     if (!res.ok) {
-//       const errorMsg = await res.text(); // backend se message
+//       const errorMsg = await res.text();
 //       alert(errorMsg || "Invalid username or password");
 //       return;
 //     }
 
 //     const token = await res.text();
-
 //     localStorage.setItem("token", token);
 
+//     // ✅ USER
+//     const userRes = await fetch("http://localhost:8080/api/users/me", {
+//       headers: { Authorization: `Bearer ${token}` },
+//     });
+
+//     if (!userRes.ok) {
+//       alert("Failed to fetch user");
+//       return;
+//     }
+
+//     const userData = await userRes.json();
+//     localStorage.setItem("user", JSON.stringify(userData.data));
+
+//     const roleId = userData.data.roles[0].id;
+
+//     // ✅ PERMISSIONS
+//     const permRes = await fetch(`http://localhost:8080/api/permissions/${roleId}`, {
+//       headers: { Authorization: `Bearer ${token}` },
+//     });
+
+//     if (!permRes.ok) {
+//       alert("Failed to load permissions");
+//       return;
+//     }
+
+//     const permData = await permRes.json();
+
+//     localStorage.setItem(
+//       "permissions",
+//       JSON.stringify(permData.data || [])
+//     );
+
 //     window.location.href = "/";
+
 //   } catch (err) {
 //     alert("Server error. Please try again.");
 //   }
@@ -578,42 +669,122 @@ export default function Login() {
   };
 
   // ── your original API call (unchanged) — wrapped with UI state ──
+  // const handleLogin = async () => {
+  //   // client-side validation
+  //   const e = {};
+  //   if (!form.username.trim()) e.username = "Username is required.";
+  //   if (!form.password)        e.password = "Password is required.";
+  //   if (Object.keys(e).length) { setErrors(e); return; }
+
+  //   setStatus("loading");
+
+  //   try {
+  //     const res = await fetch("http://localhost:8080/api/auth/login", {
+  //     // const res = await fetch("https://uatdms.healncare.in/api/auth/login", {
+  //       // https://uatdms.healncare.in
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(form),
+  //     });
+
+  //     if (!res.ok) {
+  //       const errorMsg = await res.text();
+  //       alert(errorMsg || "Invalid username or password");
+  //       setStatus("idle");
+  //       return;
+  //     }
+
+  //     const token = await res.text();
+  //     localStorage.setItem("token", token);
+
+  //     setStatus("success");
+  //     setTimeout(() => { window.location.href = "/"; }, 800);
+
+  //   } catch (err) {
+  //     alert("Server error. Please try again.");
+  //     setStatus("idle");
+  //   }
+  // };
   const handleLogin = async () => {
-    // client-side validation
-    const e = {};
-    if (!form.username.trim()) e.username = "Username is required.";
-    if (!form.password)        e.password = "Password is required.";
-    if (Object.keys(e).length) { setErrors(e); return; }
+  // validation (UI wala same rahega)
+  const e = {};
+  if (!form.username.trim()) e.username = "Username is required.";
+  if (!form.password) e.password = "Password is required.";
+  if (Object.keys(e).length) {
+    setErrors(e);
+    return;
+  }
 
-    setStatus("loading");
+  setStatus("loading");
 
-    try {
-      const res = await fetch("http://localhost:8080/api/auth/login", {
-      // const res = await fetch("https://uatdms.healncare.in/api/auth/login", {
-        // https://uatdms.healncare.in
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+  try {
+    // ✅ LOGIN
+    const res = await fetch("http://localhost:8080/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(form),
+    });
 
-      if (!res.ok) {
-        const errorMsg = await res.text();
-        alert(errorMsg || "Invalid username or password");
-        setStatus("idle");
-        return;
-      }
-
-      const token = await res.text();
-      localStorage.setItem("token", token);
-
-      setStatus("success");
-      setTimeout(() => { window.location.href = "/"; }, 800);
-
-    } catch (err) {
-      alert("Server error. Please try again.");
+    if (!res.ok) {
+      const errorMsg = await res.text();
+      alert(errorMsg || "Invalid username or password");
       setStatus("idle");
+      return;
     }
-  };
+
+    const token = await res.text();
+    localStorage.setItem("token", token);
+
+    // ✅ USER FETCH
+    const userRes = await fetch("http://localhost:8080/api/users/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!userRes.ok) {
+      alert("Failed to fetch user");
+      setStatus("idle");
+      return;
+    }
+
+    const userData = await userRes.json();
+    localStorage.setItem("user", JSON.stringify(userData.data));
+
+    const roleId = userData.data.roles[0].id;
+
+    // ✅ PERMISSIONS FETCH
+    const permRes = await fetch(
+      `http://localhost:8080/api/permissions/${roleId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (!permRes.ok) {
+      alert("Failed to load permissions");
+      setStatus("idle");
+      return;
+    }
+
+    const permData = await permRes.json();
+
+    localStorage.setItem(
+      "permissions",
+      JSON.stringify(permData.data || [])
+    );
+
+    // ✅ SUCCESS UI + REDIRECT
+    setStatus("success");
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 800);
+
+  } catch (err) {
+    alert("Server error. Please try again.");
+    setStatus("idle");
+  }
+};
 
   // ── button label helper ──
   const btnLabel = () => {

@@ -30,7 +30,9 @@ const SetPermission = () => {
   { module: "Dashboard", canView: false, canAdd: false, canEdit: false },
   { module: "Test Master", canView: false, canAdd: false, canEdit: false },
   { module: "Organization", canView: false, canAdd: false, canEdit: false },
+  { module: "Insurance", canView: false, canAdd: false, canEdit: false },
   { module: "Service Provider", canView: false, canAdd: false, canEdit: false },
+  { module: "Currency", canView: false, canAdd: false, canEdit: false },
   { module: "Users", canView: false, canAdd: false, canEdit: false }, 
   { module: "Roles", canView: false, canAdd: false, canEdit: false },
   { module: "Patients", canView: false, canAdd: false, canEdit: false },
@@ -67,19 +69,31 @@ const SetPermission = () => {
   );
 };
 
-  const handleSave = async () => {
-    await api.post("/permissions", {
-      roleId: Number(roleId),
-      permissions: permissions.map((p) => ({
-        module: p.module,
-        canView: p.canView,
-        canAdd: p.canAdd,
-        canEdit: p.canEdit,
-      })),
-    });
+  // const handleSave = async () => {
+  //   await api.post("/permissions", {
+  //     roleId: Number(roleId),
+  //     permissions: permissions.map((p) => ({
+  //       module: p.module,
+  //       canView: p.canView,
+  //       canAdd: p.canAdd,
+  //       canEdit: p.canEdit,
+  //     })),
+  //   });
 
-    alert("Permissions saved successfully");
-  };
+  //   alert("Permissions saved successfully");
+  // };
+  const handleSave = async () => {
+  await api.post("/permissions", {
+    roleId: Number(roleId),
+    permissions,
+  });
+
+  // 🔥 reload permissions
+  const res = await api.get(`/permissions/${roleId}`);
+  localStorage.setItem("permissions", JSON.stringify(res.data.data));
+
+  alert("Permissions saved successfully");
+};
 
   return (
     <div className="container-fluid mt-3">

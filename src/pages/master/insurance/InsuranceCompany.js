@@ -10,6 +10,7 @@ import {
 } from "../../../services/insuranceService";
 
 import { getOrganizationsAll } from "../../../services/organizationService";
+import { hasPermission } from "../../permissionUtil";
 
 const InsuranceCompany = () => {
   // const navigate = useNavigate();
@@ -36,20 +37,45 @@ const InsuranceCompany = () => {
   });
 
   const [organizations, setOrganizations] = useState([]);
+  // useEffect(() => {
+  //   const loadOrgs = async () => {
+  //     const res = await getOrganizationsAll();
+  //     setOrganizations(res.data.data);
+  //   };
+  //   loadOrgs();
+  // }, []);
   useEffect(() => {
-    const loadOrgs = async () => {
+  const loadOrgs = async () => {
+    try {
       const res = await getOrganizationsAll();
       setOrganizations(res.data.data);
-    };
-    loadOrgs();
-  }, []);
+    } catch (err) {
+      console.warn("Organization access denied");
 
+      setOrganizations([]); // fallback
+    }
+  };
+  loadOrgs();
+}, []);
+
+  // const loadInsurances = async () => {
+  //   const res = await getInsurances(currentPage - 1, entries, search);
+
+  //   setInsurances(res.data.content);
+  //   setTotalPages(res.data.totalPages);
+  // };
   const loadInsurances = async () => {
+  try {
     const res = await getInsurances(currentPage - 1, entries, search);
 
     setInsurances(res.data.content);
     setTotalPages(res.data.totalPages);
-  };
+  } catch (err) {
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
+    }
+  }
+};
 
   useEffect(() => {
     loadInsurances();
@@ -147,6 +173,7 @@ const InsuranceCompany = () => {
     );
   }
 };
+const canViewOrg = hasPermission("Organization", "VIEW");
 
   return (
     <div className="container-fluid mt-3">
@@ -160,7 +187,7 @@ const InsuranceCompany = () => {
         >
           <h5>Insurance Master</h5>
 
-          <button
+          {/* <button
             className="btn btn-light"
             onClick={() => {
               setEditData(null);
@@ -168,7 +195,18 @@ const InsuranceCompany = () => {
             }}
           >
             + Add New Insurance
-          </button>
+          </button> */}
+          {hasPermission("Insurance", "ADD") && (
+  <button
+    className="btn btn-light"
+    onClick={() => {
+      setEditData(null);
+      setShowModal(true);
+    }}
+  >
+    + Add New Insurance
+  </button>
+)}
         </div>
 
         <div className="card-body">
@@ -215,12 +253,12 @@ const InsuranceCompany = () => {
                 <tr>
                   <th>Actions</th>
 
-                  <th
+                  {/* <th
                     onClick={() => handleSort("status")}
                     style={{ cursor: "pointer" }}
                   >
                     Status {getArrow("status")}
-                  </th>
+                  </th> */}
 
                   <th
                     onClick={() => handleSort("company")}
@@ -242,7 +280,7 @@ const InsuranceCompany = () => {
                 {insurances.map((i) => (
                   <tr key={i.id}>
                     <td>
-                      <button
+                      {/* <button
                         className="btn btn-info btn-sm"
                         onClick={() => {
                           setEditData(i);
@@ -255,10 +293,26 @@ const InsuranceCompany = () => {
                         }}
                       >
                         Edit
-                      </button>
+                      </button> */}
+                      {hasPermission("Insurance", "EDIT") && (
+  <button
+    className="btn btn-info btn-sm"
+    onClick={() => {
+      setEditData(i);
+      setForm({
+        insuranceName: i.insuranceName,
+        organizationId: i.organizationId || "",
+        file: null,
+      });
+      setShowModal(true);
+    }}
+  >
+    Edit
+  </button>
+)}
                     </td>
 
-                    <td>
+                    {/* <td>
                       <div className="form-check form-switch">
                         <input
                           className="form-check-input"
@@ -266,12 +320,12 @@ const InsuranceCompany = () => {
                           checked={i.isActive}
                         />
                       </div>
-                    </td>
+                    </td> */}
 
                     <td>{i.insuranceName}</td>
 
                     <td>
-                      <button
+                      {/* <button
                         className="btn btn-link"
                         style={{ color: "#6c63ff" }}
                         onClick={() =>
@@ -281,7 +335,18 @@ const InsuranceCompany = () => {
                         }
                       >
                         View
-                      </button>
+                      </button> */}
+                      {hasPermission("Insurance", "VIEW") && (
+  <button
+    className="btn btn-link"
+    style={{ color: "#6c63ff" }}
+    onClick={() =>
+      setPdfPreview(`http://localhost:8080/api/insurances/file/${i.id}`)
+    }
+  >
+    View
+  </button>
+)}
                     </td>
                   </tr>
                 ))}
@@ -372,7 +437,7 @@ const InsuranceCompany = () => {
 
                 <div className="mb-3">
                   <label className="form-label">Organization</label>
-
+                  {canViewOrg ? (
                   <select
                     className="form-control"
                     name="organizationId"
@@ -386,7 +451,13 @@ const InsuranceCompany = () => {
                         {o.organizationName}
                       </option>
                     ))}
-                  </select>
+                  </select>) : (
+  <input
+    className="form-control"
+    value="No Organization Access"
+    disabled
+  />
+)}
                 </div>
 
                 <div className="mb-3">

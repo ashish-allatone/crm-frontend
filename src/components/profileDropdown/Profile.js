@@ -146,7 +146,7 @@ const handleChangePassword = async () => {
             <div className="ms-3 patient-name">{form.firstName} {form.lastName}</div>
           </div>
 
-          <button
+          {/* <button
             className="btn edit-btn"
             onClick={() => {
               setTempPhoto(profilePhoto);
@@ -154,7 +154,7 @@ const handleChangePassword = async () => {
             }}
           >
             ✏ Edit Profile
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -183,12 +183,12 @@ const handleChangePassword = async () => {
 
               
 
-              <button
+              {/* <button
                 className="btn btn-primary mt-2"
                 onClick={() => setShowPasswordModal(true)}
               >
                 🔑 Change Password
-              </button>
+              </button> */}
             </div>
 
             <div className="col-md-6">

@@ -196,8 +196,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { saveTestResult } from "../../services/testResultService";
 import { getAppointmentById } from "../../services/appointmentService";
 import { getTestResult } from "../../services/testResultService";
+import { hasPermission } from "../permissionUtil";
 
 const AddTestResult = () => {
+
+  const canAdd = hasPermission("Test Result", "ADD");
   const { id } = useParams(); // appointmentId
   const navigate = useNavigate();
 
@@ -382,6 +385,9 @@ const handleSubmit = async () => {
       </div>
     );
   }
+  if (!canAdd) {
+  return <h3>Access Denied ❌</h3>;
+}
 
   return (
     <div className="container-fluid mt-3">
@@ -473,9 +479,14 @@ const handleSubmit = async () => {
 
           {/* BUTTONS */}
           <div className="mt-3">
-            <button className="btn btn-primary" onClick={handleSubmit}>
+            {/* <button className="btn btn-primary" onClick={handleSubmit}>
               Save Result
-            </button>
+            </button> */}
+            {hasPermission("Test Result", "ADD") && (
+  <button className="btn btn-primary" onClick={handleSubmit}>
+    Save Result
+  </button>
+)}
 
             <button
               className="btn btn-danger ms-2"

@@ -4,6 +4,7 @@ import "../../styles/allPatients.css";
 import { getTodayAppointments } from "../../services/appointmentService";
 import { getAppointments } from "../../services/appointmentService";
 import { useNavigate } from "react-router-dom";
+import { hasPermission } from "../permissionUtil";
 
 const TodayAppointment = () => {
 
@@ -35,17 +36,34 @@ const [totalPages, setTotalPages] = useState(0);
     setSortColumn(column);
     setSortDirection(direction);
   };
-const loadAppointments = async () => {
-  const res = await getAppointments(
-    currentPage - 1,
-    entries,
-    search,
-    "TODAY"
-  );
+// const loadAppointments = async () => {
+//   const res = await getAppointments(
+//     currentPage - 1,
+//     entries,
+//     search,
+//     "TODAY"
+//   );
 
-  setAppointments(res.data.content);
-  setTotalPages(res.data.totalPages);
-};  
+//   setAppointments(res.data.content);
+//   setTotalPages(res.data.totalPages);
+// };  
+const loadAppointments = async () => {
+  try {
+    const res = await getAppointments(
+      currentPage - 1,
+      entries,
+      search,
+      "TODAY"
+    );
+
+    setAppointments(res.data.content);
+    setTotalPages(res.data.totalPages);
+  } catch (err) {
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
+    }
+  }
+};
 
   // search filter
 useEffect(() => {
@@ -211,14 +229,24 @@ for (let i = 1; i <= totalPages; i++) {
 
             <ul className="dropdown-menu">
               <li>
-                <button
+                {/* <button
                   className="dropdown-item"
                   onClick={() =>
                     navigate(`/edit-appointment/${a.appointmentId}`)
                   }
                 >
                   Edit Appointment
-                </button>
+                </button> */}
+                {hasPermission("Appointment", "EDIT") && (
+  <button
+    className="dropdown-item"
+    onClick={() =>
+      navigate(`/edit-appointment/${a.appointmentId}`)
+    }
+  >
+    Edit Appointment
+  </button>
+)}
               </li>
             </ul>
           </div>
