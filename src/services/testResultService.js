@@ -5,3 +5,6 @@ export const saveTestResult = (data) =>
 
 export const getTestResult = (appointmentId) =>
   api.get(`/test-results/${appointmentId}`);
+
+export const deleteTestResult = (appointmentId) =>
+  api.delete(`/test-results/${appointmentId}`);

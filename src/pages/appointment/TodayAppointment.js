@@ -149,6 +149,13 @@ for (let i = 1; i <= totalPages; i++) {
 
                   <th>Action</th>
 
+                   <th
+                    onClick={() => handleSort("lm")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    S.NO.{getArrow("lm")}
+                  </th>
+
                   <th
                     onClick={() => handleSort("lm")}
                     style={{ cursor: "pointer" }}
@@ -198,9 +205,9 @@ for (let i = 1; i <= totalPages; i++) {
                     VISIT DATE {getArrow("visit")}
                   </th>
 
-                  <th>
+                  {/* <th>
                     VIEW DETAILS
-                  </th>
+                  </th> */}
 
                 </tr>
 
@@ -214,7 +221,7 @@ for (let i = 1; i <= totalPages; i++) {
       </td>
     </tr>
   ) : (
-    appointments.map((a) => (
+    appointments.map((a,index) => (
       <tr key={a.appointmentId}>
 
         {/* ✅ ACTION FIRST */}
@@ -253,7 +260,8 @@ for (let i = 1; i <= totalPages; i++) {
         </td>
 
         {/* ✅ LM NO */}
-        <td>{a.appointmentId}</td>
+        <td>{(currentPage - 1) * entries + index + 1}</td>
+        <td>{a.patientId}</td>
 
         {/* ✅ PATIENT NAME */}
         <td>{a.patientName}</td>
@@ -274,9 +282,9 @@ for (let i = 1; i <= totalPages; i++) {
         <td>{a.visitDate}</td>
 
         {/* ✅ VIEW */}
-        <td className="text-primary" style={{ cursor: "pointer" }}>
+        {/* <td className="text-primary" style={{ cursor: "pointer" }}>
           View
-        </td>
+        </td> */}
 
       </tr>
     ))

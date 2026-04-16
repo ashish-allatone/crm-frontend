@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import api from "../services/api";
 import { FaUserCircle } from "react-icons/fa";
+import { hasPermission } from "../pages/permissionUtil";
 
 import {
   FaHome,
@@ -21,6 +22,18 @@ import ReportsDropdown from "./dropdown/ReportsDropdown";
 import ProfileDropdown from "./profileDropdown/ProfileDropdown";
 
 const Navbar = () => {
+  const canViewDashboard = hasPermission("Dashboard", "VIEW");
+const canViewPatients = hasPermission("Patients", "VIEW");
+const canViewAppointment = hasPermission("Appointment", "VIEW");
+const canViewTestResult = hasPermission("Test Result", "VIEW");
+const canViewTestReport = hasPermission("Test Report", "VIEW");
+const canViewInvoice = hasPermission("Invoice", "VIEW");
+const canViewMaster = hasPermission("Organization", "VIEW")
+  || hasPermission("Users", "VIEW")
+  || hasPermission("Roles", "VIEW")
+  || hasPermission("Service Provider", "VIEW")
+  || hasPermission("Insurance", "VIEW")
+  || hasPermission("Currency", "VIEW");
 
   const [user, setUser] = useState(null);
 
@@ -48,49 +61,100 @@ const Navbar = () => {
         {/* LEFT MENU */}
         <ul className="navbar-nav">
 
-          <li className="nav-item">
+          {/* <li className="nav-item">
             <Link className="nav-link" to="/">
               <FaHome className="nav-icon" /> Dashboard
             </Link>
-          </li>
+          </li> */}
+          {canViewDashboard && (
+  <li className="nav-item">
+    <Link className="nav-link" to="/">
+      <FaHome className="nav-icon" /> Dashboard
+    </Link>
+  </li>
+)}
 
-          <li className="nav-item dropdown-menu-wrapper">
+          {/* <li className="nav-item dropdown-menu-wrapper">
             <span className="nav-link">
               <FaUsers className="nav-icon" /> Master ▼
             </span>
             <MasterDropdown />
-          </li>
+          </li> */}
+          {canViewMaster && (
+  <li className="nav-item dropdown-menu-wrapper">
+    <span className="nav-link">
+      <FaUsers className="nav-icon" /> Master ▼
+    </span>
+    <MasterDropdown />
+  </li>
+)}
 
-          <li className="nav-item">
+          {/* <li className="nav-item">
             <Link className="nav-link" to="/patients">
               <FaUserInjured className="nav-icon" /> All Patients
             </Link>
-          </li>
+          </li> */}
+          {canViewPatients && (
+  <li className="nav-item">
+    <Link className="nav-link" to="/patients">
+      <FaUserInjured className="nav-icon" /> All Patients
+    </Link>
+  </li>
+)}
 
-          <li className="nav-item dropdown-menu-wrapper">
+          {/* <li className="nav-item dropdown-menu-wrapper">
             <span className="nav-link">
               <FaCalendarCheck className="nav-icon" /> Appointment ▼
             </span>
             <AppointmentDropdown />
-          </li>
+          </li> */}
+          {canViewAppointment && (
+  <li className="nav-item dropdown-menu-wrapper">
+    <span className="nav-link">
+      <FaCalendarCheck className="nav-icon" /> Appointment ▼
+    </span>
+    <AppointmentDropdown />
+  </li>
+)}
 
-          <li className="nav-item">
+          {/* <li className="nav-item">
             <Link className="nav-link" to="/test-result">
               <FaFlask className="nav-icon" /> Test Result
             </Link>
-          </li>
+          </li> */}
+          {canViewTestResult && (
+  <li className="nav-item">
+    <Link className="nav-link" to="/test-result">
+      <FaFlask className="nav-icon" /> Test Result
+    </Link>
+  </li>
+)}
 
-          <li className="nav-item">
+          {/* <li className="nav-item">
             <Link className="nav-link" to="/test-report">
               <FaFileMedical className="nav-icon" /> Test Report
             </Link>
-          </li>
+          </li> */}
+          {canViewTestReport && (
+  <li className="nav-item">
+    <Link className="nav-link" to="/test-report">
+      <FaFileMedical className="nav-icon" /> Test Report
+    </Link>
+  </li>
+)}
 
-          <li className="nav-item">
+          {/* <li className="nav-item">
             <Link className="nav-link" to="/invoice">
               <FaFileInvoice className="nav-icon" /> Invoice
             </Link>
-          </li>
+          </li> */}
+          {canViewInvoice && (
+  <li className="nav-item">
+    <Link className="nav-link" to="/invoice">
+      <FaFileInvoice className="nav-icon" /> Invoice
+    </Link>
+  </li>
+)}
 
           {/* <li className="nav-item dropdown-menu-wrapper">
             <span className="nav-link">

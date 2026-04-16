@@ -146,6 +146,12 @@ const UpcommingAppointment = () => {
                   <tr>
   
                     <th>Action</th>
+                     <th
+                    onClick={() => handleSort("lm")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    S.NO.{getArrow("lm")}
+                  </th>
   
                     <th
                       onClick={() => handleSort("lm")}
@@ -196,9 +202,9 @@ const UpcommingAppointment = () => {
                       VISIT DATE {getArrow("visit")}
                     </th>
   
-                    <th>
+                    {/* <th>
                       VIEW DETAILS
-                    </th>
+                    </th> */}
   
                   </tr>
   
@@ -212,7 +218,7 @@ const UpcommingAppointment = () => {
         </td>
       </tr>
     ) : (
-      appointments.map((a) => (
+      appointments.map((a,index) => (
         <tr key={a.appointmentId}>
   
           {/* ✅ ACTION FIRST */}
@@ -251,7 +257,8 @@ const UpcommingAppointment = () => {
           </td>
   
           {/* ✅ LM NO */}
-          <td>{a.appointmentId}</td>
+          <td>{(currentPage - 1) * entries + index + 1}</td>
+          <td>{a.patientId}</td>
   
           {/* ✅ PATIENT NAME */}
           <td>{a.patientName}</td>
@@ -272,9 +279,9 @@ const UpcommingAppointment = () => {
           <td>{a.visitDate}</td>
   
           {/* ✅ VIEW */}
-          <td className="text-primary" style={{ cursor: "pointer" }}>
+          {/* <td className="text-primary" style={{ cursor: "pointer" }}>
             View
-          </td>
+          </td> */}
   
         </tr>
       ))

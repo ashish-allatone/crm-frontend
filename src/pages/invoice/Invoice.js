@@ -7,6 +7,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
 import { hasPermission } from "../permissionUtil";
+import { updateInvoice, deleteInvoice } from "../../services/invoiceService";
 
 const Invoice = () => {
   const [search, setSearch] = useState("");
@@ -17,6 +18,8 @@ const Invoice = () => {
   const [invoiceList, setInvoiceList] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [organizations, setOrganizations] = useState([]);
+
+  const [editPaid, setEditPaid] = useState(null);
 
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -40,15 +43,15 @@ const Invoice = () => {
   //   }
   // };
   const loadInvoices = async () => {
-  try {
-    const res = await getInvoices();
-    setInvoiceList(res.data.data || []);
-  } catch (err) {
-    if (err.response?.status === 403) {
-      alert("Access Denied ❌");
+    try {
+      const res = await getInvoices();
+      setInvoiceList(res.data.data || []);
+    } catch (err) {
+      if (err.response?.status === 403) {
+        alert("Access Denied ❌");
+      }
     }
-  }
-};
+  };
   const loadOrganizations = async () => {
     try {
       const res = await getOrganizationsAll();
@@ -125,6 +128,37 @@ const Invoice = () => {
     pdf.save(fileName);
   };
 
+  const handleUpdate = async (invoiceId) => {
+    try {
+      await updateInvoice(invoiceId, {
+        paidAmount: editPaid,
+      });
+
+      alert("Updated successfully ✅");
+      loadInvoices();
+      setEditPaid(null);
+    } catch (err) {
+      alert("Update failed ❌");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!hasPermission("Invoice", "EDIT")) {
+      alert("Access Denied ❌");
+      return;
+    }
+
+    if (!window.confirm("Delete this invoice?")) return;
+
+    try {
+      await deleteInvoice(id);
+      alert("Deleted successfully");
+      loadInvoices();
+    } catch (err) {
+      alert("Delete failed ❌");
+    }
+  };
+
   return (
     <div className="container-fluid mt-3">
       <div className="card">
@@ -138,10 +172,13 @@ const Invoice = () => {
             ➕ Add New Invoice
           </button> */}
           {hasPermission("Invoice", "ADD") && (
-  <button className="btn btn-light" onClick={() => setShowModal(true)}>
-    ➕ Add New Invoice
-  </button>
-)}
+            <button
+              className="btn btn-light"
+              onClick={() => setShowModal(true)}
+            >
+              ➕ Add New Invoice
+            </button>
+          )}
         </div>
 
         <div className="card-body">
@@ -255,26 +292,24 @@ const Invoice = () => {
                     return (
                       <tr key={p.invoiceId}>
                         <td>
-                          {/* <button
-                            className="btn btn-info btn-sm"
+                          <button
+                            className="btn btn-info btn-sm me-1"
                             onClick={() => {
                               setSelectedInvoice(p);
                               setShowInvoiceModal(true);
                             }}
                           >
                             View
-                          </button> */}
-                          {hasPermission("Invoice", "VIEW") && (
-  <button
-    className="btn btn-info btn-sm"
-    onClick={() => {
-      setSelectedInvoice(p);
-      setShowInvoiceModal(true);
-    }}
-  >
-    View
-  </button>
-)}
+                          </button>
+
+                          {hasPermission("Invoice", "EDIT") && (
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => handleDelete(p.invoiceId)}
+                            >
+                              Delete
+                            </button>
+                          )}
                         </td>
 
                         <td>{p.status}</td>
@@ -289,7 +324,29 @@ const Invoice = () => {
 
                         <td>₹ {p.totalAmount}</td>
 
-                        <td>₹ {p.paidAmount}</td>
+                        {/* <td>₹ {p.paidAmount}</td> */}
+                        <td>
+  <div className="d-flex align-items-center gap-2">
+    
+    <input
+      type="number"
+      className="form-control form-control-sm paid-input"
+      disabled={!hasPermission("Invoice", "EDIT")}
+      defaultValue={p.paidAmount}
+      onChange={(e) => setEditPaid(e.target.value)}
+    />
+
+   {hasPermission("Invoice", "EDIT") && (
+  <button
+    className="btn btn-success btn-sm"
+    onClick={() => handleUpdate(p.invoiceId)}
+  >
+    Save
+  </button>
+)}
+
+  </div>
+</td>
 
                         <td>₹ {dueAmount}</td>
                       </tr>
@@ -470,13 +527,13 @@ const Invoice = () => {
                         + Add Invoice
                       </button> */}
                       {hasPermission("Invoice", "ADD") && (
-  <button
-    className="btn btn-primary btn-sm"
-    onClick={() => navigate(`/add-invoice/${org.id}`)}
-  >
-    + Add Invoice
-  </button>
-)}
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => navigate(`/add-invoice/${org.id}`)}
+                        >
+                          + Add Invoice
+                        </button>
+                      )}
                     </div>
                   ))
                 )}

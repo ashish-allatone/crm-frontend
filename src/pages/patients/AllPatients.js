@@ -10,7 +10,7 @@ const AllPatients = () => {
   // const { id } = useParams();
 
   const [search, setSearch] = useState("");
-  const [entries, setEntries] = useState(5);
+  const [entries, setEntries] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");

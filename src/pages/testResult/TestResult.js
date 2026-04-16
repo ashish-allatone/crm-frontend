@@ -2,6 +2,7 @@ import React, { useState ,useEffect} from "react";
 import "../../styles/allPatients.css";
 import { getAppointments } from "../../services/appointmentService";
 import { getTestResult } from "../../services/testResultService";
+import { deleteTestResult } from "../../services/testResultService";
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -119,6 +120,25 @@ const handleExportPDF = async () => {
   pdf.save(fileName);
 };
 
+const handleDelete = async (appointmentId) => {
+
+  if (!hasPermission("Test Result", "EDIT")) {
+    alert("Access Denied ❌");
+    return;
+  }
+
+  if (!window.confirm("Are you sure to delete this test result?")) return;
+
+  try {
+    await deleteTestResult(appointmentId);
+    alert("Deleted successfully ✅");
+
+    loadAppointments(); // refresh
+  } catch (err) {
+    alert("Delete failed ❌");
+  }
+};
+
   return (
     <div className="container-fluid mt-3">
       <div className="card">
@@ -171,6 +191,12 @@ const handleExportPDF = async () => {
               <thead>
                 <tr>
                   <th>Actions</th>
+                   <th
+                    onClick={() => handleSort("lm")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    S.NO.{getArrow("lm")}
+                  </th>
 
                   <th
                     onClick={() => handleSort("lm")}
@@ -240,7 +266,7 @@ const handleExportPDF = async () => {
       </td>
     </tr>
   ) : (
-    appointments.map((a) => (
+    appointments.map((a, index) => (
       <tr key={a.appointmentId}>
 
         {/* ACTION */}
@@ -269,16 +295,27 @@ const handleExportPDF = async () => {
       navigate(`/add-test-result/${a.appointmentId}`)
     }
   >
-    Add Test Result
+    Add / Edit Test Result
   </button>
 )}
               </li>
+               {hasPermission("Test Result", "EDIT") && (
+    <li>
+      <button
+        className="dropdown-item text-danger"
+        onClick={() => handleDelete(a.appointmentId)}
+      >
+        Delete Test Result
+      </button>
+    </li>
+  )}
 
             </ul>
           </div>
         </td>
 
-        <td>{a.appointmentId}</td>
+        <td>{(currentPage - 1) * entries + index + 1}</td>
+         <td>{a.patientId}</td>
         <td>{a.patientName}</td>
         <td>{a.mobile}</td>
         <td>{a.ageGender}</td>

@@ -118,6 +118,12 @@ const TestReport = () => {
               <thead>
                 <tr>
                   <th>Actions</th>
+                   <th
+                    onClick={() => handleSort("lm")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    S.NO.{getArrow("lm")}
+                  </th>
 
                   <th
                     onClick={() => handleSort("lm")}
@@ -192,7 +198,7 @@ const TestReport = () => {
                     </td>
                   </tr>
                 ) : (
-                  appointments.map((a) => (
+                  appointments.map((a,index) => (
                     <tr key={a.appointmentId}>
                       <td>
                         {/* <button
@@ -215,7 +221,8 @@ const TestReport = () => {
 )}
                       </td>
 
-                      <td>{a.appointmentId}</td>
+                      <td>{(currentPage - 1) * entries + index + 1}</td>
+                      <td>{a.patientId}</td>
                       <td>{a.patientName}</td>
                       <td>{a.mobile}</td>
                       <td>{a.ageGender}</td>

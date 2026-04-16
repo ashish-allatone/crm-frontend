@@ -117,6 +117,7 @@ import { hasPermission } from "../permissionUtil";
 
 const CreateAppointment = () => {
   const canAdd = hasPermission("Appointment", "ADD");
+  const canViewProvider = hasPermission("Service Provider", "VIEW");
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -133,10 +134,19 @@ const CreateAppointment = () => {
 
   
 
+  // useEffect(() => {
+  //   loadPatient();
+  //   loadProviders();
+  // }, []);
   useEffect(() => {
-    loadPatient();
+  loadPatient();
+
+  if (canViewProvider) {
     loadProviders();
-  }, []);
+  } else {
+    setProviders([]);
+  }
+}, [canViewProvider]);
 
   const loadPatient = async () => {
     const res = await getPatientById(id);
@@ -151,10 +161,19 @@ const CreateAppointment = () => {
     }));
   };
 
+  // const loadProviders = async () => {
+  //   const res = await getAllServiceProviders();
+  //   setProviders(res.data.data);
+  // };
   const loadProviders = async () => {
+  try {
     const res = await getAllServiceProviders();
-    setProviders(res.data.data);
-  };
+    setProviders(res.data.data || []);
+  } catch (err) {
+    console.warn("Service Provider access denied");
+    setProviders([]);
+  }
+};
 
   // const handleSubmit = async () => {
   //   await createAppointment(form);
@@ -215,6 +234,13 @@ if (!canAdd) {
             {/* Service Provider */}
             <div className="col-md-6">
               <label>Service Provider</label>
+              {!canViewProvider ? (
+  <input
+    className="form-control"
+    value="No Service Provider Access"
+    disabled
+  />
+) : (
               <select
                 className="form-control"
                 value={form.serviceProviderId}
@@ -228,7 +254,7 @@ if (!canAdd) {
                     {p.name}
                   </option>
                 ))}
-              </select>
+              </select>)}
             </div>
 
             {/* Date */}
