@@ -341,7 +341,7 @@ const canViewOrg = hasPermission("Organization", "VIEW");
     className="btn btn-link"
     style={{ color: "#6c63ff" }}
     onClick={() =>
-      setPdfPreview(`http://localhost:8080/api/insurances/file/${i.id}`)
+      setPdfPreview(`http://localhost:9090/crm/insurances/file/${i.id}`)
     }
   >
     View

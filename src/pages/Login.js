@@ -719,7 +719,7 @@ export default function Login() {
 
   try {
     // ✅ LOGIN
-    const res = await fetch("http://localhost:8080/api/auth/login", {
+    const res = await fetch("http://localhost:9090/crm/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -727,18 +727,24 @@ export default function Login() {
       body: JSON.stringify(form),
     });
 
+    // if (!res.ok) {
+    //   const errorMsg = await res.text();
+    //   alert(errorMsg || "Invalid username or password");
+    //   setStatus("idle");
+    //   return;
+    // }
     if (!res.ok) {
-      const errorMsg = await res.text();
-      alert(errorMsg || "Invalid username or password");
-      setStatus("idle");
-      return;
-    }
+  const errorData = await res.json();
+  alert(errorData.message || "Login failed");
+  setStatus("idle");
+  return;
+}
 
     const token = await res.text();
     localStorage.setItem("token", token);
 
     // ✅ USER FETCH
-    const userRes = await fetch("http://localhost:8080/api/users/me", {
+    const userRes = await fetch("http://localhost:9090/crm/users/me", {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -755,7 +761,7 @@ export default function Login() {
 
     // ✅ PERMISSIONS FETCH
     const permRes = await fetch(
-      `http://localhost:8080/api/permissions/${roleId}`,
+      `http://localhost:9090/crm/permissions/${roleId}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -798,6 +804,8 @@ export default function Login() {
     status === "loading" ? "lp-btn--loading" : "",
     status === "success" ? "lp-btn--success" : "",
   ].filter(Boolean).join(" ");
+
+  
 
   return (
     <>

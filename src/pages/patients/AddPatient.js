@@ -48,21 +48,21 @@ const AddPatient = () => {
   //   loadOrgs();
   // }, []);
   useEffect(() => {
-     if (!canViewOrg) {
-    setOrganizations([]);
-    return;
-  }
-  const loadOrgs = async () => {
-    try {
-      const res = await getOrganizationsAll();
-      setOrganizations(res.data.data || []);
-    } catch (err) {
-      console.warn("Organization access denied");
-      setOrganizations([]); // fallback
+    if (!canViewOrg) {
+      setOrganizations([]);
+      return;
     }
-  };
-  loadOrgs();
-}, [canViewOrg]);
+    const loadOrgs = async () => {
+      try {
+        const res = await getOrganizationsAll();
+        setOrganizations(res.data.data || []);
+      } catch (err) {
+        console.warn("Organization access denied");
+        setOrganizations([]); // fallback
+      }
+    };
+    loadOrgs();
+  }, [canViewOrg]);
   const [insurances, setInsurances] = useState([]);
   // useEffect(() => {
   //   const loadInsurance = async () => {
@@ -72,21 +72,21 @@ const AddPatient = () => {
   //   loadInsurance();
   // }, []);
   useEffect(() => {
-     if (!canViewInsurance) {
-    setInsurances([]);
-    return;
-  }
-  const loadInsurance = async () => {
-    try {
-      const res = await getAllInsurances();
-      setInsurances(res.data.data || []);
-    } catch (err) {
-      console.warn("Insurance access denied");
+    if (!canViewInsurance) {
       setInsurances([]);
+      return;
     }
-  };
-  loadInsurance();
-}, [canViewInsurance]);
+    const loadInsurance = async () => {
+      try {
+        const res = await getAllInsurances();
+        setInsurances(res.data.data || []);
+      } catch (err) {
+        console.warn("Insurance access denied");
+        setInsurances([]);
+      }
+    };
+    loadInsurance();
+  }, [canViewInsurance]);
 
   const [allTests, setAllTests] = useState([]);
   // useEffect(() => {
@@ -97,21 +97,21 @@ const AddPatient = () => {
   //   loadTests();
   // }, []);
   useEffect(() => {
-     if (!canViewTest) {
-    setAllTests([]);
-    return;
-  }
-  const loadTests = async () => {
-    try {
-      const res = await getAllTests();
-      setAllTests(res.data.data || []);
-    } catch (err) {
-      console.warn("Test access denied");
+    if (!canViewTest) {
       setAllTests([]);
+      return;
     }
-  };
-  loadTests();
-}, [canViewTest]);
+    const loadTests = async () => {
+      try {
+        const res = await getAllTests();
+        setAllTests(res.data.data || []);
+      } catch (err) {
+        console.warn("Test access denied");
+        setAllTests([]);
+      }
+    };
+    loadTests();
+  }, [canViewTest]);
 
   const [currencies, setCurrencies] = useState([]);
   // useEffect(() => {
@@ -123,21 +123,21 @@ const AddPatient = () => {
   //   loadCurrencies();
   // }, []);
   useEffect(() => {
-     if (!canViewCurrency) {
-    setCurrencies([]);
-    return;
-  }
-  const loadCurrencies = async () => {
-    try {
-      const res = await getAllCurrencies();
-      setCurrencies(res.data.data || []);
-    } catch (err) {
-      console.warn("Currency access denied");
+    if (!canViewCurrency) {
       setCurrencies([]);
+      return;
     }
-  };
-  loadCurrencies();
-}, [canViewCurrency]);
+    const loadCurrencies = async () => {
+      try {
+        const res = await getAllCurrencies();
+        setCurrencies(res.data.data || []);
+      } catch (err) {
+        console.warn("Currency access denied");
+        setCurrencies([]);
+      }
+    };
+    loadCurrencies();
+  }, [canViewCurrency]);
 
   const [tests, setTests] = useState([
     {
@@ -186,46 +186,44 @@ const AddPatient = () => {
   //   navigate("/patients");
   // };
   const handleSubmit = async () => {
-  try {
-    const payload = {
-      ...form,
-      organizationId: form.organizationId ? Number(form.organizationId) : null,
-      insuranceId: form.insuranceId ? Number(form.insuranceId) : null,
-      tests: tests,
-    };
+    try {
+      const payload = {
+        ...form,
+        organizationId: form.organizationId
+          ? Number(form.organizationId)
+          : null,
+        insuranceId: form.insuranceId ? Number(form.insuranceId) : null,
+        tests: tests,
+      };
 
-    const res = await createPatient(payload);
+      const res = await createPatient(payload);
 
-    // ✅ Backend message
-    alert(res.data.message); // "Patient created successfully"
+      // ✅ Backend message
+      alert(res.data.message); // "Patient created successfully"
 
-    navigate("/patients");
+      navigate("/patients");
+    } catch (error) {
+      console.error(error);
 
-  } catch (error) {
-    console.error(error);
+      alert(error.response?.data?.message || "Failed to create patient ❌");
+    }
+  };
 
-    alert(
-      error.response?.data?.message ||
-      "Failed to create patient ❌"
-    );
-  }
-};
+  const handleCountryChange = (e) => {
+    const countryCode = e.target.value;
 
-const handleCountryChange = (e) => {
-  const countryCode = e.target.value;
+    setForm({ ...form, country: countryCode, state: "", city: "" });
 
-  setForm({ ...form, country: countryCode, state: "", city: "" });
+    loadStates(countryCode);
+  };
 
-  loadStates(countryCode);
-};
+  const handleStateChange = (e) => {
+    const stateCode = e.target.value;
 
-const handleStateChange = (e) => {
-  const stateCode = e.target.value;
+    setForm({ ...form, state: stateCode, city: "" });
 
-  setForm({ ...form, state: stateCode, city: "" });
-
-  loadCities(form.country, stateCode);
-};
+    loadCities(form.country, stateCode);
+  };
 
   return (
     <div className="container-fluid mt-3">
@@ -364,17 +362,17 @@ const handleStateChange = (e) => {
                 <option value="England">England</option>
               </select> */}
               <select
-  className="form-control"
-  value={form.country}
-  onChange={handleCountryChange}
->
-  <option value="">Select Country</option>
-  {countries.map((c) => (
-    <option key={c.iso2} value={c.iso2}>
-      {c.name}
-    </option>
-  ))}
-</select>
+                className="form-control"
+                value={form.country}
+                onChange={handleCountryChange}
+              >
+                <option value="">Select Country</option>
+                {countries.map((c) => (
+                  <option key={c.iso2} value={c.iso2}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="col-md-3">
@@ -392,17 +390,17 @@ const handleStateChange = (e) => {
                 <option value="Gujarat">Gujarat</option>
               </select> */}
               <select
-  className="form-control"
-  value={form.state}
-  onChange={handleStateChange}
->
-  <option value="">Select State</option>
-  {states.map((s) => (
-    <option key={s.iso2} value={s.iso2}>
-      {s.name}
-    </option>
-  ))}
-</select>
+                className="form-control"
+                value={form.state}
+                onChange={handleStateChange}
+              >
+                <option value="">Select State</option>
+                {states.map((s) => (
+                  <option key={s.iso2} value={s.iso2}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="col-md-3">
@@ -420,18 +418,18 @@ const handleStateChange = (e) => {
                 <option value="Ahmedabad">Ahmedabad</option>
               </select> */}
               <select
-  className="form-control"
-  value={form.city}
-   name="city"
-  onChange={handleChange}
->
-  <option value="">Select City</option>
-  {cities.map((c) => (
-    <option key={c.id} value={c.name}>
-      {c.name}
-    </option>
-  ))}
-</select>
+                className="form-control"
+                value={form.city}
+                name="city"
+                onChange={handleChange}
+              >
+                <option value="">Select City</option>
+                {cities.map((c) => (
+                  <option key={c.id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="col-md-3">
@@ -473,27 +471,27 @@ const handleStateChange = (e) => {
             <div className="col-md-4">
               <label>Currency</label>
               {!canViewCurrency ? (
-  <input
-    className="form-control"
-    value="No Currency Access"
-    disabled
-  />
-) : (
+                <input
+                  className="form-control"
+                  value="No Currency Access"
+                  disabled
+                />
+              ) : (
+                <select
+                  className="form-control"
+                  name="currency"
+                  value={form.currency}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Currency</option>
 
-              <select
-                className="form-control"
-                name="currency"
-                value={form.currency}
-                onChange={handleChange}
-              >
-                <option value="">Select Currency</option>
-
-                {currencies.map((c) => (
-                  <option key={c.id} value={c.currencyCode}>
-                    {c.currencyCode}
-                  </option>
-                ))}
-              </select>)}
+                  {currencies.map((c) => (
+                    <option key={c.id} value={c.currencyCode}>
+                      {c.currencyCode}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div className="col-md-6">
@@ -511,53 +509,53 @@ const handleStateChange = (e) => {
             <div className="col-md-6">
               <label>Select Organization</label>
               {!canViewOrg ? (
-  <input
-    className="form-control"
-    value="No Organization Access"
-    disabled
-  />
-) : (
+                <input
+                  className="form-control"
+                  value="No Organization Access"
+                  disabled
+                />
+              ) : (
+                <select
+                  className="form-control"
+                  name="organizationId"
+                  value={form.organizationId}
+                  onChange={handleChange}
+                >
+                  <option value="">All</option>
 
-              <select
-                className="form-control"
-                name="organizationId"
-                value={form.organizationId}
-                onChange={handleChange}
-              >
-                <option value="">All</option>
-
-                {organizations.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.organizationName}
-                  </option>
-                ))}
-              </select>)}
+                  {organizations.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.organizationName}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div className="col-md-6">
               <label>Insurance Company</label>
               {!canViewInsurance ? (
-  <input
-    className="form-control"
-    value="No Insurance Access"
-    disabled
-  />
-) : (
+                <input
+                  className="form-control"
+                  value="No Insurance Access"
+                  disabled
+                />
+              ) : (
+                <select
+                  className="form-control"
+                  name="insuranceId"
+                  value={form.insuranceId}
+                  onChange={handleChange}
+                >
+                  <option value="">All</option>
 
-              <select
-                className="form-control"
-                name="insuranceId"
-                value={form.insuranceId}
-                onChange={handleChange}
-              >
-                <option value="">All</option>
-
-                {insurances.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.insuranceName}
-                  </option>
-                ))}
-              </select>)}
+                  {insurances.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.insuranceName}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
 
@@ -583,26 +581,27 @@ const handleStateChange = (e) => {
 
                   <td>
                     {!canViewTest ? (
-  <input
-    className="form-control"
-    value="No Test Access"
-    disabled
-  />
-) : (
-                    <select
-                      className="form-control"
-                      value={item.testId}
-                      onChange={(e) =>
-                        handleTestChange(index, "testId", e.target.value)
-                      }
-                    >
-                      <option>--Select--</option>
-                      {allTests.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.testName}
-                        </option>
-                      ))}
-                    </select>)}
+                      <input
+                        className="form-control"
+                        value="No Test Access"
+                        disabled
+                      />
+                    ) : (
+                      <select
+                        className="form-control"
+                        value={item.testId}
+                        onChange={(e) =>
+                          handleTestChange(index, "testId", e.target.value)
+                        }
+                      >
+                        <option>--Select--</option>
+                        {allTests.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.testName}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </td>
 
                   <td>
