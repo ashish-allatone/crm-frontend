@@ -345,6 +345,7 @@ const canView = hasPermission("Test Report", "VIEW");
                       <option value="PENDING">Pending</option>
                       <option value="RECHECK">QC Recheck</option>
                       <option value="APPROVED">QC Approved</option>
+                      <option value="REJECTED">QC Rejected</option>
                     </select>
                   </td>
                   {/* <td>
@@ -430,6 +431,7 @@ const canView = hasPermission("Test Report", "VIEW");
                     <option value="">Select QC</option>
                     <option value="RECHECK">QC Recheck</option>
                     <option value="APPROVED">QC Approved</option>
+                    <option value="REJECTED">QC Rejected</option>
                   </select>
                 </div>
               </div>

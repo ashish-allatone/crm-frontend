@@ -187,6 +187,12 @@ useEffect(() => {
                   >
                     Test Name {getArrow("testName")}
                   </th>
+                  <th
+                    onClick={() => handleSort("shortName")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    Short Name {getArrow("shortName")}
+                  </th>
 
                   <th
                     onClick={() => handleSort("testType")}
@@ -238,6 +244,7 @@ useEffect(() => {
                     <td>{t.organizationName}</td>
 
                     <td>{t.testName}</td>
+                    <td>{t.shortName}</td>
 
                     <td>{t.testType}</td>
 
