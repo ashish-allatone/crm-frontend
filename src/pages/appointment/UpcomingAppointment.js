@@ -185,7 +185,7 @@ const UpcommingAppointment = () => {
                       onClick={() => handleSort("provider")}
                       style={{ cursor: "pointer" }}
                     >
-                      SERVICES PROVIDER {getArrow("provider")}
+                      DIAGNOSTIC CENTER {getArrow("provider")}
                     </th>
   
                     <th
@@ -270,7 +270,7 @@ const UpcommingAppointment = () => {
           <td>{a.organizationName}</td>
   
           {/* ✅ SERVICE PROVIDER */}
-          <td>{a.serviceProviderName}</td>
+          <td>{a.diagnosticCenterName || "-"}</td>
   
           {/* ✅ INSURANCE */}
           <td>{a.insuranceName}</td>

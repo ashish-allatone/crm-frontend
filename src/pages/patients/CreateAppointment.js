@@ -112,41 +112,46 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import { createAppointment } from "../../services/appointmentService";
 import { getPatientById } from "../../services/patientService";
-import { getAllServiceProviders } from "../../services/serviceProviderService";
+// import { getAllServiceProviders } from "../../services/serviceProviderService";
+import { getDiagnosticCenters } from "../../services/diagnosticCenterService";
 import { hasPermission } from "../permissionUtil";
 
 const CreateAppointment = () => {
   const canAdd = hasPermission("Appointment", "ADD");
-  const canViewProvider = hasPermission("Service Provider", "VIEW");
+  const canViewDc = hasPermission("Diagnostic Center", "VIEW");
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [patient, setPatient] = useState(null);
-  const [providers, setProviders] = useState([]);
+  // const [providers, setProviders] = useState([]);
+  const [diagnosticCenters, setDiagnosticCenters] = useState([]);
 
   const [form, setForm] = useState({
     patientId: "",
     organizationId: "",
-    serviceProviderId: "",
+    // serviceProviderId: "",
+    diagnosticCenterId: "",
+    visitType: "CENTER_VISIT",
+    visitSlot: "",
+    medicalAddress: "",
+    diagnosticCenterName: "",
     visitDate: "",
-    visitTime: "",
   });
-
-  
 
   // useEffect(() => {
   //   loadPatient();
   //   loadProviders();
   // }, []);
   useEffect(() => {
-  loadPatient();
+    loadPatient();
 
-  if (canViewProvider) {
-    loadProviders();
-  } else {
-    setProviders([]);
-  }
-}, [canViewProvider]);
+    if (canViewDc) {
+      // loadProviders();
+      loadDiagnosticCenters();
+    } else {
+      setDiagnosticCenters([]);
+    }
+  }, [canViewDc]);
 
   const loadPatient = async () => {
     const res = await getPatientById(id);
@@ -165,53 +170,57 @@ const CreateAppointment = () => {
   //   const res = await getAllServiceProviders();
   //   setProviders(res.data.data);
   // };
-  const loadProviders = async () => {
-  try {
-    const res = await getAllServiceProviders();
-    setProviders(res.data.data || []);
-  } catch (err) {
-    console.warn("Service Provider access denied");
-    setProviders([]);
-  }
-};
+  //   const loadProviders = async () => {
+  //   try {
+  //     const res = await getAllServiceProviders();
+  //     setProviders(res.data.data || []);
+  //   } catch (err) {
+  //     console.warn("Service Provider access denied");
+  //     setProviders([]);
+  //   }
+  // };
+
+  const loadDiagnosticCenters = async () => {
+    try {
+      const res = await getDiagnosticCenters(0, 1000, "");
+
+      setDiagnosticCenters(res.data.content || []);
+    } catch (err) {
+      console.warn("DC access denied");
+
+      setDiagnosticCenters([]);
+    }
+  };
 
   // const handleSubmit = async () => {
   //   await createAppointment(form);
   //   navigate("/patients");
   // };
   const handleSubmit = async () => {
-  try {
-    const res = await createAppointment(form);
+    try {
+      const res = await createAppointment(form);
 
-    // ✅ Backend message
-    alert(res.data.message); // "Appointment created successfully"
+      // ✅ Backend message
+      alert(res.data.message); // "Appointment created successfully"
 
-    navigate("/patients");
+      navigate("/patients");
+    } catch (error) {
+      console.error(error);
 
-  } catch (error) {
-    console.error(error);
-
-    alert(
-      error.response?.data?.message ||
-      "Failed to create appointment ❌"
-    );
+      alert(error.response?.data?.message || "Failed to create appointment ❌");
+    }
+  };
+  if (!canAdd) {
+    return <h3>Access Denied ❌</h3>;
   }
-};
-if (!canAdd) {
-  return <h3>Access Denied ❌</h3>;
-}
   return (
     <div className="container-fluid mt-3">
       <div className="card">
-
         {/* Header */}
-        <div className="card-header add-header">
-          Create Appointment
-        </div>
+        <div className="card-header add-header">Create Appointment</div>
 
         <div className="card-body">
           <div className="row g-3">
-
             {/* Patient Info */}
             <div className="col-md-6">
               <label>Patient Name</label>
@@ -232,7 +241,7 @@ if (!canAdd) {
             </div>
 
             {/* Service Provider */}
-            <div className="col-md-6">
+            {/* <div className="col-md-6">
               <label>Service Provider</label>
               {!canViewProvider ? (
   <input
@@ -255,6 +264,66 @@ if (!canAdd) {
                   </option>
                 ))}
               </select>)}
+            </div> */}
+
+            <div className="col-md-6">
+              <label>Diagnostic Center</label>
+              {!canViewDc ? (
+                <input
+                  className="form-control"
+                  value="No Diagnostic Center Access"
+                  disabled
+                />
+              ) : (
+                <select
+                  className="form-control"
+                  value={form.diagnosticCenterId}
+                  onChange={(e) => {
+                    const selectedDc = diagnosticCenters.find(
+                      (dc) => dc.id == e.target.value,
+                    );
+
+                    setForm({
+                      ...form,
+
+                      diagnosticCenterId: e.target.value,
+
+                      diagnosticCenterName: selectedDc?.name || "",
+
+                      medicalAddress: selectedDc?.primaryAddress || "",
+                    });
+                  }}
+                >
+                  <option value="">Select DC</option>
+
+                  {diagnosticCenters.map((dc) => (
+                    <option key={dc.id} value={dc.id}>
+                      {dc.name}
+                      {" - "}
+                      {dc.locationName}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <div className="col-md-3">
+              <label>Visit Type</label>
+
+              <select
+                className="form-control"
+                value={form.visitType}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    visitType: e.target.value,
+                  })
+                }
+              >
+                <option value="CENTER_VISIT">Center Visit</option>
+
+                <option value="HOME_VISIT">Home Visit</option>
+              </select>
             </div>
 
             {/* Date */}
@@ -276,18 +345,23 @@ if (!canAdd) {
               <input
                 type="time"
                 className="form-control"
-                value={form.visitTime}
+                
                 onChange={(e) =>
-                  setForm({ ...form, visitTime: e.target.value })
+                  setForm({
+  ...form,
+  visitSlot: e.target.value
+})
                 }
               />
             </div>
-
           </div>
 
           {/* Buttons */}
           <div className="mt-4">
-            <button className="btn btn-primary submit-btn" onClick={handleSubmit}>
+            <button
+              className="btn btn-primary submit-btn"
+              onClick={handleSubmit}
+            >
               Save Appointment
             </button>
 
@@ -298,7 +372,6 @@ if (!canAdd) {
               Cancel
             </button>
           </div>
-
         </div>
       </div>
     </div>

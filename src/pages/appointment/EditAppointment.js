@@ -3,27 +3,36 @@ import "../../styles/addPatient.css";
 import { useParams, useNavigate } from "react-router-dom";
 
 import { updateAppointment } from "../../services/appointmentService";
-import { getAllServiceProviders } from "../../services/serviceProviderService";
+// import { getAllServiceProviders } from "../../services/serviceProviderService";
 import api from "../../services/api";
+import { getDiagnosticCenters }
+from "../../services/diagnosticCenterService";
 
 const EditAppointment = () => {
   const { id } = useParams(); // appointmentId
   const navigate = useNavigate();
 
   const [patient, setPatient] = useState(null);
-  const [providers, setProviders] = useState([]);
+  // const [providers, setProviders] = useState([]);
+  const [diagnosticCenters,
+setDiagnosticCenters] = useState([]);
 
   const [form, setForm] = useState({
     patientId: "",
     organizationId: "",
-    serviceProviderId: "",
+    // serviceProviderId: "",
     visitDate: "",
-    visitTime: "",
+    // visitTime: "",
+    diagnosticCenterId: "",
+visitSlot: "",
+visitType: "CENTER_VISIT",
+medicalAddress: "",
+diagnosticCenterName: "",
   });
 
   useEffect(() => {
     loadAppointment();
-    loadProviders();
+    loadDiagnosticCenters();
   }, []);
 
   // 🔥 LOAD APPOINTMENT (IMPORTANT)
@@ -39,16 +48,55 @@ const EditAppointment = () => {
     setForm({
       patientId: data.patientId,
       organizationId: data.organizationId,
-      serviceProviderId: data.serviceProviderId || "",
+      // serviceProviderId: data.serviceProviderId || "",
       visitDate: data.visitDate || "",
-      visitTime: data.visitTime || "",
+      // visitTime: data.visitTime || "",
+      diagnosticCenterId:
+  data.diagnosticCenterId || "",
+
+visitSlot:
+  data.visitSlot || "",
+
+visitType:
+  data.visitType || "CENTER_VISIT",
+
+medicalAddress:
+  data.medicalAddress || "",
+
+diagnosticCenterName:
+  data.diagnosticCenterName || "",
     });
   };
 
-  const loadProviders = async () => {
-    const res = await getAllServiceProviders();
-    setProviders(res.data.data);
-  };
+  // const loadProviders = async () => {
+  //   const res = await getAllServiceProviders();
+  //   setProviders(res.data.data);
+  // };
+
+  const loadDiagnosticCenters = async () => {
+
+  try {
+
+    const res =
+      await getDiagnosticCenters(
+        0,
+        1000,
+        ""
+      );
+
+    setDiagnosticCenters(
+      res.data.content || []
+    );
+
+  } catch (err) {
+
+    console.warn(
+      "DC access denied"
+    );
+
+    setDiagnosticCenters([]);
+  }
+};
 
 //   const handleSubmit = async () => {
 //     await updateAppointment(id, form);
@@ -126,7 +174,7 @@ const handleSubmit = async () => {
             </div>
 
             {/* Service Provider */}
-            <div className="col-md-6">
+            {/* <div className="col-md-6">
               <label>Service Provider</label>
               <select
                 className="form-control"
@@ -142,7 +190,82 @@ const handleSubmit = async () => {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
+            <div className="col-md-6">
+
+  <label>Diagnostic Center</label>
+
+  <select
+    className="form-control"
+    value={form.diagnosticCenterId}
+    onChange={(e) => {
+
+      const selectedDc =
+        diagnosticCenters.find(
+          dc => dc.id == e.target.value
+        );
+
+      setForm({
+
+        ...form,
+
+        diagnosticCenterId:
+          e.target.value,
+
+        diagnosticCenterName:
+          selectedDc?.name || "",
+
+        medicalAddress:
+          selectedDc?.primaryAddress || ""
+      });
+    }}
+  >
+
+    <option value="">
+      Select DC
+    </option>
+
+    {diagnosticCenters.map((dc) => (
+
+      <option
+        key={dc.id}
+        value={dc.id}
+      >
+
+        {dc.name}
+        {" - "}
+        {dc.locationName}
+
+      </option>
+    ))}
+  </select>
+</div>
+
+<div className="col-md-3">
+
+  <label>Visit Type</label>
+
+  <select
+    className="form-control"
+    value={form.visitType}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        visitType: e.target.value
+      })
+    }
+  >
+
+    <option value="CENTER_VISIT">
+      Center Visit
+    </option>
+
+    <option value="HOME_VISIT">
+      Home Visit
+    </option>
+
+  </select>
+</div>
 
             {/* Date */}
             <div className="col-md-3">
@@ -163,9 +286,9 @@ const handleSubmit = async () => {
               <input
                 type="time"
                 className="form-control"
-                value={form.visitTime}
+                value={form.visitSlot}
                 onChange={(e) =>
-                  setForm({ ...form, visitTime: e.target.value })
+                  setForm({ ...form, visitSlot: e.target.value })
                 }
               />
             </div>

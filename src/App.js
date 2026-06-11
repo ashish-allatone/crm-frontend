@@ -49,6 +49,10 @@ import CreateAppointment from "./pages/patients/CreateAppointment";
 import EditAppointment from "./pages/appointment/EditAppointment";
 import AddTestResult from "./pages/testResult/AddTestResult";
 import AddInvoice from "./pages/invoice/AddInvoice";
+import DiagnosticCenter from "./pages/master/diagnosticCenter/DiagnosticCenter";
+import AllAppointment from "./pages/appointment/AllAppointment";
+import AddDiagnosticCenter from "./pages/master/diagnosticCenter/AddDiagnosticCenter";
+import EditDiagnosticCenter from "./pages/master/diagnosticCenter/EditDiagnosticCenter";
 
 
 function App() {
@@ -140,6 +144,32 @@ function App() {
     </ProtectedRoute>
   }
 />
+
+<Route
+  path="/diagnostic-center"
+  element={
+    <ProtectedRoute module="Diagnostic Center" action="VIEW">
+      <DiagnosticCenter />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/diagnostic-center/create"
+  element={
+    <ProtectedRoute module="Diagnostic Center" action="ADD">
+      <AddDiagnosticCenter />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/diagnostic-center/edit/:id"
+  element={
+    <ProtectedRoute module="Diagnostic Center" action="EDIT">
+      <EditDiagnosticCenter />
+    </ProtectedRoute>
+  }
+/>
+
         {/* <Route path="/currency" element={<ProtectedRoute><Currency /></ProtectedRoute>} /> */}
         <Route
   path="/currency"
@@ -170,6 +200,16 @@ function App() {
 />
 
         {/* APPOINTMENT */}
+
+        <Route
+  path="/appointment/all"
+  element={
+    <ProtectedRoute module="Appointment" action="VIEW">
+      <AllAppointment />
+    </ProtectedRoute>
+  }
+/>
+
         {/* <Route path="/appointment/today" element={<ProtectedRoute><TodayAppointment /></ProtectedRoute>} /> */}
         <Route
   path="/appointment/today"

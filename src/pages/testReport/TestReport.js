@@ -161,11 +161,11 @@ const TestReport = () => {
                   </th>
 
                   <th
-                    onClick={() => handleSort("provider")}
-                    style={{ cursor: "pointer" }}
-                  >
-                    SERVICES PROVIDER {getArrow("provider")}
-                  </th>
+  onClick={() => handleSort("dc")}
+  style={{ cursor: "pointer" }}
+>
+  Diagnostic Center {getArrow("dc")}
+</th>
 
                   <th
                     onClick={() => handleSort("insurance")}
@@ -227,7 +227,7 @@ const TestReport = () => {
                       <td>{a.mobile}</td>
                       <td>{a.ageGender}</td>
                       <td>{a.organizationName}</td>
-                      <td>{a.serviceProviderName}</td>
+                       <td>{a.diagnosticCenterName || "-"}</td>
                       <td>{a.insuranceName}</td>
                       <td>{a.visitDate}</td>
                     </tr>

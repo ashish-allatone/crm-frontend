@@ -188,7 +188,7 @@ for (let i = 1; i <= totalPages; i++) {
                     onClick={() => handleSort("provider")}
                     style={{ cursor: "pointer" }}
                   >
-                    SERVICES PROVIDER {getArrow("provider")}
+                    DIAGNOSTIC CENTER {getArrow("provider")}
                   </th>
 
                   <th
@@ -273,7 +273,7 @@ for (let i = 1; i <= totalPages; i++) {
         <td>{a.organizationName}</td>
 
         {/* ✅ SERVICE PROVIDER */}
-        <td>{a.serviceProviderName}</td>
+        <td>{a.diagnosticCenterName || "-"}</td>
 
         {/* ✅ INSURANCE */}
         <td>{a.insuranceName}</td>

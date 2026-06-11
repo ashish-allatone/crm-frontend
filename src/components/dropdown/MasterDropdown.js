@@ -7,7 +7,8 @@ FaUserShield,
 FaUsers,
 FaCog,
 FaDollarSign,
-FaUserTie
+FaUserTie,
+FaHospital
 } from "react-icons/fa";
 
 import { MdScience } from "react-icons/md";
@@ -53,6 +54,13 @@ Insurance Company
   </Link>
 )}
 
+{hasPermission("Diagnostic Center", "VIEW") && (
+  <Link to="/diagnostic-center" className="dropdown-item">
+     <FaHospital className="icon"/>
+    Diagnostic Center
+  </Link>
+)}
+
 {/* <Link to="/service-provider" className="dropdown-item">
 <FaUserTie className="icon"/>
 Service Provider
@@ -63,6 +71,8 @@ Service Provider
     Service Provider
   </Link>
 )}
+
+
 
 {/* <Link to="/currency" className="dropdown-item">
 <FaDollarSign className="icon"/>

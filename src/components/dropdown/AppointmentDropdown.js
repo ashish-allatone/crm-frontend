@@ -10,6 +10,13 @@ const AppointmentDropdown = () => {
       {/* <Link to="/appointment/today" className="dropdown-item">
         <FaCalendarCheck className="icon" /> Today
       </Link> */}
+
+       {hasPermission("Appointment", "VIEW") && (
+        <Link to="/appointment/all" className="dropdown-item">
+          <FaCalendarCheck className="icon" /> All Appointments
+        </Link>
+      )}
+
       {hasPermission("Appointment", "VIEW") && (
   <Link to="/appointment/today" className="dropdown-item">
     <FaCalendarCheck className="icon" /> Today

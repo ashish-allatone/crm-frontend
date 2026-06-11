@@ -251,7 +251,7 @@ const Users = () => {
           </button> */}
           {hasPermission("Users", "ADD") && (
   <button className="btn btn-light" onClick={openAdd}>
-    + Add New User
+    ➕ Add New User
   </button>
 )}
         </div>

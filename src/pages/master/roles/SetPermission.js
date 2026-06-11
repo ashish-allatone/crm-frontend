@@ -32,6 +32,7 @@ const SetPermission = () => {
   { module: "Organization", canView: false, canAdd: false, canEdit: false },
   { module: "Insurance", canView: false, canAdd: false, canEdit: false },
   { module: "Service Provider", canView: false, canAdd: false, canEdit: false },
+  { module: "Diagnostic Center", canView: false, canAdd: false, canEdit: false },
   { module: "Currency", canView: false, canAdd: false, canEdit: false },
   { module: "Users", canView: false, canAdd: false, canEdit: false }, 
   { module: "Roles", canView: false, canAdd: false, canEdit: false },

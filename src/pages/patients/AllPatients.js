@@ -176,12 +176,18 @@ const AllPatients = () => {
                     Organization Name {getArrow("org")}
                   </th>
 
-                  <th
+                  {/* <th
                     onClick={() => handleSort("provider")}
                     style={{ cursor: "pointer" }}
                   >
                     Services Provider {getArrow("provider")}
-                  </th>
+                  </th> */}
+                  <th
+  onClick={() => handleSort("dc")}
+  style={{ cursor: "pointer" }}
+>
+  Diagnostic Center {getArrow("dc")}
+</th>
 
                   <th>Insurance</th>
 
@@ -317,7 +323,7 @@ const AllPatients = () => {
                       {p.age} / {p.gender}
                     </td>
                     <td>{p.organizationName}</td>
-                    <td>{p.serviceProviderName}</td>
+                    <td>{p.diagnosticCenterName || "-"}</td>
                     <td>{p.insuranceName}</td>
                     {/* <td>{p.approval}</td> */}
                     <td>{p.appointmentDate}</td>

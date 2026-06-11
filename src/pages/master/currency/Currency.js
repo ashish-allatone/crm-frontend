@@ -179,7 +179,7 @@ const handleSubmit = async () => {
       setShowModal(true);
     }}
   >
-    + Add New Currency
+    ➕ Add New Currency
   </button>
 )}
         </div>

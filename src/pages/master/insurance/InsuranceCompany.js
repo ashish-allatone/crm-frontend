@@ -204,7 +204,7 @@ const canViewOrg = hasPermission("Organization", "VIEW");
       setShowModal(true);
     }}
   >
-    + Add New Insurance
+    ➕ Add New Insurance
   </button>
 )}
         </div>

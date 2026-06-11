@@ -128,7 +128,7 @@ const endEntry = Math.min(currentPage * entries, totalPages * entries);
     className="btn btn-light"
     onClick={() => navigate("/add-organization")}
   >
-    Add New Organization
+    ➕ Add New Organization
   </button>
 )}
         </div>

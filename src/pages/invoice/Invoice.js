@@ -393,7 +393,59 @@ const Invoice = () => {
                       <b>Due Date:</b> {selectedInvoice.dueDate}
                     </div>
 
+                    
+
                     <hr />
+
+                    <h6 className="mb-3">
+  Patient Invoice Details
+</h6>
+
+<table className="table table-bordered">
+  <thead>
+    <tr>
+      <th>Patient Name</th>
+      <th>Visit Date</th>
+      <th>Package Amount</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    {selectedInvoice.items?.length > 0 ? (
+
+      selectedInvoice.items.map((item, index) => (
+
+        <tr key={index}>
+
+          <td>
+            {item.patientName}
+          </td>
+
+          <td>
+            {item.visitDate}
+          </td>
+
+          <td>
+            ₹ {item.packageAmount}
+          </td>
+
+        </tr>
+
+      ))
+
+    ) : (
+
+      <tr>
+        <td colSpan="3" className="text-center">
+          No invoice items found
+        </td>
+      </tr>
+
+    )}
+
+  </tbody>
+</table>
 
                     <table className="table table-bordered">
                       <thead>

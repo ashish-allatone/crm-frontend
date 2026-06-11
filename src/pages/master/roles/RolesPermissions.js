@@ -202,7 +202,7 @@ const hasPermission = (module, action) => {
       setShowModal(true);
     }}
   >
-    + Add New Roles
+    ➕ Add New Roles
   </button>
 )}
         </div>
