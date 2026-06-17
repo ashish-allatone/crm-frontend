@@ -224,6 +224,7 @@
 //   );
 // }
 import React, { useState } from "react";
+import api from "../services/api";
 // import "../styles/allPatients.css";
 
 // ── Injected Styles ───────────────────────────────────────────────────────────
@@ -706,10 +707,17 @@ export default function Login() {
   //   }
   // };
   const handleLogin = async () => {
-  // validation (UI wala same rahega)
+  // validation (UI same)
   const e = {};
-  if (!form.username.trim()) e.username = "Username is required.";
-  if (!form.password) e.password = "Password is required.";
+
+  if (!form.username.trim()) {
+    e.username = "Username is required.";
+  }
+
+  if (!form.password) {
+    e.password = "Password is required.";
+  }
+
   if (Object.keys(e).length) {
     setErrors(e);
     return;
@@ -719,61 +727,29 @@ export default function Login() {
 
   try {
     // ✅ LOGIN
-    const res = await fetch("http://localhost:9090/crm/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(form),
-    });
+    const res = await api.post("/auth/login", form);
 
-    // if (!res.ok) {
-    //   const errorMsg = await res.text();
-    //   alert(errorMsg || "Invalid username or password");
-    //   setStatus("idle");
-    //   return;
-    // }
-    if (!res.ok) {
-  const errorData = await res.json();
-  alert(errorData.message || "Login failed");
-  setStatus("idle");
-  return;
-}
-
-    const token = await res.text();
+    const token = res.data;
     localStorage.setItem("token", token);
 
     // ✅ USER FETCH
-    const userRes = await fetch("http://localhost:9090/crm/users/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const userRes = await api.get("/users/me");
 
-    if (!userRes.ok) {
-      alert("Failed to fetch user");
-      setStatus("idle");
-      return;
-    }
+    const userData = userRes.data;
 
-    const userData = await userRes.json();
-    localStorage.setItem("user", JSON.stringify(userData.data));
+    localStorage.setItem(
+      "user",
+      JSON.stringify(userData.data)
+    );
 
     const roleId = userData.data.roles[0].id;
 
     // ✅ PERMISSIONS FETCH
-    const permRes = await fetch(
-      `http://localhost:9090/crm/permissions/${roleId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+    const permRes = await api.get(
+      `/permissions/${roleId}`
     );
 
-    if (!permRes.ok) {
-      alert("Failed to load permissions");
-      setStatus("idle");
-      return;
-    }
-
-    const permData = await permRes.json();
+    const permData = permRes.data;
 
     localStorage.setItem(
       "permissions",
@@ -782,12 +758,21 @@ export default function Login() {
 
     // ✅ SUCCESS UI + REDIRECT
     setStatus("success");
+
     setTimeout(() => {
-      window.location.href = "/";
+      // window.location.href = "/"; For Localhost
+      window.location.href = "/crm";
     }, 800);
 
   } catch (err) {
-    alert("Server error. Please try again.");
+
+    const errorMessage =
+      err.response?.data?.message ||
+      err.response?.data ||
+      "Server error. Please try again.";
+
+    alert(errorMessage);
+
     setStatus("idle");
   }
 };

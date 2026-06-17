@@ -59,7 +59,7 @@ function App() {
   const token = localStorage.getItem("token");
 
   return (
-    <Router>
+    <Router basename="/crm">
       {/* Navbar only after login */}
       {token && <Navbar />}
 
