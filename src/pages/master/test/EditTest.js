@@ -4,12 +4,16 @@ import "../../../styles/addPatient.css";
 // import { tests } from "../../../data/tests";
 import { getTestById, updateTest } from "../../../services/testService";
 import { getOrganizationsAll } from "../../../services/organizationService";
+import { getCurrentUser } from "../../../services/userService";
 
 const EditTest = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   // const test = tests.find((t) => t.id === Number(id));
+
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
  const [form, setForm] = useState({});
  const [organizations, setOrganizations] = useState([]);
@@ -20,6 +24,31 @@ const EditTest = () => {
    };
    loadOrgs();
  }, []);
+
+ useEffect(() => {
+  const loadCurrentUser = async () => {
+    try {
+
+      const res = await getCurrentUser();
+
+      const user = res.data.data;
+
+      setCurrentUser(user);
+
+      const admin = user.roles?.some(
+        (r) => r.name.toLowerCase() === "admin"
+      );
+
+      setIsAdmin(admin);
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadCurrentUser();
+
+}, []);
 
 useEffect(() => {
   const loadTest = async () => {
@@ -90,7 +119,7 @@ const handleSubmit = async () => {
             <div className="col-md-6">
               <label>Test For Organization</label>
 
-              <select
+              {/* <select
   className="form-control"
   name="organization"
   value={form.organization}
@@ -103,6 +132,29 @@ const handleSubmit = async () => {
       {o.organizationName}
     </option>
   ))}
+</select> */}
+<select
+  className="form-control"
+  name="organization"
+  value={form.organization}
+  onChange={handleChange}
+  disabled={!isAdmin}
+>
+  {isAdmin ? (
+    <>
+      <option value="">Select Organization</option>
+
+      {organizations.map((o) => (
+        <option key={o.id} value={o.id}>
+          {o.organizationName}
+        </option>
+      ))}
+    </>
+  ) : (
+    <option value={currentUser?.organization?.id}>
+      {currentUser?.organization?.organizationName}
+    </option>
+  )}
 </select>
             </div>
 

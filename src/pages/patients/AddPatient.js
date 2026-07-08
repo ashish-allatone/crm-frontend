@@ -8,6 +8,7 @@ import { getAllTests } from "../../services/testService";
 import { getAllCurrencies } from "../../services/currencyService";
 import { hasPermission } from "../permissionUtil";
 import { useLocation } from "../../hooks/useLocation";
+import { getCurrentUser } from "../../services/userService";
 
 const AddPatient = () => {
   const canViewOrg = hasPermission("Organization", "VIEW");
@@ -16,6 +17,9 @@ const AddPatient = () => {
   const canViewInsurance = hasPermission("Insurance", "VIEW");
   const navigate = useNavigate();
   const { countries, states, cities, loadStates, loadCities } = useLocation();
+
+  const [currentUser, setCurrentUser] = useState(null);
+const [isAdmin, setIsAdmin] = useState(false);
 
   const [form, setForm] = useState({
     title: "",
@@ -63,6 +67,41 @@ const AddPatient = () => {
     };
     loadOrgs();
   }, [canViewOrg]);
+
+
+  useEffect(() => {
+  const loadCurrentUser = async () => {
+    try {
+      const res = await getCurrentUser();
+
+      setCurrentUser(res.data.data);
+
+      const admin =
+        res.data.data.roles?.some(
+          (r) => r.name?.toLowerCase() === "admin"
+        );
+
+      setIsAdmin(admin);
+
+      // Non-admin => organization auto select
+      if (
+        !admin &&
+        res.data.data.organization
+      ) {
+        setForm((prev) => ({
+          ...prev,
+          organizationId:
+            res.data.data.organization.id,
+        }));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadCurrentUser();
+}, []);
+
   const [insurances, setInsurances] = useState([]);
   // useEffect(() => {
   //   const loadInsurance = async () => {
@@ -76,17 +115,45 @@ const AddPatient = () => {
       setInsurances([]);
       return;
     }
+    // const loadInsurance = async () => {
+    //   try {
+    //     const res = await getAllInsurances();
+    //     setInsurances(res.data.data || []);
+    //   } catch (err) {
+    //     console.warn("Insurance access denied");
+    //     setInsurances([]);
+    //   }
+    // };
     const loadInsurance = async () => {
-      try {
-        const res = await getAllInsurances();
-        setInsurances(res.data.data || []);
-      } catch (err) {
-        console.warn("Insurance access denied");
-        setInsurances([]);
-      }
-    };
+  try {
+    const res = await getAllInsurances();
+    console.log("Insurance API Response => ", res.data);
+
+    let insuranceList = res.data.data || [];
+
+    // Non Admin => only own organization insurances
+    if (
+      currentUser &&
+      !isAdmin &&
+      currentUser.organization
+    ) {
+      insuranceList = insuranceList.filter(
+        (i) =>
+          i.organizationId ===
+          currentUser.organization.id
+      );
+    }
+
+    setInsurances(insuranceList);
+
+  } catch (err) {
+    console.warn("Insurance access denied");
+    setInsurances([]);
+  }
+};
     loadInsurance();
-  }, [canViewInsurance]);
+  }, [canViewInsurance , currentUser,
+  isAdmin]);
 
   const [allTests, setAllTests] = useState([]);
   // useEffect(() => {
@@ -506,7 +573,7 @@ const AddPatient = () => {
               />
             </div>
 
-            <div className="col-md-6">
+            {/* <div className="col-md-6">
               <label>Select Organization</label>
               {!canViewOrg ? (
                 <input
@@ -530,7 +597,45 @@ const AddPatient = () => {
                   ))}
                 </select>
               )}
-            </div>
+            </div> */}
+            <div className="col-md-6">
+  <label>Select Organization</label>
+
+  {!canViewOrg ? (
+    <input
+      className="form-control"
+      value="No Organization Access"
+      disabled
+    />
+  ) : isAdmin ? (
+
+    <select
+      className="form-control"
+      name="organizationId"
+      value={form.organizationId}
+      onChange={handleChange}
+    >
+      <option value="">Select Organization</option>
+
+      {organizations.map((o) => (
+        <option key={o.id} value={o.id}>
+          {o.organizationName}
+        </option>
+      ))}
+    </select>
+
+  ) : (
+
+    <input
+      className="form-control"
+      value={
+        currentUser?.organization?.organizationName || ""
+      }
+      disabled
+    />
+
+  )}
+</div>
 
             <div className="col-md-6">
               <label>Insurance Company</label>
@@ -547,7 +652,7 @@ const AddPatient = () => {
                   value={form.insuranceId}
                   onChange={handleChange}
                 >
-                  <option value="">All</option>
+                  <option value="">Select Insurance</option>
 
                   {insurances.map((i) => (
                     <option key={i.id} value={i.id}>

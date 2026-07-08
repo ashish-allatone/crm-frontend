@@ -343,6 +343,25 @@ const loginStyles = `
     gap: 10px;
     margin-bottom: 2.25rem;
   }
+    .lp-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.lp-logo-img {
+  width: 120px;
+  height: auto;
+  margin-bottom: 12px;
+}
+
+.lp-logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: #6f3c97;
+}
 
   .lp-logo-icon {
     width: 36px;
@@ -835,13 +854,31 @@ export default function Login() {
           <div className="lp-right">
 
             {/* Logo */}
-            <div className="lp-logo">
+            {/* <div className="lp-logo">
               <div className="lp-logo-icon"><IconCrossWhite /></div>
               <span className="lp-logo-text">MediCore</span>
-            </div>
+            </div> */}
+            <div className="lp-logo">
+  <img
+  src={process.env.PUBLIC_URL + "/healncare-logo.jpeg"}
+  alt="Heal N Care"
+  className="lp-logo-img"
+/>
 
-            <h2 className="lp-title">Welcome back</h2>
-            <p className="lp-desc">Sign in to your hospital dashboard</p>
+  {/* <span className="lp-logo-text">
+    HEAL N CARE
+  </span> */}
+</div>
+
+            {/* <h2 className="lp-title">Welcome back</h2>
+            <p className="lp-desc">Sign in to your hospital dashboard</p> */}
+            <h2 className="lp-title">
+  Welcome to Heal N Care
+</h2>
+
+<p className="lp-desc">
+  Sign in to continue to your CRM Dashboard
+</p>
 
             {/* Username — name="username" preserved from your original */}
             <div className="lp-form-group">

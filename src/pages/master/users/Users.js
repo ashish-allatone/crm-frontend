@@ -10,10 +10,11 @@ import {
   toggleStatus,
 } from "../../../services/userService";
 
+import { getOrganizationsAll } from "../../../services/organizationService";
+
 import { hasPermission } from "../../permissionUtil";
 
 const Users = () => {
-   
   const [search, setSearch] = useState("");
   const [entries, setEntries] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,6 +32,8 @@ const Users = () => {
   const [users, setUsers] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [roles, setRoles] = useState([]);
+
+  const [organizations, setOrganizations] = useState([]);
 
   const token = localStorage.getItem("token");
 
@@ -53,6 +56,14 @@ const Users = () => {
     getRoles().then((res) => setRoles(res.data.data || []));
   }, []);
 
+  useEffect(() => {
+  getOrganizationsAll()
+    .then((res) => {
+      setOrganizations(res.data.data || []);
+    })
+    .catch(console.error);
+}, []);
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -65,6 +76,7 @@ const Users = () => {
     // role: "",
     // roleId: "",
     roleName: "",
+    organizationId: "",
     address: "",
     password: "",
   });
@@ -106,6 +118,7 @@ const Users = () => {
       dob: "",
       // role: "",
       roleId: "",
+      organizationId: "",
       address: "",
       password: "",
     });
@@ -128,6 +141,8 @@ const Users = () => {
       // role: user.roles?.[0]?.name || "", // ✅ IMPORTANT
       // roleId: user.roles?.[0]?.id,
       roleName: user.roles?.[0]?.name || "",
+      organizationId:
+  user.organization?.id || "",
       address: user.address || "",
       password: "", // blank
     });
@@ -156,9 +171,9 @@ const Users = () => {
     try {
       let res;
       const payload = {
-  ...form,
-  role: form.roleName   // 🔥 IMPORTANT
-};
+        ...form,
+        role: form.roleName, // 🔥 IMPORTANT
+      };
 
       if (editData) {
         res = await updateUser(editData.id, payload);
@@ -236,9 +251,7 @@ const Users = () => {
   };
 
   return (
-    
     <div className="container-fluid mt-3">
-      
       <div className="card">
         <div
           className="card-header d-flex justify-content-between align-items-center"
@@ -250,10 +263,10 @@ const Users = () => {
             + Add New User
           </button> */}
           {hasPermission("Users", "ADD") && (
-  <button className="btn btn-light" onClick={openAdd}>
-    ➕ Add New User
-  </button>
-)}
+            <button className="btn btn-light" onClick={openAdd}>
+              ➕ Add New User
+            </button>
+          )}
         </div>
 
         <div className="card-body">
@@ -330,6 +343,12 @@ const Users = () => {
                   >
                     Role {getArrow("role")}
                   </th>
+                  <th
+                    onClick={() => handleSort("organization")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    Organization {getArrow("organization")}
+                  </th>
                 </tr>
               </thead>
 
@@ -344,10 +363,13 @@ const Users = () => {
                         Edit
                       </button> */}
                       {hasPermission("Users", "EDIT") && (
-  <button className="btn btn-info btn-sm me-2" onClick={() => openEdit(u)}>
-    Edit
-  </button>
-)}
+                        <button
+                          className="btn btn-info btn-sm me-2"
+                          onClick={() => openEdit(u)}
+                        >
+                          Edit
+                        </button>
+                      )}
 
                       {/* <button
                         className="btn btn-primary btn-sm"
@@ -359,16 +381,16 @@ const Users = () => {
                         🔒 Change Password
                       </button> */}
                       {hasPermission("Users", "EDIT") && (
-  <button
-    className="btn btn-primary btn-sm"
-    onClick={() => {
-      setEditData(u);
-      setShowPasswordModal(true);
-    }}
-  >
-    🔒 Change Password
-  </button>
-)}
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => {
+                            setEditData(u);
+                            setShowPasswordModal(true);
+                          }}
+                        >
+                          🔒 Change Password
+                        </button>
+                      )}
                     </td>
 
                     {/* <td>
@@ -391,6 +413,9 @@ const Users = () => {
                     <td>{u.mobile}</td>
 
                     <td>{u.roles?.[0]?.name}</td>
+                    <td>
+  {u.organization?.organizationName}
+</td>
                   </tr>
                 ))}
               </tbody>
@@ -580,21 +605,50 @@ const Users = () => {
                         </option>
                       ))}
                     </select> */}
-                    <select className="form-control"
-  value={form.roleName}
-  onChange={(e) =>
-    setForm({ ...form, roleName: e.target.value })
-  }
->
-  <option value="">Select Role</option>
+                    <select
+                      className="form-control"
+                      value={form.roleName}
+                      onChange={(e) =>
+                        setForm({ ...form, roleName: e.target.value })
+                      }
+                    >
+                      <option value="">Select Role</option>
 
-  {roles.map((r) => (
-    <option key={r.id} value={r.name}>
-      {r.name}
-    </option>
-  ))}
-</select>
+                      {roles.map((r) => (
+                        <option key={r.id} value={r.name}>
+                          {r.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
+                  <div className="col-md-6 mb-3">
+  <label>Organization</label>
+
+  <select
+    className="form-control"
+    value={form.organizationId}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        organizationId: e.target.value,
+      })
+    }
+  >
+    <option value="">
+      Select Organization
+    </option>
+
+    {organizations.map((o) => (
+      <option
+        key={o.id}
+        value={o.id}
+      >
+        {o.organizationName}
+      </option>
+    ))}
+  </select>
+</div>
 
                   <div className="col-md-12 mb-3">
                     <label>Address</label>
@@ -616,13 +670,13 @@ const Users = () => {
                   {editData ? "Update" : "Submit"}
                 </button> */}
                 {hasPermission("Users", editData ? "EDIT" : "ADD") && (
-  <button
-    className="btn btn-primary submit-btn"
-    onClick={handleSubmit}
-  >
-    {editData ? "Update" : "Submit"}
-  </button>
-)}
+                  <button
+                    className="btn btn-primary submit-btn"
+                    onClick={handleSubmit}
+                  >
+                    {editData ? "Update" : "Submit"}
+                  </button>
+                )}
 
                 <button
                   className="btn btn-danger"

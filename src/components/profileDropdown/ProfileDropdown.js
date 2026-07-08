@@ -8,7 +8,7 @@ const ProfileDropdown = ({ user }) => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    window.location.href = "/crm/login";
   };
 
   return (

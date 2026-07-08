@@ -9,8 +9,13 @@ import {
   deleteInsurance,
 } from "../../../services/insuranceService";
 
+import api from "../../../services/api";
+
+
 import { getOrganizationsAll } from "../../../services/organizationService";
 import { hasPermission } from "../../permissionUtil";
+
+import { getCurrentUser } from "../../../services/userService";
 
 const InsuranceCompany = () => {
   // const navigate = useNavigate();
@@ -29,6 +34,9 @@ const InsuranceCompany = () => {
 
   const [insurances, setInsurances] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
+
+  const [currentUser, setCurrentUser] = useState(null);
+const [isAdmin, setIsAdmin] = useState(false);
 
   const [form, setForm] = useState({
     insuranceName: "",
@@ -56,6 +64,37 @@ const InsuranceCompany = () => {
     }
   };
   loadOrgs();
+}, []);
+
+useEffect(() => {
+  const loadCurrentUser = async () => {
+    try {
+      const res = await getCurrentUser();
+
+      const user = res.data.data;
+
+      setCurrentUser(user);
+
+      const admin = user.roles?.some(
+        (r) => r.name?.toLowerCase() === "admin"
+      );
+
+      setIsAdmin(admin);
+
+      // Non-admin => organization auto set
+      if (!admin && user.organization) {
+        setForm((prev) => ({
+          ...prev,
+          organizationId: user.organization.id,
+        }));
+      }
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadCurrentUser();
 }, []);
 
   // const loadInsurances = async () => {
@@ -299,11 +338,19 @@ const canViewOrg = hasPermission("Organization", "VIEW");
     className="btn btn-info btn-sm"
     onClick={() => {
       setEditData(i);
+      // setForm({
+      //   insuranceName: i.insuranceName,
+      //   organizationId: i.organizationId || "",
+      //   file: null,
+      // });
       setForm({
-        insuranceName: i.insuranceName,
-        organizationId: i.organizationId || "",
-        file: null,
-      });
+  insuranceName: i.insuranceName,
+  organizationId:
+    !isAdmin && currentUser?.organization
+      ? currentUser.organization.id
+      : i.organizationId || "",
+  file: null,
+});
       setShowModal(true);
     }}
   >
@@ -341,7 +388,11 @@ const canViewOrg = hasPermission("Organization", "VIEW");
     className="btn btn-link"
     style={{ color: "#6c63ff" }}
     onClick={() =>
-      setPdfPreview(`http://localhost:9090/crm/insurances/file/${i.id}`)
+      // setPdfPreview(`http://localhost:9090/insurances/file/${i.id}`)
+      // setPdfPreview(`https://uatdms.healncare.in/crm-api/insurances/file/${i.id}`)
+      setPdfPreview(
+  `${api.defaults.baseURL}/insurances/file/${i.id}`
+)
     }
   >
     View
@@ -435,7 +486,7 @@ const canViewOrg = hasPermission("Organization", "VIEW");
                   />
                 </div>
 
-                <div className="mb-3">
+                {/* <div className="mb-3">
                   <label className="form-label">Organization</label>
                   {canViewOrg ? (
                   <select
@@ -458,7 +509,41 @@ const canViewOrg = hasPermission("Organization", "VIEW");
     disabled
   />
 )}
-                </div>
+                </div> */}
+                <div className="mb-3">
+  <label className="form-label">Organization</label>
+
+  {canViewOrg ? (
+    isAdmin ? (
+      <select
+        className="form-control"
+        name="organizationId"
+        value={form.organizationId}
+        onChange={handleChange}
+      >
+        <option value="">Select Organization</option>
+
+        {organizations.map((o) => (
+          <option key={o.id} value={o.id}>
+            {o.organizationName}
+          </option>
+        ))}
+      </select>
+    ) : (
+      <input
+        className="form-control"
+        value={currentUser?.organization?.organizationName || ""}
+        disabled
+      />
+    )
+  ) : (
+    <input
+      className="form-control"
+      value="No Organization Access"
+      disabled
+    />
+  )}
+</div>
 
                 <div className="mb-3">
                   <label className="form-label">Upload Insurance PDF</label>

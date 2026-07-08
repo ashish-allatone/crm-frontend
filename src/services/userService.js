@@ -31,3 +31,6 @@ export const changePassword = (id, data) =>
 // TOGGLE STATUS
 export const toggleStatus = (id) =>
   api.put(`/users/${id}/status`);
+
+export const getCurrentUser = () =>
+  api.get("/users/me");

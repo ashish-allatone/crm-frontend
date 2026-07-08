@@ -10,6 +10,7 @@ import { getAllTests } from "../../services/testService";
 import { getAllCurrencies } from "../../services/currencyService";
 import { hasPermission } from "../permissionUtil";
 import { useLocation } from "../../hooks/useLocation";
+import { getCurrentUser } from "../../services/userService";
 
 const EditPatient = () => {
   const { countries, states, cities, loadStates, loadCities } = useLocation();
@@ -24,6 +25,9 @@ const EditPatient = () => {
   const [insurances, setInsurances] = useState([]);
   const [testMaster, setTestMaster] = useState([]);
 
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   // useEffect(() => {
   //   const loadData = async () => {
   //     const orgRes = await getOrganizationsAll();
@@ -35,35 +39,89 @@ const EditPatient = () => {
 
   //   loadData();
   // }, []);
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     // 🔥 ORGANIZATION
+  //     if (canViewOrg) {
+  //       try {
+  //         const orgRes = await getOrganizationsAll();
+  //         setOrganizations(orgRes.data.data || []);
+  //       } catch {
+  //         setOrganizations([]);
+  //       }
+  //     } else {
+  //       setOrganizations([]);
+  //     }
+
+  //     // 🔥 INSURANCE
+  //     if (canViewInsurance) {
+  //       try {
+  //         const insRes = await getAllInsurances();
+  //         setInsurances(insRes.data.data || []);
+  //       } catch {
+  //         setInsurances([]);
+  //       }
+  //     } else {
+  //       setInsurances([]);
+  //     }
+  //   };
+
+  //   loadData();
+  // }, [canViewOrg, canViewInsurance]);
+
   useEffect(() => {
-    const loadData = async () => {
-      // 🔥 ORGANIZATION
-      if (canViewOrg) {
-        try {
-          const orgRes = await getOrganizationsAll();
-          setOrganizations(orgRes.data.data || []);
-        } catch {
-          setOrganizations([]);
-        }
-      } else {
+  const loadData = async () => {
+
+    // ORGANIZATION
+    if (canViewOrg) {
+      try {
+        const orgRes = await getOrganizationsAll();
+        setOrganizations(orgRes.data.data || []);
+      } catch {
         setOrganizations([]);
       }
+    } else {
+      setOrganizations([]);
+    }
 
-      // 🔥 INSURANCE
-      if (canViewInsurance) {
-        try {
-          const insRes = await getAllInsurances();
-          setInsurances(insRes.data.data || []);
-        } catch {
-          setInsurances([]);
+    // INSURANCE
+    if (canViewInsurance) {
+      try {
+        const insRes = await getAllInsurances();
+
+        let insuranceList = insRes.data.data || [];
+
+        // Non Admin -> only own org insurances
+        if (
+          currentUser &&
+          !isAdmin &&
+          currentUser.organization
+        ) {
+          insuranceList = insuranceList.filter(
+            (i) =>
+              i.organizationId ===
+              currentUser.organization.id
+          );
         }
-      } else {
+
+        setInsurances(insuranceList);
+
+      } catch {
         setInsurances([]);
       }
-    };
+    } else {
+      setInsurances([]);
+    }
+  };
 
-    loadData();
-  }, [canViewOrg, canViewInsurance]);
+  loadData();
+
+}, [
+  canViewOrg,
+  canViewInsurance,
+  currentUser,
+  isAdmin
+]);
 
   // useEffect(() => {
   //   const loadTests = async () => {
@@ -118,6 +176,27 @@ const EditPatient = () => {
 
     loadCurrencies();
   }, [canViewCurrency]);
+
+  useEffect(() => {
+  const loadCurrentUser = async () => {
+    try {
+      const res = await getCurrentUser();
+
+      setCurrentUser(res.data.data);
+
+      const admin = res.data.data.roles?.some(
+        (r) => r.name?.toLowerCase() === "admin"
+      );
+
+      setIsAdmin(admin);
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadCurrentUser();
+}, []);
 
   const [patient, setPatient] = useState({
     title: "",
@@ -589,7 +668,7 @@ const handleStateChange = (e) => {
               />
             </div>
 
-            <div className="col-md-6">
+            {/* <div className="col-md-6">
               <label>Select Organization</label>
               {!canViewOrg ? (
                 <input
@@ -613,7 +692,49 @@ const handleStateChange = (e) => {
                   ))}
                 </select>
               )}
-            </div>
+            </div> */}
+            <div className="col-md-6">
+  <label>Select Organization</label>
+
+  {!canViewOrg ? (
+    <input
+      className="form-control"
+      value="No Organization Access"
+      disabled
+    />
+  ) : isAdmin ? (
+
+    <select
+      className="form-control"
+      value={patient.organizationId}
+      onChange={(e) =>
+        setPatient({
+          ...patient,
+          organizationId: e.target.value,
+        })
+      }
+    >
+      <option value="">Select Organization</option>
+
+      {organizations.map((o) => (
+        <option key={o.id} value={o.id}>
+          {o.organizationName}
+        </option>
+      ))}
+    </select>
+
+  ) : (
+
+    <input
+      className="form-control"
+      value={
+        currentUser?.organization?.organizationName || ""
+      }
+      disabled
+    />
+
+  )}
+</div>
 
             <div className="col-md-6">
               <label>Insurance Company</label>
