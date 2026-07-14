@@ -214,9 +214,51 @@ const [isAdmin, setIsAdmin] = useState(false);
     },
   ]);
 
+  const calculateAge = (dob, ageType) => {
+  if (!dob) return "";
+
+  const birthDate = new Date(dob);
+  const today = new Date();
+
+  let years = today.getFullYear() - birthDate.getFullYear();
+  let months =
+    (today.getFullYear() - birthDate.getFullYear()) * 12 +
+    (today.getMonth() - birthDate.getMonth());
+
+  if (
+    today.getMonth() < birthDate.getMonth() ||
+    (today.getMonth() === birthDate.getMonth() &&
+      today.getDate() < birthDate.getDate())
+  ) {
+    years--;
+    months--;
+  }
+
+  return ageType === "MONTH"
+    ? months
+    : years;
+};
+
+  // const handleChange = (e) => {
+  //   setForm({ ...form, [e.target.name]: e.target.value });
+  // };
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const { name, value } = e.target;
+
+  let updatedForm = {
+    ...form,
+    [name]: value,
   };
+
+  if (name === "dob" || name === "ageType") {
+    updatedForm.age = calculateAge(
+      name === "dob" ? value : form.dob,
+      name === "ageType" ? value : form.ageType
+    );
+  }
+
+  setForm(updatedForm);
+};
 
   const handleTestChange = (index, field, value) => {
     const updated = [...tests];
@@ -346,7 +388,7 @@ const [isAdmin, setIsAdmin] = useState(false);
               <label>Mobile No.</label>
 
               <div className="d-flex">
-                <select
+                {/* <select
                   className="form-control code"
                   name="mobileCountryCode"
                   value={form.mobileCountryCode}
@@ -354,7 +396,24 @@ const [isAdmin, setIsAdmin] = useState(false);
                 >
                   <option>+0055</option>
                   <option>+91</option>
-                </select>
+                </select> */}
+                <select
+  className="form-control code"
+  name="mobileCountryCode"
+  value={form.mobileCountryCode}
+  onChange={handleChange}
+>
+  <option value="">Code</option>
+
+  {countries.map((country) => (
+    <option
+      key={country.iso2}
+      value={`+${country.phonecode}`}
+    >
+      {country.name} (+{country.phonecode})
+    </option>
+  ))}
+</select>
 
                 <input
                   type="text"
@@ -383,22 +442,22 @@ const [isAdmin, setIsAdmin] = useState(false);
 
               <div className="d-flex">
                 <input
-                  type="text"
-                  className="form-control"
-                  name="age"
-                  value={form.age}
-                  onChange={handleChange}
-                />
+  type="text"
+  className="form-control"
+  name="age"
+  value={form.age}
+  readOnly
+/>
 
                 <select
-                  className="form-control"
-                  name="ageType"
-                  value={form.ageType}
-                  onChange={handleChange}
-                >
-                  <option>Year</option>
-                  <option>Month</option>
-                </select>
+  className="form-control"
+  name="ageType"
+  value={form.ageType}
+  onChange={handleChange}
+>
+  <option value="YEAR">Years</option>
+  <option value="MONTH">Months</option>
+</select>
               </div>
             </div>
 

@@ -225,10 +225,18 @@ const EditPatient = () => {
       const data = res.data.data;
 
       // ✅ FIX HERE
+      // setPatient({
+      //   ...data,
+      //   currency: data.currency ? data.currency.trim() : "",
+      // });
       setPatient({
-        ...data,
-        currency: data.currency ? data.currency.trim() : "",
-      });
+  ...data,
+  currency: data.currency ? data.currency.trim() : "",
+  age: calculateAge(
+    data.dob,
+    data.ageType
+  ),
+});
 
        if (data.country) {
       await loadStates(data.country);
@@ -270,6 +278,31 @@ const EditPatient = () => {
 
   //   navigate("/patients");
   // };
+
+  const calculateAge = (dob, ageType) => {
+  if (!dob) return "";
+
+  const birthDate = new Date(dob);
+  const today = new Date();
+
+  let years = today.getFullYear() - birthDate.getFullYear();
+  let months =
+    (today.getFullYear() - birthDate.getFullYear()) * 12 +
+    (today.getMonth() - birthDate.getMonth());
+
+  if (
+    today.getMonth() < birthDate.getMonth() ||
+    (today.getMonth() === birthDate.getMonth() &&
+      today.getDate() < birthDate.getDate())
+  ) {
+    years--;
+    months--;
+  }
+
+  return ageType === "MONTH"
+    ? months
+    : years;
+};
   const handleUpdate = async () => {
     try {
       const payload = {
@@ -407,7 +440,7 @@ const handleStateChange = (e) => {
               <label>Mobile No.</label>
 
               <div className="d-flex">
-                <select
+                {/* <select
                   className="form-control code"
                   value={patient.mobileCountryCode}
                   onChange={(e) =>
@@ -419,7 +452,28 @@ const handleStateChange = (e) => {
                 >
                   <option>+0055</option>
                   <option>+91</option>
-                </select>
+                </select> */}
+                <select
+  className="form-control code"
+  value={patient.mobileCountryCode}
+  onChange={(e) =>
+    setPatient({
+      ...patient,
+      mobileCountryCode: e.target.value,
+    })
+  }
+>
+  <option value="">Code</option>
+
+  {countries.map((country) => (
+    <option
+      key={country.iso2}
+      value={`+${country.phonecode}`}
+    >
+      {country.name} (+{country.phonecode})
+    </option>
+  ))}
+</select>
 
                 <input
                   type="text"
@@ -439,9 +493,19 @@ const handleStateChange = (e) => {
                 type="date"
                 className="form-control"
                 value={patient.dob}
+                // onChange={(e) =>
+                //   setPatient({ ...patient, dob: e.target.value })
+                // }
                 onChange={(e) =>
-                  setPatient({ ...patient, dob: e.target.value })
-                }
+  setPatient({
+    ...patient,
+    dob: e.target.value,
+    age: calculateAge(
+      e.target.value,
+      patient.ageType
+    ),
+  })
+}
               />
             </div>
 
@@ -449,16 +513,22 @@ const handleStateChange = (e) => {
               <label>Age</label>
 
               <div className="d-flex">
-                <input
+                {/* <input
                   type="text"
                   className="form-control"
                   value={patient.age}
                   onChange={(e) =>
                     setPatient({ ...patient, age: e.target.value })
                   }
-                />
+                /> */}
+                <input
+  type="text"
+  className="form-control"
+  value={patient.age}
+  readOnly
+/>
 
-                <select
+                {/* <select
                   className="form-control"
                   value={patient.ageType}
                   onChange={(e) =>
@@ -467,7 +537,24 @@ const handleStateChange = (e) => {
                 >
                   <option>Year</option>
                   <option>Month</option>
-                </select>
+                </select> */}
+                <select
+  className="form-control"
+  value={patient.ageType}
+  onChange={(e) =>
+    setPatient({
+      ...patient,
+      ageType: e.target.value,
+      age: calculateAge(
+        patient.dob,
+        e.target.value
+      ),
+    })
+  }
+>
+  <option value="YEAR">Years</option>
+  <option value="MONTH">Months</option>
+</select>
               </div>
             </div>
 

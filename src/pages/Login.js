@@ -175,7 +175,7 @@
 //   return (
 //    <div className="vh-100 d-flex justify-content-center align-items-center">
 //       <div className="card" style={{ width: "400px" }}>
-        
+
 //         {/* HEADER same as Users */}
 //         <div
 //           className="card-header text-center"
@@ -223,7 +223,7 @@
 //     </div>
 //   );
 // }
-import React, { useState } from "react";
+import React, { useState , useEffect, useRef} from "react";
 import api from "../services/api";
 // import "../styles/allPatients.css";
 
@@ -526,89 +526,352 @@ const loginStyles = `
 // ── Hospital SVG Illustration ─────────────────────────────────────────────────
 function HospitalScene() {
   return (
-    <svg className="lp-svg" viewBox="0 0 420 600" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      className="lp-svg"
+      viewBox="0 0 420 600"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       {[120, 240, 360].map((y) => (
-        <line key={y} x1="0" y1={y} x2="420" y2={y} stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+        <line
+          key={y}
+          x1="0"
+          y1={y}
+          x2="420"
+          y2={y}
+          stroke="rgba(255,255,255,0.04)"
+          strokeWidth="1"
+        />
       ))}
       {[140, 280].map((x) => (
-        <line key={x} x1={x} y1="0" x2={x} y2="600" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+        <line
+          key={x}
+          x1={x}
+          y1="0"
+          x2={x}
+          y2="600"
+          stroke="rgba(255,255,255,0.04)"
+          strokeWidth="1"
+        />
       ))}
 
       {/* Building */}
-      <rect x="110" y="180" width="200" height="200" fill="rgba(255,255,255,0.06)" rx="4" />
-      <rect x="175" y="310" width="70"  height="70"  fill="rgba(255,255,255,0.08)" rx="3" />
+      <rect
+        x="110"
+        y="180"
+        width="200"
+        height="200"
+        fill="rgba(255,255,255,0.06)"
+        rx="4"
+      />
+      <rect
+        x="175"
+        y="310"
+        width="70"
+        height="70"
+        fill="rgba(255,255,255,0.08)"
+        rx="3"
+      />
 
       {/* Windows row 1 */}
-      {[{ x:130,o:.15},{x:175,o:.20},{x:220,o:.12},{x:265,o:.18}].map(({x,o})=>(
-        <rect key={x} x={x} y="200" width="30" height="25" fill={`rgba(91,191,255,${o})`} rx="3"/>
+      {[
+        { x: 130, o: 0.15 },
+        { x: 175, o: 0.2 },
+        { x: 220, o: 0.12 },
+        { x: 265, o: 0.18 },
+      ].map(({ x, o }) => (
+        <rect
+          key={x}
+          x={x}
+          y="200"
+          width="30"
+          height="25"
+          fill={`rgba(91,191,255,${o})`}
+          rx="3"
+        />
       ))}
       {/* Windows row 2 */}
-      {[{ x:130,o:.10},{x:175,o:.22},{x:220,o:.08},{x:265,o:.15}].map(({x,o})=>(
-        <rect key={x} x={x} y="245" width="30" height="25" fill={`rgba(91,191,255,${o})`} rx="3"/>
+      {[
+        { x: 130, o: 0.1 },
+        { x: 175, o: 0.22 },
+        { x: 220, o: 0.08 },
+        { x: 265, o: 0.15 },
+      ].map(({ x, o }) => (
+        <rect
+          key={x}
+          x={x}
+          y="245"
+          width="30"
+          height="25"
+          fill={`rgba(91,191,255,${o})`}
+          rx="3"
+        />
       ))}
       {/* Windows row 3 */}
-      <rect x="130" y="290" width="30" height="25" fill="rgba(91,191,255,0.14)" rx="3"/>
-      <rect x="265" y="290" width="30" height="25" fill="rgba(91,191,255,0.10)" rx="3"/>
+      <rect
+        x="130"
+        y="290"
+        width="30"
+        height="25"
+        fill="rgba(91,191,255,0.14)"
+        rx="3"
+      />
+      <rect
+        x="265"
+        y="290"
+        width="30"
+        height="25"
+        fill="rgba(91,191,255,0.10)"
+        rx="3"
+      />
 
       {/* Roof */}
-      <rect x="130" y="140" width="160" height="42" fill="rgba(255,255,255,0.07)" rx="3"/>
+      <rect
+        x="130"
+        y="140"
+        width="160"
+        height="42"
+        fill="rgba(255,255,255,0.07)"
+        rx="3"
+      />
 
       {/* Roof cross */}
-      <rect x="198" y="100" width="24" height="8"  fill="rgba(91,191,255,0.6)" rx="2"/>
-      <rect x="208" y="90"  width="8"  height="28" fill="rgba(91,191,255,0.6)" rx="2"/>
+      <rect
+        x="198"
+        y="100"
+        width="24"
+        height="8"
+        fill="rgba(91,191,255,0.6)"
+        rx="2"
+      />
+      <rect
+        x="208"
+        y="90"
+        width="8"
+        height="28"
+        fill="rgba(91,191,255,0.6)"
+        rx="2"
+      />
 
       {/* Flag */}
-      <line x1="210" y1="85" x2="210" y2="65" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5"/>
-      <rect x="210" y="65" width="18" height="11" fill="rgba(91,191,255,0.5)" rx="1"/>
+      <line
+        x1="210"
+        y1="85"
+        x2="210"
+        y2="65"
+        stroke="rgba(255,255,255,0.3)"
+        strokeWidth="1.5"
+      />
+      <rect
+        x="210"
+        y="65"
+        width="18"
+        height="11"
+        fill="rgba(91,191,255,0.5)"
+        rx="1"
+      />
 
       {/* Ambulance */}
-      <rect x="40" y="370" width="80" height="40" fill="rgba(255,255,255,0.08)" rx="5"/>
-      <rect x="40" y="370" width="28" height="40" fill="rgba(91,191,255,0.12)" rx="5"/>
-      {[55,102].map(cx=>(
+      <rect
+        x="40"
+        y="370"
+        width="80"
+        height="40"
+        fill="rgba(255,255,255,0.08)"
+        rx="5"
+      />
+      <rect
+        x="40"
+        y="370"
+        width="28"
+        height="40"
+        fill="rgba(91,191,255,0.12)"
+        rx="5"
+      />
+      {[55, 102].map((cx) => (
         <g key={cx}>
-          <circle cx={cx} cy="412" r="8" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5"/>
-          <circle cx={cx} cy="412" r="4" fill="rgba(255,255,255,0.2)"/>
+          <circle
+            cx={cx}
+            cy="412"
+            r="8"
+            fill="rgba(255,255,255,0.1)"
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth="1.5"
+          />
+          <circle cx={cx} cy="412" r="4" fill="rgba(255,255,255,0.2)" />
         </g>
       ))}
-      <rect x="80" y="381" width="14" height="4"  fill="rgba(91,191,255,0.5)" rx="1"/>
-      <rect x="85" y="376" width="4"  height="14" fill="rgba(91,191,255,0.5)" rx="1"/>
+      <rect
+        x="80"
+        y="381"
+        width="14"
+        height="4"
+        fill="rgba(91,191,255,0.5)"
+        rx="1"
+      />
+      <rect
+        x="85"
+        y="376"
+        width="4"
+        height="14"
+        fill="rgba(91,191,255,0.5)"
+        rx="1"
+      />
 
       {/* Data card – top right */}
-      <rect x="295" y="85" width="110" height="58" fill="rgba(255,255,255,0.06)" rx="8" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5"/>
-      <circle cx="313" cy="103" r="8" fill="rgba(91,191,255,0.2)"/>
-      <rect x="325" y="98"  width="55" height="5"  fill="rgba(255,255,255,0.25)" rx="2"/>
-      <rect x="325" y="108" width="35" height="4"  fill="rgba(255,255,255,0.12)" rx="2"/>
-      <rect x="305" y="120" width="85" height="14" fill="rgba(91,191,255,0.12)" rx="3"/>
-      <rect x="305" y="120" width="40" height="14" fill="rgba(91,191,255,0.25)" rx="3"/>
+      <rect
+        x="295"
+        y="85"
+        width="110"
+        height="58"
+        fill="rgba(255,255,255,0.06)"
+        rx="8"
+        stroke="rgba(255,255,255,0.1)"
+        strokeWidth="0.5"
+      />
+      <circle cx="313" cy="103" r="8" fill="rgba(91,191,255,0.2)" />
+      <rect
+        x="325"
+        y="98"
+        width="55"
+        height="5"
+        fill="rgba(255,255,255,0.25)"
+        rx="2"
+      />
+      <rect
+        x="325"
+        y="108"
+        width="35"
+        height="4"
+        fill="rgba(255,255,255,0.12)"
+        rx="2"
+      />
+      <rect
+        x="305"
+        y="120"
+        width="85"
+        height="14"
+        fill="rgba(91,191,255,0.12)"
+        rx="3"
+      />
+      <rect
+        x="305"
+        y="120"
+        width="40"
+        height="14"
+        fill="rgba(91,191,255,0.25)"
+        rx="3"
+      />
 
       {/* Data card – left mid */}
-      <rect x="15" y="200" width="85" height="70" fill="rgba(255,255,255,0.05)" rx="8" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5"/>
-      <rect x="25" y="212" width="30" height="4"  fill="rgba(255,255,255,0.2)"  rx="2"/>
-      <rect x="25" y="222" width="55" height="18" fill="rgba(91,191,255,0.15)" rx="3"/>
-      <text x="35" y="235" fontSize="11" fill="rgba(91,191,255,0.9)" fontFamily="DM Sans,sans-serif" fontWeight="500">98.4%</text>
-      <rect x="25" y="248" width="45" height="3"  fill="rgba(255,255,255,0.1)"  rx="2"/>
-      <rect x="25" y="255" width="32" height="3"  fill="rgba(255,255,255,0.07)" rx="2"/>
+      <rect
+        x="15"
+        y="200"
+        width="85"
+        height="70"
+        fill="rgba(255,255,255,0.05)"
+        rx="8"
+        stroke="rgba(255,255,255,0.08)"
+        strokeWidth="0.5"
+      />
+      <rect
+        x="25"
+        y="212"
+        width="30"
+        height="4"
+        fill="rgba(255,255,255,0.2)"
+        rx="2"
+      />
+      <rect
+        x="25"
+        y="222"
+        width="55"
+        height="18"
+        fill="rgba(91,191,255,0.15)"
+        rx="3"
+      />
+      <text
+        x="35"
+        y="235"
+        fontSize="11"
+        fill="rgba(91,191,255,0.9)"
+        fontFamily="DM Sans,sans-serif"
+        fontWeight="500"
+      >
+        98.4%
+      </text>
+      <rect
+        x="25"
+        y="248"
+        width="45"
+        height="3"
+        fill="rgba(255,255,255,0.1)"
+        rx="2"
+      />
+      <rect
+        x="25"
+        y="255"
+        width="32"
+        height="3"
+        fill="rgba(255,255,255,0.07)"
+        rx="2"
+      />
 
       {/* Heartbeat */}
-      <polyline points="15,450 55,450 70,420 85,480 100,430 115,450 160,450"
-        stroke="rgba(91,191,255,0.4)" strokeWidth="1.5" fill="none"
-        strokeLinecap="round" strokeLinejoin="round"/>
+      <polyline
+        points="15,450 55,450 70,420 85,480 100,430 115,450 160,450"
+        stroke="rgba(91,191,255,0.4)"
+        strokeWidth="1.5"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
 
       {/* Dots */}
-      <circle cx="310" cy="170" r="2"   fill="rgba(91,191,255,0.3)"/>
-      <circle cx="335" cy="180" r="1.5" fill="rgba(91,191,255,0.2)"/>
-      <circle cx="320" cy="195" r="1"   fill="rgba(91,191,255,0.15)"/>
-      <circle cx="70"  cy="155" r="2"   fill="rgba(255,255,255,0.1)"/>
-      <circle cx="88"  cy="168" r="1.5" fill="rgba(255,255,255,0.08)"/>
+      <circle cx="310" cy="170" r="2" fill="rgba(91,191,255,0.3)" />
+      <circle cx="335" cy="180" r="1.5" fill="rgba(91,191,255,0.2)" />
+      <circle cx="320" cy="195" r="1" fill="rgba(91,191,255,0.15)" />
+      <circle cx="70" cy="155" r="2" fill="rgba(255,255,255,0.1)" />
+      <circle cx="88" cy="168" r="1.5" fill="rgba(255,255,255,0.08)" />
 
       {/* Road */}
-      <line x1="0" y1="480" x2="420" y2="480" stroke="rgba(255,255,255,0.06)" strokeWidth="1"/>
+      <line
+        x1="0"
+        y1="480"
+        x2="420"
+        y2="480"
+        stroke="rgba(255,255,255,0.06)"
+        strokeWidth="1"
+      />
 
       {/* Trees */}
-      <ellipse cx="360" cy="440" rx="16" ry="20" fill="rgba(255,255,255,0.05)"/>
-      <rect    x="357"  y="455"  width="6"  height="18" fill="rgba(255,255,255,0.05)"/>
-      <ellipse cx="385" cy="445" rx="13" ry="16" fill="rgba(255,255,255,0.04)"/>
-      <rect    x="382"  y="457"  width="5"  height="15" fill="rgba(255,255,255,0.04)"/>
+      <ellipse
+        cx="360"
+        cy="440"
+        rx="16"
+        ry="20"
+        fill="rgba(255,255,255,0.05)"
+      />
+      <rect
+        x="357"
+        y="455"
+        width="6"
+        height="18"
+        fill="rgba(255,255,255,0.05)"
+      />
+      <ellipse
+        cx="385"
+        cy="445"
+        rx="13"
+        ry="16"
+        fill="rgba(255,255,255,0.04)"
+      />
+      <rect
+        x="382"
+        y="457"
+        width="5"
+        height="15"
+        fill="rgba(255,255,255,0.04)"
+      />
     </svg>
   );
 }
@@ -616,59 +879,156 @@ function HospitalScene() {
 // ── Inline SVG Icons ──────────────────────────────────────────────────────────
 const IconCrossWhite = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-    <rect x="7" y="1" width="4" height="16" rx="1.5" fill="white"/>
-    <rect x="1" y="7" width="16" height="4" rx="1.5" fill="white"/>
+    <rect x="7" y="1" width="4" height="16" rx="1.5" fill="white" />
+    <rect x="1" y="7" width="16" height="4" rx="1.5" fill="white" />
   </svg>
 );
 const IconCrossBlue = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-    <rect x="5.5" y="1"   width="3"  height="12" rx="1" fill="rgba(91,191,255,0.9)"/>
-    <rect x="1"   y="5.5" width="12" height="3"  rx="1" fill="rgba(91,191,255,0.9)"/>
+    <rect
+      x="5.5"
+      y="1"
+      width="3"
+      height="12"
+      rx="1"
+      fill="rgba(91,191,255,0.9)"
+    />
+    <rect
+      x="1"
+      y="5.5"
+      width="12"
+      height="3"
+      rx="1"
+      fill="rgba(91,191,255,0.9)"
+    />
   </svg>
 );
 const IconUser = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <circle cx="8" cy="5.5" r="3" stroke="currentColor" strokeWidth="1.3"/>
-    <path d="M2 13c0-2.5 2.7-4.5 6-4.5s6 2 6 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <circle cx="8" cy="5.5" r="3" stroke="currentColor" strokeWidth="1.3" />
+    <path
+      d="M2 13c0-2.5 2.7-4.5 6-4.5s6 2 6 4.5"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+    />
   </svg>
 );
 const IconLock = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
-    <path d="M5 7V5a3 3 0 1 1 6 0v2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-    <circle cx="8" cy="10.5" r="1" fill="currentColor"/>
+    <rect
+      x="3"
+      y="7"
+      width="10"
+      height="7"
+      rx="1.5"
+      stroke="currentColor"
+      strokeWidth="1.3"
+    />
+    <path
+      d="M5 7V5a3 3 0 1 1 6 0v2"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+    />
+    <circle cx="8" cy="10.5" r="1" fill="currentColor" />
   </svg>
 );
 const IconEyeOpen = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z" stroke="currentColor" strokeWidth="1.3"/>
-    <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/>
+    <path
+      d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z"
+      stroke="currentColor"
+      strokeWidth="1.3"
+    />
+    <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3" />
   </svg>
 );
 const IconEyeClosed = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path d="M2 2l12 12M6.5 6.6A2 2 0 0 0 9.4 9.5M4 4.3C2.4 5.4 1 8 1 8s2.5 5 7 5c1.4 0 2.6-.4 3.7-1M7 3.1C7.3 3 7.7 3 8 3c4.5 0 7 5 7 5s-.6 1.2-1.6 2.4"
-      stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    <path
+      d="M2 2l12 12M6.5 6.6A2 2 0 0 0 9.4 9.5M4 4.3C2.4 5.4 1 8 1 8s2.5 5 7 5c1.4 0 2.6-.4 3.7-1M7 3.1C7.3 3 7.7 3 8 3c4.5 0 7 5 7 5s-.6 1.2-1.6 2.4"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+    />
   </svg>
 );
 const IconArrow = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path d="M6 3H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3" stroke="white" strokeWidth="1.3" strokeLinecap="round"/>
-    <path d="M10 11l3-3-3-3" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-    <line x1="13" y1="8" x2="6" y2="8" stroke="white" strokeWidth="1.3" strokeLinecap="round"/>
+    <path
+      d="M6 3H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3"
+      stroke="white"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+    />
+    <path
+      d="M10 11l3-3-3-3"
+      stroke="white"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <line
+      x1="13"
+      y1="8"
+      x2="6"
+      y2="8"
+      stroke="white"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+    />
   </svg>
 );
 const IconCheck = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <path d="M3 8l4 4 6-7" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path
+      d="M3 8l4 4 6-7"
+      stroke="white"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 const IconSSO = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-    <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3"/>
-    <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3"/>
-    <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3"/>
-    <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3"/>
+    <rect
+      x="2"
+      y="2"
+      width="5"
+      height="5"
+      rx="1"
+      stroke="currentColor"
+      strokeWidth="1.3"
+    />
+    <rect
+      x="9"
+      y="2"
+      width="5"
+      height="5"
+      rx="1"
+      stroke="currentColor"
+      strokeWidth="1.3"
+    />
+    <rect
+      x="2"
+      y="9"
+      width="5"
+      height="5"
+      rx="1"
+      stroke="currentColor"
+      strokeWidth="1.3"
+    />
+    <rect
+      x="9"
+      y="9"
+      width="5"
+      height="5"
+      rx="1"
+      stroke="currentColor"
+      strokeWidth="1.3"
+    />
   </svg>
 );
 
@@ -678,9 +1038,21 @@ export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
 
   // ── new UI state ──
-  const [showPass, setShowPass]   = useState(false);
-  const [status,   setStatus]     = useState("idle"); // idle | loading | success
-  const [errors,   setErrors]     = useState({});
+  const [showPass, setShowPass] = useState(false);
+  const [status, setStatus] = useState("idle"); // idle | loading | success
+  const [errors, setErrors] = useState({});
+
+  const [showOtpScreen, setShowOtpScreen] = useState(false);
+
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+
+  const [countdown, setCountdown] = useState(30);
+
+  const [canResend, setCanResend] = useState(false);
+
+  const [loginUsername, setLoginUsername] = useState("");
+
+  const otpRefs = useRef([]);
 
   // ── your original handler (unchanged) ──
   const handleChange = (e) => {
@@ -688,70 +1060,135 @@ export default function Login() {
     setErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
   };
 
-  // ── your original API call (unchanged) — wrapped with UI state ──
-  // const handleLogin = async () => {
-  //   // client-side validation
-  //   const e = {};
-  //   if (!form.username.trim()) e.username = "Username is required.";
-  //   if (!form.password)        e.password = "Password is required.";
-  //   if (Object.keys(e).length) { setErrors(e); return; }
-
-  //   setStatus("loading");
-
-  //   try {
-  //     const res = await fetch("http://localhost:8080/api/auth/login", {
-  //     // const res = await fetch("https://uatdms.healncare.in/api/auth/login", {
-  //       // https://uatdms.healncare.in
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(form),
-  //     });
-
-  //     if (!res.ok) {
-  //       const errorMsg = await res.text();
-  //       alert(errorMsg || "Invalid username or password");
-  //       setStatus("idle");
-  //       return;
-  //     }
-
-  //     const token = await res.text();
-  //     localStorage.setItem("token", token);
-
-  //     setStatus("success");
-  //     setTimeout(() => { window.location.href = "/"; }, 800);
-
-  //   } catch (err) {
-  //     alert("Server error. Please try again.");
-  //     setStatus("idle");
-  //   }
-  // };
   const handleLogin = async () => {
-  // validation (UI same)
-  const e = {};
+    // validation (UI same)
+    const e = {};
 
-  if (!form.username.trim()) {
-    e.username = "Username is required.";
-  }
+    if (!form.username.trim()) {
+      e.username = "Username is required.";
+    }
 
-  if (!form.password) {
-    e.password = "Password is required.";
-  }
+    if (!form.password) {
+      e.password = "Password is required.";
+    }
 
-  if (Object.keys(e).length) {
-    setErrors(e);
+    if (Object.keys(e).length) {
+      setErrors(e);
+      return;
+    }
+
+    setStatus("loading");
+
+    try {
+      const res = await api.post("/auth/login", form);
+
+      if (res.data.success && res.data.otpRequired) {
+        setLoginUsername(form.username);
+
+        setCountdown(30);
+        setCanResend(false);
+
+        setShowOtpScreen(true);
+
+        setStatus("idle");
+
+        alert(res.data.message);
+
+        return;
+      }
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data ||
+        "Server error. Please try again.";
+
+      alert(errorMessage);
+
+      setStatus("idle");
+    }
+  };
+
+  const handleOtpChange = (index, value) => {
+
+    if (!/^\d?$/.test(value)) return;
+
+    const newOtp = [...otp];
+
+    newOtp[index] = value;
+
+    setOtp(newOtp);
+
+    if (value && index < 5) {
+
+        otpRefs.current[index + 1].focus();
+
+    }
+
+};
+
+const handleOtpKeyDown = (index, e) => {
+
+    if (e.key === "Backspace") {
+
+        if (!otp[index] && index > 0) {
+
+            otpRefs.current[index - 1].focus();
+
+        }
+
+    }
+
+    if (e.key === "Enter") {
+
+        handleVerifyOtp();
+
+    }
+
+};
+
+const handleOtpPaste = (e) => {
+
+    e.preventDefault();
+
+    const pasted = e.clipboardData
+        .getData("text")
+        .replace(/\D/g, "")
+        .slice(0, 6);
+
+    if (!pasted) return;
+
+    const newOtp = [...otp];
+
+    pasted.split("").forEach((digit, i) => {
+
+        newOtp[i] = digit;
+
+    });
+
+    setOtp(newOtp);
+
+};
+
+  const handleVerifyOtp = async () => {
+
+  if (otp.join("").length !== 6) {
+    alert("Please enter OTP");
     return;
   }
 
   setStatus("loading");
 
   try {
-    // ✅ LOGIN
-    const res = await api.post("/auth/login", form);
 
-    const token = res.data;
-    localStorage.setItem("token", token);
+    const res = await api.post("/auth/verify-otp", {
+      username: loginUsername,
+      otp: otp.join("")
+    });
 
-    // ✅ USER FETCH
+    // JWT
+    localStorage.setItem("token", res.data.token);
+
+    // USER DETAILS
     const userRes = await api.get("/users/me");
 
     const userData = userRes.data;
@@ -763,23 +1200,19 @@ export default function Login() {
 
     const roleId = userData.data.roles[0].id;
 
-    // ✅ PERMISSIONS FETCH
-    const permRes = await api.get(
-      `/permissions/${roleId}`
-    );
-
-    const permData = permRes.data;
+    // PERMISSIONS
+    const permRes = await api.get(`/permissions/${roleId}`);
 
     localStorage.setItem(
       "permissions",
-      JSON.stringify(permData.data || [])
+      JSON.stringify(permRes.data.data || [])
     );
 
-    // ✅ SUCCESS UI + REDIRECT
     setStatus("success");
 
+    setOtp(["", "", "", "", "", ""]);
+
     setTimeout(() => {
-      // window.location.href = "/"; For Localhost
       window.location.href = "/crm";
     }, 800);
 
@@ -787,29 +1220,116 @@ export default function Login() {
 
     const errorMessage =
       err.response?.data?.message ||
-      err.response?.data ||
-      "Server error. Please try again.";
+      "Invalid OTP";
 
     alert(errorMessage);
 
     setStatus("idle");
   }
+
 };
+
+const handleResendOtp = async () => {
+
+    try {
+
+        const res = await api.post("/auth/resend-otp", {
+            username: loginUsername
+        });
+
+        // Clear previous OTP
+        setOtp(["", "", "", "", "", ""]);
+
+        // Focus first box again
+        setTimeout(() => {
+            otpRefs.current[0]?.focus();
+        }, 100);
+
+        setCountdown(30);
+        setCanResend(false);
+
+        alert(res.data.message);
+
+    } catch (err) {
+
+        alert(
+            err.response?.data?.message ||
+            "Unable to resend OTP"
+        );
+
+    }
+
+};
+
+useEffect(() => {
+
+    let interval;
+
+    if (showOtpScreen && !canResend) {
+
+        interval = setInterval(() => {
+
+            setCountdown((prev) => {
+
+                if (prev <= 1) {
+
+                    clearInterval(interval);
+
+                    setCanResend(true);
+
+                    return 0;
+
+                }
+
+                return prev - 1;
+
+            });
+
+        }, 1000);
+
+    }
+
+    return () => clearInterval(interval);
+
+}, [showOtpScreen, canResend]);
+
+useEffect(() => {
+
+    if(showOtpScreen){
+
+        setTimeout(() => {
+
+            otpRefs.current[0]?.focus();
+
+        },100);
+
+    }
+
+},[showOtpScreen]);
 
   // ── button label helper ──
   const btnLabel = () => {
     if (status === "loading") return "Signing in...";
-    if (status === "success") return <><IconCheck /> Signed in</>;
-    return <><IconArrow /> Login</>;
+    if (status === "success")
+      return (
+        <>
+          <IconCheck /> Signed in
+        </>
+      );
+    return (
+      <>
+        <IconArrow /> Login
+      </>
+    );
   };
 
   const btnClass = [
     "lp-btn",
     status === "loading" ? "lp-btn--loading" : "",
     status === "success" ? "lp-btn--success" : "",
-  ].filter(Boolean).join(" ");
-
-  
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <>
@@ -817,7 +1337,6 @@ export default function Login() {
 
       <div className="login-page">
         <div className="login-wrapper">
-
           {/* ══════════ LEFT PANEL ══════════ */}
           <div className="lp-left">
             <HospitalScene />
@@ -829,17 +1348,20 @@ export default function Login() {
               </div>
 
               <h1 className="lp-heading">
-                Smarter care<br />starts with better data
+                Smarter care
+                <br />
+                starts with better data
               </h1>
               <p className="lp-sub">
-                Manage patients, staff, and hospital operations from a single unified platform.
+                Manage patients, staff, and hospital operations from a single
+                unified platform.
               </p>
 
               <div className="lp-stats">
                 {[
-                  { num: "12k+",  label: "Patients managed" },
-                  { num: "98.4%", label: "Uptime"           },
-                  { num: "340+",  label: "Hospitals"        },
+                  { num: "12k+", label: "Patients managed" },
+                  { num: "98.4%", label: "Uptime" },
+                  { num: "340+", label: "Hospitals" },
                 ].map(({ num, label }) => (
                   <div className="lp-stat" key={label}>
                     <span className="lp-stat-num">{num}</span>
@@ -852,108 +1374,222 @@ export default function Login() {
 
           {/* ══════════ RIGHT PANEL ══════════ */}
           <div className="lp-right">
-
             {/* Logo */}
             {/* <div className="lp-logo">
               <div className="lp-logo-icon"><IconCrossWhite /></div>
               <span className="lp-logo-text">MediCore</span>
             </div> */}
             <div className="lp-logo">
-  <img
-  src={process.env.PUBLIC_URL + "/healncare-logo.jpeg"}
-  alt="Heal N Care"
-  className="lp-logo-img"
-/>
+              <img
+                src={process.env.PUBLIC_URL + "/healncare-logo.jpeg"}
+                alt="Heal N Care"
+                className="lp-logo-img"
+              />
 
-  {/* <span className="lp-logo-text">
+              {/* <span className="lp-logo-text">
     HEAL N CARE
   </span> */}
-</div>
+            </div>
 
             {/* <h2 className="lp-title">Welcome back</h2>
             <p className="lp-desc">Sign in to your hospital dashboard</p> */}
-            <h2 className="lp-title">
-  Welcome to Heal N Care
-</h2>
+            
+            {!showOtpScreen ? (
+              <>
+              <h2 className="lp-title">Welcome to Heal N Care</h2>
 
-<p className="lp-desc">
-  Sign in to continue to your CRM Dashboard
-</p>
+            <p className="lp-desc">Sign in to continue to your CRM Dashboard</p>
+                {/* Username — name="username" preserved from your original */}
+                <div className="lp-form-group">
+                  <label className="lp-label" htmlFor="username">
+                    Username
+                  </label>
+                  <div className="lp-input-wrap">
+                    <span className="lp-icon">
+                      <IconUser />
+                    </span>
+                    <input
+                      id="username"
+                      className="lp-input"
+                      type="text"
+                      name="username"
+                      placeholder="Enter username"
+                      value={form.username}
+                      onChange={handleChange}
+                      autoComplete="username"
+                    />
+                  </div>
+                  {errors.username && (
+                    <span className="lp-error">{errors.username}</span>
+                  )}
+                </div>
 
-            {/* Username — name="username" preserved from your original */}
-            <div className="lp-form-group">
-              <label className="lp-label" htmlFor="username">Username</label>
-              <div className="lp-input-wrap">
-                <span className="lp-icon"><IconUser /></span>
-                <input
-                  id="username"
-                  className="lp-input"
-                  type="text"
-                  name="username"
-                  placeholder="Enter username"
-                  value={form.username}
-                  onChange={handleChange}
-                  autoComplete="username"
-                />
-              </div>
-              {errors.username && <span className="lp-error">{errors.username}</span>}
-            </div>
+                {/* Password — name="password" preserved from your original */}
+                <div className="lp-form-group">
+                  <label className="lp-label" htmlFor="password">
+                    Password
+                  </label>
+                  <div className="lp-input-wrap">
+                    <span className="lp-icon">
+                      <IconLock />
+                    </span>
+                    <input
+                      id="password"
+                      className="lp-input"
+                      type={showPass ? "text" : "password"}
+                      name="password"
+                      placeholder="Enter password"
+                      value={form.password}
+                      onChange={handleChange}
+                      autoComplete="current-password"
+                    />
+                    <button
+                      className="lp-eye"
+                      type="button"
+                      onClick={() => setShowPass((v) => !v)}
+                      aria-label={showPass ? "Hide password" : "Show password"}
+                    >
+                      {showPass ? <IconEyeOpen /> : <IconEyeClosed />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <span className="lp-error">{errors.password}</span>
+                  )}
+                </div>
 
-            {/* Password — name="password" preserved from your original */}
-            <div className="lp-form-group">
-              <label className="lp-label" htmlFor="password">Password</label>
-              <div className="lp-input-wrap">
-                <span className="lp-icon"><IconLock /></span>
-                <input
-                  id="password"
-                  className="lp-input"
-                  type={showPass ? "text" : "password"}
-                  name="password"
-                  placeholder="Enter password"
-                  value={form.password}
-                  onChange={handleChange}
-                  autoComplete="current-password"
-                />
+                {/* Login button — calls your original handleLogin */}
                 <button
-                  className="lp-eye"
+                  className={btnClass}
+                  onClick={handleLogin}
+                  disabled={status === "loading" || status === "success"}
                   type="button"
-                  onClick={() => setShowPass((v) => !v)}
-                  aria-label={showPass ? "Hide password" : "Show password"}
                 >
-                  {showPass ? <IconEyeOpen /> : <IconEyeClosed />}
+                  {btnLabel()}
                 </button>
-              </div>
-              {errors.password && <span className="lp-error">{errors.password}</span>}
-            </div>
 
-            {/* Login button — calls your original handleLogin */}
-            <button
-              className={btnClass}
-              onClick={handleLogin}
-              disabled={status === "loading" || status === "success"}
-              type="button"
-            >
-              {btnLabel()}
-            </button>
+                {/* Divider */}
+                <div className="lp-divider">
+                  <div className="lp-divider-line" />
+                  <span className="lp-divider-text">or</span>
+                  <div className="lp-divider-line" />
+                </div>
 
-            {/* Divider */}
-            <div className="lp-divider">
-              <div className="lp-divider-line" />
-              <span className="lp-divider-text">or</span>
-              <div className="lp-divider-line" />
-            </div>
+                {/* SSO */}
+                <button className="lp-sso" type="button">
+                  <IconSSO />
+                  Continue with SSO
+                </button>
 
-            {/* SSO */}
-            <button className="lp-sso" type="button">
-              <IconSSO />
-              Continue with SSO
-            </button>
+                <p className="lp-help">
+                  Need access? <a href="#contact">Contact your administrator</a>
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="lp-title">Verify OTP</h2>
 
-            <p className="lp-help">
-              Need access? <a href="#contact">Contact your administrator</a>
-            </p>
+                <p className="lp-desc">
+                  Enter the 6-digit OTP sent to your registered email.
+                </p>
+
+                <div className="lp-form-group">
+                  <label className="lp-label">OTP</label>
+
+                  <div className="lp-input-wrap">
+                    <div
+    style={{
+        display: "flex",
+        justifyContent: "space-between",
+        gap: "10px"
+    }}
+>
+
+    {otp.map((digit, index) => (
+
+        <input
+
+            key={index}
+
+            ref={(el) => otpRefs.current[index] = el}
+
+            value={digit}
+
+            type="password"
+
+            maxLength={1}
+
+            onPaste={handleOtpPaste}
+
+            onKeyDown={(e) =>
+                handleOtpKeyDown(index, e)
+            }
+
+            onChange={(e) =>
+                handleOtpChange(index, e.target.value)
+            }
+
+            style={{
+                width: "52px",
+                height: "52px",
+                textAlign: "center",
+                fontSize: "22px",
+                borderRadius: "10px",
+                border: "1px solid #d9d9d9"
+            }}
+
+        />
+
+    ))}
+
+</div>
+                  </div>
+                </div>
+
+                <button
+    className={btnClass}
+    type="button"
+    onClick={handleVerifyOtp}
+    disabled={status === "loading" || status === "success"}
+>
+    {status === "loading" ? "Verifying..." : "Verify OTP"}
+</button>
+<button
+
+    type="button"
+
+    className="lp-sso"
+
+    onClick={() => {
+
+        setShowOtpScreen(false);
+
+        setOtp(["","","","","",""]);
+
+        setStatus("idle");
+
+    }}
+
+>
+
+    ← Back to Login
+
+</button>
+
+               <button
+    className="lp-sso"
+    type="button"
+    disabled={!canResend}
+    onClick={handleResendOtp}
+>
+
+    {canResend
+        ? "Resend OTP"
+        : `Resend OTP in ${countdown}s`}
+
+</button>
+              </>
+            )}
           </div>
-
         </div>
       </div>
     </>
