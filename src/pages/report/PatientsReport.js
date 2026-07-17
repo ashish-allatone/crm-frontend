@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import "../../styles/allPatients.css";
-import { patients } from "../../data/patients";
+import { getPatients } from "../../services/patientService";
 import * as XLSX from "xlsx";
 
 const PatientsReport = () => {
@@ -17,6 +17,29 @@ const PatientsReport = () => {
   const [appliedStatus, setAppliedStatus] = useState("All");
   const [appliedFromDate, setAppliedFromDate] = useState("");
   const [appliedToDate, setAppliedToDate] = useState("");
+
+  const [patients, setPatients] = useState([]);
+const [totalPages, setTotalPages] = useState(0);
+
+const loadPatients = async () => {
+  try {
+    const res = await getPatients(
+      currentPage - 1,
+      entries,
+      search
+    );
+
+    setPatients(res.data.content);
+    setTotalPages(res.data.totalPages);
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+useEffect(() => {
+  loadPatients();
+}, [currentPage, entries, search]);
 
   const handleSort = (column) => {
     let direction = "asc";
@@ -35,49 +58,10 @@ const PatientsReport = () => {
     return new Date(`${year}-${month}-${day}`);
   };
 
-  const filteredData = patients.filter((p) => {
-    const matchesSearch = Object.values(p)
-      .join(" ")
-      .toLowerCase()
-      .includes(search.toLowerCase());
-
-    const matchesStatus = appliedStatus === "All" || p.status === appliedStatus;
-
-    let matchesDate = true;
-
-    if (appliedFromDate || appliedToDate) {
-      const patientDate = convertDate(p.registered);
-
-      if (appliedFromDate) {
-        matchesDate = patientDate >= new Date(appliedFromDate);
-      }
-
-      if (appliedToDate) {
-        matchesDate = patientDate <= new Date(appliedToDate) && matchesDate;
-      }
-    }
-
-    return matchesSearch && matchesStatus && matchesDate;
-  });
-
-  const sortedData = [...filteredData].sort((a, b) => {
-    if (!sortColumn) return 0;
-
-    let valA = a[sortColumn];
-    let valB = b[sortColumn];
-
-    if (valA < valB) return sortDirection === "asc" ? -1 : 1;
-    if (valA > valB) return sortDirection === "asc" ? 1 : -1;
-
-    return 0;
-  });
+  
 
   const indexOfLast = currentPage * entries;
   const indexOfFirst = indexOfLast - entries;
-
-  const currentData = sortedData.slice(indexOfFirst, indexOfLast);
-
-  const totalPages = Math.ceil(sortedData.length / entries);
 
   const pageNumbers = [];
 
@@ -85,9 +69,7 @@ const PatientsReport = () => {
     pageNumbers.push(i);
   }
 
-  const startEntry = sortedData.length === 0 ? 0 : indexOfFirst + 1;
-  const endEntry = Math.min(indexOfLast, sortedData.length);
-
+  
   const getArrow = (column) => {
     if (sortColumn !== column) return "⇅";
 
@@ -95,7 +77,7 @@ const PatientsReport = () => {
   };
 
   const exportToExcel = () => {
-    const exportData = filteredData.map((p) => ({
+    const exportData = patients.map((p) => ({
       "Registration D/T": p.registered,
       "LM No": p.lm,
       "Proposal ID": p.proposalId,
@@ -332,37 +314,35 @@ const PatientsReport = () => {
               </thead>
 
               <tbody>
-                {currentData.length === 0 ? (
+                {patients.length === 0 ? (
                   <tr>
                     <td colSpan="20" className="text-center">
                       !!No Record Found!!
                     </td>
                   </tr>
                 ) : (
-                  currentData.map((p) => (
+                  patients.map((p) => (
                     <tr key={p.id}>
                       <td>{p.registered}</td>
-                      <td>{p.lm}</td>
-                      <td>{p.proposalId}</td>
-                      <td>
-                        {p.title} {p.name}
-                      </td>
-                      <td>-</td>
-                      <td>{p.gender}</td>
-                      <td>{p.age}</td>
-                      <td>{p.dob}</td>
-                      <td>{p.mobile}</td>
-                      <td>{p.address}</td>
-                      <td>{p.city}</td>
-                      <td>{p.state}</td>
-                      <td>{p.country}</td>
-                      <td>{p.email}</td>
-                      <td>{p.organization}</td>
-                      <td>{p.provider}</td>
-                      <td>{p.insurance}</td>
-                      <td>{p.nationalId}</td>
-                      <td>{p.passport}</td>
-                      <td>{p.status}</td>
+<td>{p.id}</td>
+<td>{p.proposalId}</td>
+<td>{p.title} {p.patientName}</td>
+<td>-</td>
+<td>{p.gender}</td>
+<td>{p.age}</td>
+<td>{p.dob}</td>
+<td>{p.mobileNumber}</td>
+<td>{p.address}</td>
+<td>{p.city}</td>
+<td>{p.state}</td>
+<td>{p.country}</td>
+<td>{p.email}</td>
+<td>{p.organizationName}</td>
+<td>{p.diagnosticCenterName}</td>
+<td>{p.insuranceName}</td>
+<td>{p.nationalIdNumber}</td>
+<td>{p.passportNumber}</td>
+<td>{p.tpaStatus}</td>
                     </tr>
                   ))
                 )}
@@ -373,9 +353,9 @@ const PatientsReport = () => {
           {/* Pagination */}
 
           <div className="d-flex justify-content-between align-items-center mt-3">
-            <div>
+            {/* <div>
               Showing {startEntry} to {endEntry} of {sortedData.length} entries
-            </div>
+            </div> */}
 
             <nav>
               <ul className="pagination mb-0">

@@ -3,6 +3,10 @@ import "../../styles/allPatients.css";
 import { getAppointments } from "../../services/appointmentService";
 import { useNavigate } from "react-router-dom";
 import { hasPermission } from "../permissionUtil";
+import {
+    getTestModuleAppointments
+} from "../../services/appointmentService";
+
 
 const TestReport = () => {
   //   const reports = [];
@@ -28,17 +32,22 @@ const TestReport = () => {
   //   setTotalPages(res.data.totalPages);
   // };
   const loadAppointments = async () => {
-    try {
-      const res = await getAppointments(currentPage - 1, entries, search);
-  
-      setAppointments(res.data.content);
-      setTotalPages(res.data.totalPages);
-    } catch (err) {
-      if (err.response?.status === 403) {
-        alert("Access Denied ❌");
-      }
+  try {
+    const res = await getTestModuleAppointments(
+      currentPage - 1,
+      entries,
+      search
+    );
+
+    setAppointments(res.data.data.content);
+    setTotalPages(res.data.data.totalPages);
+
+  } catch (err) {
+    if (err.response?.status === 403) {
+      alert("Access Denied ❌");
     }
-  };
+  }
+};
 
   const handleSort = (column) => {
     let direction = "asc";

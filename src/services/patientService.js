@@ -23,5 +23,6 @@ export const updatePatient = (id, data) =>
   api.put(`/patients/${id}`, data);
 
 // DELETE
-export const deletePatient = (id) =>
-  api.delete(`/patients/${id}`);
+export const deletePatient = (id) => {
+  return api.delete(`/patients/${id}`);
+};

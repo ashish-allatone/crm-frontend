@@ -23,3 +23,26 @@ export const updateAppointment = (id, data) =>
 
 export const getAppointmentById = (id) =>
   api.get(`/appointments/${id}`);
+
+export const getTestModuleAppointments = (
+    page,
+    size,
+    search
+) => {
+
+    return api.get("/appointments/test-module", {
+
+        params: {
+
+            page,
+
+            size,
+
+            search
+        }
+    });
+};
+
+export const deleteAppointment = (id) => {
+  return api.delete(`/appointments/${id}`);
+};

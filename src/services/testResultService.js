@@ -8,3 +8,22 @@ export const getTestResult = (appointmentId) =>
 
 export const deleteTestResult = (appointmentId) =>
   api.delete(`/test-results/${appointmentId}`);
+
+export const getTestModuleAppointments = (
+    page,
+    size,
+    search
+) => {
+
+    return api.get("/appointments/test-module", {
+
+        params: {
+
+            page,
+
+            size,
+
+            search
+        }
+    });
+};

@@ -8,6 +8,10 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
 import { hasPermission } from "../permissionUtil";
+import {
+    getTestModuleAppointments
+} from "../../services/appointmentService";
+
 
 const TestResult = () => {
   //   const testResults = [];
@@ -24,6 +28,14 @@ const [selectedResult, setSelectedResult] = useState(null);
 const [showModal, setShowModal] = useState(false);
 const navigate = useNavigate();
 
+const currentUser = JSON.parse(localStorage.getItem("user"));
+
+const isAdmin =
+  currentUser?.roles?.some((r) => r.name === "Admin");
+
+const allOrganizations =
+  currentUser?.allOrganizations === true;
+
 useEffect(() => {
   loadAppointments();
 }, [currentPage, entries, search]);
@@ -36,10 +48,15 @@ useEffect(() => {
 // };
 const loadAppointments = async () => {
   try {
-    const res = await getAppointments(currentPage - 1, entries, search);
+    const res = await getTestModuleAppointments(
+      currentPage - 1,
+      entries,
+      search
+    );
 
-    setAppointments(res.data.content);
-    setTotalPages(res.data.totalPages);
+    setAppointments(res.data.data.content);
+    setTotalPages(res.data.data.totalPages);
+
   } catch (err) {
     if (err.response?.status === 403) {
       alert("Access Denied ❌");
@@ -271,6 +288,7 @@ const handleDelete = async (appointmentId) => {
 
         {/* ACTION */}
         <td>
+          {(isAdmin || !allOrganizations) ? (
           <div className="dropdown">
             <button className="btn btn-info dropdown-toggle" data-bs-toggle="dropdown">
               Action
@@ -288,7 +306,8 @@ const handleDelete = async (appointmentId) => {
                 >
                   Add Test Result
                 </button> */}
-                {hasPermission("Test Result", "ADD") && (
+                {hasPermission("Test Result", "ADD") &&
+ !allOrganizations && (
   <button
     className="dropdown-item"
     onClick={() =>
@@ -299,7 +318,7 @@ const handleDelete = async (appointmentId) => {
   </button>
 )}
               </li>
-               {hasPermission("Test Result", "EDIT") && (
+               {isAdmin && (
     <li>
       <button
         className="dropdown-item text-danger"
@@ -312,6 +331,9 @@ const handleDelete = async (appointmentId) => {
 
             </ul>
           </div>
+          ) : (
+    "-"
+  )}
         </td>
 
         <td>{(currentPage - 1) * entries + index + 1}</td>

@@ -57,12 +57,12 @@ const Users = () => {
   }, []);
 
   useEffect(() => {
-  getOrganizationsAll()
-    .then((res) => {
-      setOrganizations(res.data.data || []);
-    })
-    .catch(console.error);
-}, []);
+    getOrganizationsAll()
+      .then((res) => {
+        setOrganizations(res.data.data || []);
+      })
+      .catch(console.error);
+  }, []);
 
   const [form, setForm] = useState({
     firstName: "",
@@ -77,6 +77,7 @@ const Users = () => {
     // roleId: "",
     roleName: "",
     organizationId: "",
+    allOrganizations: false,
     address: "",
     password: "",
   });
@@ -119,6 +120,7 @@ const Users = () => {
       // role: "",
       roleId: "",
       organizationId: "",
+      allOrganizations: false,
       address: "",
       password: "",
     });
@@ -141,8 +143,9 @@ const Users = () => {
       // role: user.roles?.[0]?.name || "", // ✅ IMPORTANT
       // roleId: user.roles?.[0]?.id,
       roleName: user.roles?.[0]?.name || "",
-      organizationId:
-  user.organization?.id || "",
+      organizationId: user.organization?.id || "",
+
+      allOrganizations: user.allOrganizations || false,
       address: user.address || "",
       password: "", // blank
     });
@@ -168,11 +171,18 @@ const Users = () => {
   //   loadUsers();
   // };
   const handleSubmit = async () => {
+    if (!form.organizationId) {
+      alert("Please select Organization");
+      return;
+    }
     try {
       let res;
       const payload = {
         ...form,
         role: form.roleName, // 🔥 IMPORTANT
+        organizationId: Number(form.organizationId),
+
+        allOrganizations: form.allOrganizations,
       };
 
       if (editData) {
@@ -414,8 +424,12 @@ const Users = () => {
 
                     <td>{u.roles?.[0]?.name}</td>
                     <td>
-  {u.organization?.organizationName}
-</td>
+                      {u.roles?.[0]?.name === "Admin"
+                        ? "All Organizations"
+                        : u.allOrganizations
+                          ? "All Organizations"
+                          : u.organization?.organizationName}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -609,7 +623,16 @@ const Users = () => {
                       className="form-control"
                       value={form.roleName}
                       onChange={(e) =>
-                        setForm({ ...form, roleName: e.target.value })
+                        setForm({
+                          ...form,
+
+                          roleName: e.target.value,
+
+                          allOrganizations:
+                            e.target.value === "Admin"
+                              ? false
+                              : form.allOrganizations,
+                        })
                       }
                     >
                       <option value="">Select Role</option>
@@ -623,33 +646,57 @@ const Users = () => {
                   </div>
 
                   <div className="col-md-6 mb-3">
-  <label>Organization</label>
+                    <label>Organization</label>
 
-  <select
-    className="form-control"
-    value={form.organizationId}
-    onChange={(e) =>
-      setForm({
-        ...form,
-        organizationId: e.target.value,
-      })
-    }
-  >
-    <option value="">
-      Select Organization
-    </option>
+                    <select
+                      className="form-control"
+                      value={form.organizationId}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          organizationId: Number(e.target.value),
+                        })
+                      }
+                    >
+                      <option value="">Select Organization</option>
 
-    {organizations.map((o) => (
-      <option
-        key={o.id}
-        value={o.id}
+                      {organizations.map((o) => (
+                        <option key={o.id} value={o.id}>
+                          {o.organizationName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+{form.roleName !== "Admin" && (
+  <div className="col-md-12 mb-3">
+    <div className="form-check form-switch">
+      <input
+        className="form-check-input"
+        type="checkbox"
+        role="switch"
+        id="allOrganizations"
+        checked={form.allOrganizations}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            allOrganizations: e.target.checked,
+          })
+        }
+      />
+      <label
+        className="form-check-label fw-semibold"
+        htmlFor="allOrganizations"
+        style={{ cursor: "pointer" }}
       >
-        {o.organizationName}
-      </option>
-    ))}
-  </select>
-</div>
-
+        Access All Organizations
+      </label>
+    </div>
+    <small className="text-muted ms-4 d-block">
+      Enable this to grant the user access to data across all organizations.
+    </small>
+  </div>
+)}
                   <div className="col-md-12 mb-3">
                     <label>Address</label>
                     <textarea

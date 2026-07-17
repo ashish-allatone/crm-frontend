@@ -5,6 +5,7 @@ import {
   uploadTestReport,
   updateQc,
   getTestReportFile,
+  updateTestReport,
 } from "../../services/testReportService";
 import { getAppointmentById } from "../../services/appointmentService";
 import { useParams } from "react-router-dom";
@@ -12,10 +13,17 @@ import { getPatientById } from "../../services/patientService";
 import { hasPermission } from "../permissionUtil";
 
 const TestReportUpload = () => {
-
   const canAdd = hasPermission("Test Report", "ADD");
-const canEdit = hasPermission("Test Report", "EDIT");
-const canView = hasPermission("Test Report", "VIEW");
+  const canEdit = hasPermission("Test Report", "EDIT");
+  const canView = hasPermission("Test Report", "VIEW");
+
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+
+  const isAdmin = currentUser?.roles?.some((r) => r.name === "Admin");
+
+  const allOrganizations = currentUser?.allOrganizations === true;
+
+  const canUpdateQc = isAdmin || allOrganizations;
   const { id } = useParams();
 
   const [patient, setPatient] = useState({});
@@ -26,6 +34,7 @@ const canView = hasPermission("Test Report", "VIEW");
   const [showModal, setShowModal] = useState(false);
   const [appointment, setAppointment] = useState(null);
   const [pdfPreview, setPdfPreview] = useState(null);
+  const [editingReport, setEditingReport] = useState(null);
 
   const [form, setForm] = useState({
     reportName: "",
@@ -58,39 +67,7 @@ const canView = hasPermission("Test Report", "VIEW");
       console.error(err);
     }
   };
-  // const handleUpload = async () => {
-  //   try {
-  //     if (!form.reportName || !form.file || !form.qcStatus) {
-  //       alert("Fill all required fields");
-  //       return;
-  //     }
 
-  //     const formData = new FormData();
-
-  //     formData.append("appointmentId", id);
-  //     formData.append("reportName", form.reportName);
-  //     formData.append("file", form.file);
-  //     formData.append("qcStatus", form.qcStatus);
-  //     formData.append("uploadedBy", form.myLabsTeam);
-
-  //     await uploadTestReport(formData);
-
-  //     alert("Uploaded Successfully");
-
-  //     setShowModal(false);
-  //     setForm({
-  //       reportName: "",
-  //       file: null,
-  //       qcStatus: "",
-  //       myLabsTeam: "",
-  //     });
-
-  //     loadData();
-
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
   const handleUpload = async () => {
     try {
       if (!form.reportName || !form.file || !form.qcStatus) {
@@ -126,6 +103,53 @@ const canView = hasPermission("Test Report", "VIEW");
       alert(err.response?.data?.message || "Upload failed ❌");
     }
   };
+
+  const openEditModal = (report) => {
+    setEditingReport(report);
+
+    setForm({
+      reportName: report.reportName,
+      file: null,
+      qcStatus: report.qcStatus,
+      myLabsTeam: report.uploadedBy || "",
+    });
+
+    setShowModal(true);
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const formData = new FormData();
+
+      formData.append("reportName", form.reportName);
+
+      if (form.file) {
+        formData.append("file", form.file);
+      }
+
+      formData.append("qcStatus", form.qcStatus);
+      formData.append("uploadedBy", form.myLabsTeam);
+
+      const res = await updateTestReport(editingReport.reportId, formData);
+
+      alert(res.data.message);
+
+      setEditingReport(null);
+
+      setShowModal(false);
+
+      setForm({
+        reportName: "",
+        file: null,
+        qcStatus: "",
+        myLabsTeam: "",
+      });
+
+      loadData();
+    } catch (err) {
+      alert(err.response?.data?.message || "Update failed");
+    }
+  };
   // const handleQc = async (reportId, status) => {
   //   try {
   //     await updateQc(reportId, status);
@@ -147,6 +171,26 @@ const canView = hasPermission("Test Report", "VIEW");
       console.error(err);
 
       alert(err.response?.data?.message || "QC update failed ❌");
+    }
+  };
+
+  const handleUpdateQcRemark = async (report) => {
+    try {
+      const formData = new FormData();
+
+      formData.append("reportName", report.reportName);
+
+      formData.append("qcStatus", report.qcStatus);
+
+      formData.append("uploadedBy", report.uploadedBy);
+
+      await updateTestReport(report.reportId, formData);
+
+      alert("Updated Successfully");
+
+      loadData();
+    } catch (err) {
+      alert(err.response?.data?.message || "Update Failed");
     }
   };
 
@@ -237,14 +281,14 @@ const canView = hasPermission("Test Report", "VIEW");
           >
             Upload Report
           </button> */}
-          {canAdd && (
-  <button
-    className="btn btn-primary mb-3"
-    onClick={() => setShowModal(true)}
-  >
-    Upload Report
-  </button>
-)}
+          {canAdd && !allOrganizations && (
+            <button
+              className="btn btn-primary mb-3"
+              onClick={() => setShowModal(true)}
+            >
+              Upload Report
+            </button>
+          )}
 
           <table className="table table-bordered">
             <thead>
@@ -277,18 +321,30 @@ const canView = hasPermission("Test Report", "VIEW");
           <table className="table table-bordered">
             <thead>
               <tr>
+                <th>Action</th>
                 <th>S No.</th>
                 <th>Report Name</th>
                 <th>Report Show</th>
                 <th>Upload Date</th>
-                <th>MyLabs Team</th>
+                <th>Remarks</th>
                 <th>QC by Organization</th>
+                <th>Save</th>
               </tr>
             </thead>
 
             <tbody>
               {reports.map((r, index) => (
                 <tr key={r.reportId}>
+                  <td>
+                    {isAdmin && (
+                      <button
+                        className="btn btn-warning btn-sm"
+                        onClick={() => openEditModal(r)}
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </td>
                   <td>{index + 1}</td>
                   <td>{r.reportName}</td>
 
@@ -309,26 +365,44 @@ const canView = hasPermission("Test Report", "VIEW");
                       View Report
                     </button> */}
                     {canView && (
-  <button
-    className="btn btn-info btn-sm"
-    onClick={async () => {
-      try {
-        const res = await getTestReportFile(r.reportId);
-        const fileURL = URL.createObjectURL(res.data);
-        setPdfPreview(fileURL);
-      } catch (err) {
-        alert("Preview failed");
-      }
-    }}
-  >
-    View Report
-  </button>
-)}
+                      <button
+                        className="btn btn-info btn-sm"
+                        onClick={async () => {
+                          try {
+                            const res = await getTestReportFile(r.reportId);
+                            const fileURL = URL.createObjectURL(res.data);
+                            setPdfPreview(fileURL);
+                          } catch (err) {
+                            alert("Preview failed");
+                          }
+                        }}
+                      >
+                        View Report
+                      </button>
+                    )}
                   </td>
 
                   <td>{r.uploadDate}</td>
 
-                  <td>{r.uploadedBy}</td>
+                  <td>
+                    {canUpdateQc && !isAdmin ? (
+                      <input
+                        className="form-control"
+                        value={r.uploadedBy || ""}
+                        onChange={(e) => {
+                          const updatedReports = reports.map((report) =>
+                            report.reportId === r.reportId
+                              ? { ...report, uploadedBy: e.target.value }
+                              : report,
+                          );
+
+                          setReports(updatedReports);
+                        }}
+                      />
+                    ) : (
+                      r.uploadedBy
+                    )}
+                  </td>
 
                   <td>
                     {/* <select
@@ -337,16 +411,47 @@ const canView = hasPermission("Test Report", "VIEW");
                       onChange={(e) => handleQc(r.reportId, e.target.value)}
                     > */}
                     <select
-  className="form-control"
-  value={r.qcStatus}
-  disabled={!canEdit}
-  onChange={(e) => handleQc(r.reportId, e.target.value)}
->
+                      className="form-control"
+                      value={r.qcStatus}
+                      disabled={!canUpdateQc}
+                      onChange={async (e) => {
+
+  const status = e.target.value;
+
+  if (isAdmin) {
+
+    await handleQc(r.reportId, status);
+
+  } else {
+
+    const updatedReports = reports.map((report) =>
+      report.reportId === r.reportId
+        ? {
+            ...report,
+            qcStatus: status,
+          }
+        : report
+    );
+
+    setReports(updatedReports);
+  }
+}}
+                    >
                       <option value="PENDING">Pending</option>
                       <option value="RECHECK">QC Recheck</option>
                       <option value="APPROVED">QC Approved</option>
                       <option value="REJECTED">QC Rejected</option>
                     </select>
+                  </td>
+                  <td>
+                    {allOrganizations && !isAdmin && (
+                      <button
+                        className="btn btn-success btn-sm"
+                        onClick={() => handleUpdateQcRemark(r)}
+                      >
+                        Save
+                      </button>
+                    )}
                   </td>
                   {/* <td>
   <span
@@ -376,7 +481,9 @@ const canView = hasPermission("Test Report", "VIEW");
                 className="modal-header"
                 style={{ background: "#3fb4b6", color: "white" }}
               >
-                <h5 className="modal-title">Upload Test Report</h5>
+                <h5 className="modal-title">
+                  {editingReport ? "Edit Test Report" : "Upload Test Report"}
+                </h5>
 
                 <button
                   className="btn-close"
@@ -409,7 +516,7 @@ const canView = hasPermission("Test Report", "VIEW");
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">MyLabs Team</label>
+                  <label className="form-label">Remarks</label>
                   <input
                     className="form-control"
                     value={form.myLabsTeam}
@@ -444,18 +551,29 @@ const canView = hasPermission("Test Report", "VIEW");
                 >
                   Upload
                 </button> */}
-                {canAdd && (
-  <button
-    className="btn btn-primary submit-btn"
-    onClick={handleUpload}
-  >
-    Upload
-  </button>
-)}
+                {canAdd && !allOrganizations && (
+                  <button
+                    className="btn btn-primary submit-btn"
+                    onClick={editingReport ? handleUpdate : handleUpload}
+                  >
+                    {editingReport ? "Update" : "Upload"}
+                  </button>
+                )}
 
                 <button
                   className="btn btn-danger"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+
+                    setEditingReport(null);
+
+                    setForm({
+                      reportName: "",
+                      file: null,
+                      qcStatus: "",
+                      myLabsTeam: "",
+                    });
+                  }}
                 >
                   Cancel
                 </button>

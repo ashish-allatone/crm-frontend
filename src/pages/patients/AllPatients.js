@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../../styles/allPatients.css";
 import { useNavigate } from "react-router-dom";
 // import { useParams } from "react-router-dom";
-import { getPatients } from "../../services/patientService";
+import { getPatients, deletePatient } from "../../services/patientService";
 import { hasPermission } from "../permissionUtil";
 
 const AllPatients = () => {
@@ -24,16 +24,34 @@ const AllPatients = () => {
   //   setTotalPages(res.data.totalPages);
   // };
   const loadPatients = async () => {
-  try {
-    const res = await getPatients(currentPage - 1, entries, search);
-    setPatients(res.data.content);
-    setTotalPages(res.data.totalPages);
-  } catch (err) {
-    if (err.response?.status === 403) {
-      alert("Access Denied ❌");
+    try {
+      const res = await getPatients(currentPage - 1, entries, search);
+      setPatients(res.data.content);
+      setTotalPages(res.data.totalPages);
+    } catch (err) {
+      if (err.response?.status === 403) {
+        alert("Access Denied ❌");
+      }
     }
-  }
-};
+  };
+
+  const handleDelete = async (patientId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this patient?",
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await deletePatient(patientId);
+
+      alert("Patient deleted successfully.");
+
+      loadPatients();
+    } catch (err) {
+      alert(err.response?.data?.message || "Unable to delete patient.");
+    }
+  };
 
   useEffect(() => {
     loadPatients();
@@ -82,13 +100,13 @@ const AllPatients = () => {
             👤 New Patient Registration
           </button> */}
           {hasPermission("Patients", "ADD") && (
-  <button
-    className="btn btn-light"
-    onClick={() => navigate("/add-patient")}
-  >
-    👤 New Patient Registration
-  </button>
-)}
+            <button
+              className="btn btn-light"
+              onClick={() => navigate("/add-patient")}
+            >
+              👤 New Patient Registration
+            </button>
+          )}
         </div>
 
         <div className="card-body">
@@ -183,11 +201,11 @@ const AllPatients = () => {
                     Services Provider {getArrow("provider")}
                   </th> */}
                   <th
-  onClick={() => handleSort("dc")}
-  style={{ cursor: "pointer" }}
->
-  Diagnostic Center {getArrow("dc")}
-</th>
+                    onClick={() => handleSort("dc")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    Diagnostic Center {getArrow("dc")}
+                  </th>
 
                   <th>Insurance</th>
 
@@ -240,15 +258,17 @@ const AllPatients = () => {
                             </button>
                           </li> */}
                           {hasPermission("Patients", "VIEW") && (
-  <li>
-    <button
-      className="dropdown-item"
-      onClick={() => navigate(`/patient-details/${p.id}`)}
-    >
-      View Details
-    </button>
-  </li>
-)}
+                            <li>
+                              <button
+                                className="dropdown-item"
+                                onClick={() =>
+                                  navigate(`/patient-details/${p.id}`)
+                                }
+                              >
+                                View Details
+                              </button>
+                            </li>
+                          )}
 
                           {/* <li>
                             <button
@@ -259,15 +279,17 @@ const AllPatients = () => {
                             </button>
                           </li> */}
                           {hasPermission("Patients", "EDIT") && (
-  <li>
-    <button
-      className="dropdown-item"
-      onClick={() => navigate(`/edit-patient/${p.id}`)}
-    >
-      Edit
-    </button>
-  </li>
-)}
+                            <li>
+                              <button
+                                className="dropdown-item"
+                                onClick={() =>
+                                  navigate(`/edit-patient/${p.id}`)
+                                }
+                              >
+                                Edit
+                              </button>
+                            </li>
+                          )}
 
                           {/* <li>
                             <button
@@ -280,7 +302,7 @@ const AllPatients = () => {
                             </button>
                           </li> */}
                           {/* {hasPermission("Patients", "ADD") && ( */}
-                          {hasPermission("Appointment", "ADD") && (
+                          {hasPermission("Appointment", "ADD") && !p.hasAppointment && (
   <li>
     <button
       className="dropdown-item"
@@ -290,6 +312,25 @@ const AllPatients = () => {
     </button>
   </li>
 )}
+
+{/* For showing proper alert on click create appointment */}
+{/* {hasPermission("Appointment", "ADD") && (
+  <li>
+    <button
+      className="dropdown-item"
+      onClick={() => {
+        if (p.hasAppointment) {
+          alert("Patient appointment already done earlier.");
+          return;
+        }
+
+        navigate(`/create-appointment/${p.id}`);
+      }}
+    >
+      Create Appointment
+    </button>
+  </li>
+)} */}
 
                           {/* <li>
                             <button
@@ -302,15 +343,27 @@ const AllPatients = () => {
                             </button>
                           </li> */}
                           {hasPermission("Patients", "EDIT") && (
-  <li>
-    <button
-      className="dropdown-item"
-      onClick={() => navigate(`/add-package-price/${p.id}`)}
-    >
-      Add Package Price
-    </button>
-  </li>
-)}
+                            <li>
+                              <button
+                                className="dropdown-item"
+                                onClick={() =>
+                                  navigate(`/add-package-price/${p.id}`)
+                                }
+                              >
+                                Add Package Price
+                              </button>
+                            </li>
+                          )}
+                          <li>
+                            {hasPermission("Patients", "EDIT") && (
+                              <button
+                                className="dropdown-item text-danger"
+                                onClick={() => handleDelete(p.id)}
+                              >
+                                Delete Patient
+                              </button>
+                            )}
+                          </li>
                         </ul>
                       </div>
                     </td>
@@ -327,7 +380,11 @@ const AllPatients = () => {
                     <td>{p.insuranceName}</td>
                     {/* <td>{p.approval}</td> */}
                     <td>{p.appointmentDate}</td>
-                    <td>{p.registered ? new Date(p.registered).toLocaleString() : "-"}</td>
+                    <td>
+                      {p.registered
+                        ? new Date(p.registered).toLocaleString()
+                        : "-"}
+                    </td>
                     <td>{p.tat || "-"}</td>
                   </tr>
                 ))}

@@ -156,12 +156,12 @@ const canViewMaster = hasPermission("Organization", "VIEW")
   </li>
 )}
 
-          {/* <li className="nav-item dropdown-menu-wrapper">
+          <li className="nav-item dropdown-menu-wrapper">
             <span className="nav-link">
               <FaChartBar className="nav-icon" /> Reports ▼
             </span>
             <ReportsDropdown />
-          </li> */}
+          </li>
 
         </ul>
 

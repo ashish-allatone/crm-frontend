@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/allPatients.css";
 
-import { getAppointments } from "../../services/appointmentService";
+import { getAppointments ,  deleteAppointment,} from "../../services/appointmentService";
 import { useNavigate } from "react-router-dom";
 import { hasPermission } from "../permissionUtil";
 
@@ -38,6 +38,32 @@ const AllAppointment = () => {
 
     }
   };
+
+  const handleDelete = async (appointmentId) => {
+
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this appointment?"
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+
+    await deleteAppointment(appointmentId);
+
+    alert("Appointment deleted successfully.");
+
+    loadAppointments();
+
+  } catch (err) {
+
+    alert(
+      err.response?.data?.message ||
+      "Unable to delete appointment."
+    );
+
+  }
+};
 
   useEffect(() => {
     loadAppointments();
@@ -162,6 +188,16 @@ const AllAppointment = () => {
                               )}
 
                             </li>
+                            <li>
+  {hasPermission("Appointment", "EDIT") && (
+    <button
+      className="dropdown-item text-danger"
+      onClick={() => handleDelete(a.appointmentId)}
+    >
+      Delete Appointment
+    </button>
+  )}
+</li>
 
                           </ul>
 
