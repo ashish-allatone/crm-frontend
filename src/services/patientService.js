@@ -26,3 +26,29 @@ export const updatePatient = (id, data) =>
 export const deletePatient = (id) => {
   return api.delete(`/patients/${id}`);
 };
+
+export const getPatientReport = (
+    page,
+    size,
+    search,
+    status,
+    fromDate,
+    toDate
+) => {
+
+    return api.get("/reports/patients", {
+
+        params: {
+
+            page,
+            size,
+            search,
+            status,
+            fromDate,
+            toDate
+
+        }
+
+    });
+
+};

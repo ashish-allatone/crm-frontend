@@ -1,6 +1,6 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import "../../styles/allPatients.css";
-import { getPatients } from "../../services/patientService";
+import { getPatientReport } from "../../services/patientService";
 import * as XLSX from "xlsx";
 
 const PatientsReport = () => {
@@ -10,36 +10,55 @@ const PatientsReport = () => {
   const [sortColumn, setSortColumn] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
 
-  const [status, setStatus] = useState("All");
+  const [status, setStatus] = useState("ALL");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
-  const [appliedStatus, setAppliedStatus] = useState("All");
+  const [appliedStatus, setAppliedStatus] = useState("ALL");
   const [appliedFromDate, setAppliedFromDate] = useState("");
   const [appliedToDate, setAppliedToDate] = useState("");
 
   const [patients, setPatients] = useState([]);
-const [totalPages, setTotalPages] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-const loadPatients = async () => {
-  try {
-    const res = await getPatients(
-      currentPage - 1,
-      entries,
-      search
-    );
+  const loadPatients = async () => {
+    try {
+      const res = await getPatientReport(
+        currentPage - 1,
 
-    setPatients(res.data.content);
-    setTotalPages(res.data.totalPages);
+        entries,
 
-  } catch (err) {
-    console.error(err);
-  }
-};
+        search,
 
-useEffect(() => {
-  loadPatients();
-}, [currentPage, entries, search]);
+        appliedStatus === "ALL" ? "ALL" : appliedStatus,
+
+        appliedFromDate || null,
+
+        appliedToDate || null,
+      );
+
+      setPatients(res.data.content);
+      setTotalPages(res.data.totalPages);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    loadPatients();
+  }, [
+    currentPage,
+
+    entries,
+
+    search,
+
+    appliedStatus,
+
+    appliedFromDate,
+
+    appliedToDate,
+  ]);
 
   const handleSort = (column) => {
     let direction = "asc";
@@ -58,8 +77,6 @@ useEffect(() => {
     return new Date(`${year}-${month}-${day}`);
   };
 
-  
-
   const indexOfLast = currentPage * entries;
   const indexOfFirst = indexOfLast - entries;
 
@@ -69,7 +86,6 @@ useEffect(() => {
     pageNumbers.push(i);
   }
 
-  
   const getArrow = (column) => {
     if (sortColumn !== column) return "⇅";
 
@@ -78,27 +94,46 @@ useEffect(() => {
 
   const exportToExcel = () => {
     const exportData = patients.map((p) => ({
-      "Registration D/T": p.registered,
-      "LM No": p.lm,
-      "Proposal ID": p.proposalId,
-      "Patient Name": `${p.title} ${p.name}`,
-      "Guardian Name": "",
-      Gender: p.gender,
-      Age: p.age,
-      DOB: p.dob,
-      "Mobile No": p.mobile,
-      Address: p.address,
-      City: p.city,
-      State: p.state,
-      Country: p.country,
-      Email: p.email,
-      "Organization Name": p.organization,
-      "Services Provider": p.provider,
-      "Insurance Company": p.insurance,
-      "National ID No": p.nationalId,
-      "Passport No": p.passport,
-      Status: p.status,
-    }));
+
+    "Registration Date": p.registrationDate,
+
+    "Patient Id": p.patientId,
+
+    "Proposal Id": p.proposalId,
+
+    "Patient Name": p.patientName,
+
+    Gender: p.gender,
+
+    Age: p.age,
+
+    DOB: p.dob,
+
+    Mobile: p.mobile,
+
+    Address: p.address,
+
+    City: p.city,
+
+    State: p.state,
+
+    Country: p.country,
+
+    Email: p.email,
+
+    Organization: p.organizationName,
+
+    Insurance: p.insuranceName,
+
+    DiagnosticCenter: p.diagnosticCenterName,
+
+    QCStatus: p.qcStatus,
+
+    CurrentStatus: p.currentStatus,
+
+    TAT: p.tat
+
+}));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
 
@@ -131,10 +166,27 @@ useEffect(() => {
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
-                <option>All</option>
-                <option>QC Approved</option>
-                <option>Pending</option>
-                <option>Approved</option>
+                <option value="ALL">All</option>
+
+                <option value="PATIENT_REGISTERED">Patient Registered</option>
+
+                <option value="APPOINTMENT_SCHEDULED">
+                  Appointment Scheduled
+                </option>
+
+                <option value="APPOINTMENT_COMPLETED">
+                  Appointment Completed
+                </option>
+
+                <option value="MEDICAL_COMPLETED">Medical Completed</option>
+
+                <option value="REPORT_UPLOADED">Report Uploaded</option>
+
+                <option value="QC_PENDING">QC Pending</option>
+
+                <option value="QC_APPROVED">QC Approved</option>
+
+                <option value="QC_REJECTED">QC Rejected</option>
               </select>
             </div>
 
@@ -176,11 +228,11 @@ useEffect(() => {
               <button
                 className="btn btn-danger"
                 onClick={() => {
-                  setStatus("All");
+                  setStatus("ALL");
                   setFromDate("");
                   setToDate("");
 
-                  setAppliedStatus("All");
+                  setAppliedStatus("ALL");
                   setAppliedFromDate("");
                   setAppliedToDate("");
 
@@ -249,7 +301,7 @@ useEffect(() => {
                     Patient Name {getArrow("name")}
                   </th>
 
-                  <th>Guardian Name</th>
+                  
 
                   <th onClick={() => handleSort("gender")}>
                     Gender {getArrow("gender")}
@@ -292,7 +344,7 @@ useEffect(() => {
                   </th>
 
                   <th onClick={() => handleSort("provider")}>
-                    Services Provider {getArrow("provider")}
+                    Diagnostic Center {getArrow("provider")}
                   </th>
 
                   <th onClick={() => handleSort("insurance")}>
@@ -308,7 +360,7 @@ useEffect(() => {
                   </th>
 
                   <th onClick={() => handleSort("status")}>
-                    Status {getArrow("status")}
+                    Current Status {getArrow("status")}
                   </th>
                 </tr>
               </thead>
@@ -322,27 +374,32 @@ useEffect(() => {
                   </tr>
                 ) : (
                   patients.map((p) => (
-                    <tr key={p.id}>
-                      <td>{p.registered}</td>
-<td>{p.id}</td>
-<td>{p.proposalId}</td>
-<td>{p.title} {p.patientName}</td>
-<td>-</td>
-<td>{p.gender}</td>
-<td>{p.age}</td>
-<td>{p.dob}</td>
-<td>{p.mobileNumber}</td>
-<td>{p.address}</td>
-<td>{p.city}</td>
-<td>{p.state}</td>
-<td>{p.country}</td>
-<td>{p.email}</td>
-<td>{p.organizationName}</td>
-<td>{p.diagnosticCenterName}</td>
-<td>{p.insuranceName}</td>
-<td>{p.nationalIdNumber}</td>
-<td>{p.passportNumber}</td>
-<td>{p.tpaStatus}</td>
+                    <tr key={p.patientId}>
+                      <td>
+    {p.registrationDate
+        ? new Date(p.registrationDate).toLocaleDateString()
+        : "-"}
+</td>
+                      <td>{p.patientId}</td>
+                      <td>{p.proposalId}</td>
+                      <td>
+                        {p.title} {p.patientName}
+                      </td>
+                      <td>{p.gender}</td>
+                      <td>{p.age}</td>
+                      <td>{p.dob}</td>
+                      <td>{p.mobile}</td>
+                      <td>{p.address}</td>
+                      <td>{p.city}</td>
+                      <td>{p.state}</td>
+                      <td>{p.country}</td>
+                      <td>{p.email}</td>
+                      <td>{p.organizationName}</td>
+                      <td>{p.diagnosticCenterName}</td>
+                      <td>{p.insuranceName}</td>
+                      <td>{p.nationalIdNumber}</td>
+                      <td>{p.passportNumber}</td>
+                      <td>{p.currentStatus}</td>
                     </tr>
                   ))
                 )}

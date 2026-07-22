@@ -10,7 +10,7 @@ const ReportsDropdown = () => {
         <FaChartBar className="icon" /> Patients
       </Link>
 
-      <Link to="/report/calling" className="dropdown-item">
+      {/* <Link to="/report/calling" className="dropdown-item">
         <FaChartBar className="icon" /> Calling
       </Link>
 
@@ -20,7 +20,7 @@ const ReportsDropdown = () => {
 
       <Link to="/report/payment" className="dropdown-item">
         <FaChartBar className="icon" /> Payment
-      </Link>
+      </Link> */}
 
     </div>
   );
