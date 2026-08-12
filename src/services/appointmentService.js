@@ -46,3 +46,24 @@ export const getTestModuleAppointments = (
 export const deleteAppointment = (id) => {
   return api.delete(`/appointments/${id}`);
 };
+
+// MARK APPOINTMENT DONE
+export const markAppointmentDone = (appointmentId) =>
+  api.put(`/appointments/${appointmentId}/done`);
+
+// MARK APPOINTMENT NOT DONE
+export const markAppointmentNotDone = (appointmentId) =>
+  api.put(`/appointments/${appointmentId}/not-done`);
+
+// RESCHEDULE APPOINTMENT
+export const rescheduleAppointment = (
+  appointmentId,
+  visitDate,
+  visitTime
+) =>
+  api.put(`/appointments/${appointmentId}/reschedule`, null, {
+    params: {
+      visitDate,
+      visitTime,
+    },
+  });

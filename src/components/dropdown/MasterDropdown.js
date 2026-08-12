@@ -65,12 +65,12 @@ Insurance Company
 <FaUserTie className="icon"/>
 Service Provider
 </Link> */}
-{hasPermission("Service Provider", "VIEW") && (
+{/* {hasPermission("Service Provider", "VIEW") && (
   <Link to="/service-provider" className="dropdown-item">
     <FaUserTie className="icon"/>
     Service Provider
   </Link>
-)}
+)} */}
 
 
 

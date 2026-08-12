@@ -263,9 +263,12 @@ const PatientDetails = () => {
             </div>
           </div>
 
-          <div className="lm-number">
+          {/* <div className="lm-number">
             LM No.: <b>{patient.id}</b>
-          </div>
+          </div> */}
+          <div className="lm-number">
+  LM No.: <b>{patient.lmNo || "-"}</b>
+</div>
 
           {/* <button
             className="btn edit-btn"
@@ -310,6 +313,63 @@ const PatientDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Registration Details */}
+<div className="card mb-3">
+  <div className="card-header bg-primary text-white">
+    Registration Details
+  </div>
+
+  <div className="card-body">
+
+    <div className="row">
+
+      <div className="col-md-6">
+
+        <p>
+          <b>Status :</b>{" "}
+          {patient.status === "ACTIVE" ? (
+            <span className="badge bg-success">Active</span>
+          ) : (
+            <span className="badge bg-danger">
+              Registration Cancelled
+            </span>
+          )}
+        </p>
+
+        {patient.status === "REGISTRATION_CANCELLED" && (
+          <p>
+            <b>Cancellation Reason :</b>{" "}
+            {patient.cancellationReason || "-"}
+          </p>
+        )}
+
+      </div>
+
+      <div className="col-md-6">
+
+        {patient.status === "REGISTRATION_CANCELLED" && (
+          <>
+            <p>
+              <b>Cancelled By :</b>{" "}
+              {patient.cancelledBy || "-"}
+            </p>
+
+            <p>
+              <b>Cancelled On :</b>{" "}
+              {patient.cancelledAt
+                ? new Date(patient.cancelledAt).toLocaleString()
+                : "-"}
+            </p>
+          </>
+        )}
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
 
       {/* Test List */}
       <div className="card mb-3">

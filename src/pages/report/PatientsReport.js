@@ -92,57 +92,127 @@ const PatientsReport = () => {
     return sortDirection === "asc" ? "▲" : "▼";
   };
 
-  const exportToExcel = () => {
-    const exportData = patients.map((p) => ({
+//   const exportToExcel = () => {
+//     const exportData = patients.map((p) => ({
+
+//     "Registration Date": p.registrationDate,
+
+//     "Patient Id": p.patientId,
+
+//     "Proposal Id": p.proposalId,
+
+//     "Patient Name": p.patientName,
+
+//     Gender: p.gender,
+
+//     Age: p.age,
+
+//     DOB: p.dob,
+
+//     Mobile: p.mobile,
+
+//     Address: p.address,
+
+//     City: p.city,
+
+//     State: p.state,
+
+//     Country: p.country,
+
+//     Email: p.email,
+
+//     Organization: p.organizationName,
+
+//     Insurance: p.insuranceName,
+
+//     DiagnosticCenter: p.diagnosticCenterName,
+
+//     QCStatus: p.qcStatus,
+
+//     WorkflowStatus: p.currentStatus,
+
+//     RegistrationStatus: p.patientStatus,
+
+//     CancellationReason: p.cancellationReason,
+
+//     TAT: p.tat
+
+// }));
+
+//     const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+//     const workbook = XLSX.utils.book_new();
+
+//     XLSX.utils.book_append_sheet(workbook, worksheet, "Patients Report");
+
+//     XLSX.writeFile(workbook, "Patients_MIS_Report.xlsx");
+//   };
+
+const exportToExcel = () => {
+
+  const exportData = patients.map((p) => ({
 
     "Registration Date": p.registrationDate,
 
+    "LM No": p.lmNo,
+
     "Patient Id": p.patientId,
 
-    "Proposal Id": p.proposalId,
+    "Proposal ID": p.proposalId,
 
     "Patient Name": p.patientName,
 
-    Gender: p.gender,
+    "Gender": p.gender,
 
-    Age: p.age,
+    "Age": p.age,
 
-    DOB: p.dob,
+    "DOB": p.dob,
 
-    Mobile: p.mobile,
+    "Mobile No": p.mobile,
 
-    Address: p.address,
+    "Address": p.address,
 
-    City: p.city,
+    "City": p.city,
 
-    State: p.state,
+    "State": p.state,
 
-    Country: p.country,
+    "Country": p.country,
 
-    Email: p.email,
+    "Email": p.email,
 
-    Organization: p.organizationName,
+    "Organization": p.organizationName,
 
-    Insurance: p.insuranceName,
+    "Insurance Company": p.insuranceName,
 
-    DiagnosticCenter: p.diagnosticCenterName,
+    "Diagnostic Center": p.diagnosticCenterName,
 
-    QCStatus: p.qcStatus,
+    "QC Status": p.qcStatus,
 
-    CurrentStatus: p.currentStatus,
+    "Workflow Status": p.currentStatus,
 
-    TAT: p.tat
+    "Registration Status": p.patientStatus,
 
-}));
+    "Cancellation Reason": p.cancellationReason || "-",
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    "TAT": p.tat
 
-    const workbook = XLSX.utils.book_new();
+  }));
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Patients Report");
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
 
-    XLSX.writeFile(workbook, "Patients_MIS_Report.xlsx");
-  };
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Patients Report"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    "Patients_MIS_Report.xlsx"
+  );
+};
 
   return (
     <div className="container-fluid mt-3">
@@ -159,7 +229,7 @@ const PatientsReport = () => {
 
           <div className="row mb-3">
             <div className="col-md-3">
-              <label>Current Status</label>
+              <label>Workflow Status</label>
 
               <select
                 className="form-control"
@@ -360,8 +430,15 @@ const PatientsReport = () => {
                   </th>
 
                   <th onClick={() => handleSort("status")}>
-                    Current Status {getArrow("status")}
+                  Workflow Status {getArrow("status")}
                   </th>
+                  <th>
+    Registration Status
+</th>
+
+<th>
+    Cancellation Reason
+</th>
                 </tr>
               </thead>
 
@@ -380,7 +457,7 @@ const PatientsReport = () => {
         ? new Date(p.registrationDate).toLocaleDateString()
         : "-"}
 </td>
-                      <td>{p.patientId}</td>
+                      <td>{p.lmNo}</td>
                       <td>{p.proposalId}</td>
                       <td>
                         {p.title} {p.patientName}
@@ -400,6 +477,21 @@ const PatientsReport = () => {
                       <td>{p.nationalIdNumber}</td>
                       <td>{p.passportNumber}</td>
                       <td>{p.currentStatus}</td>
+                      <td>
+    {p.patientStatus === "ACTIVE" ? (
+        <span className="badge bg-success">
+            Active
+        </span>
+    ) : (
+        <span className="badge bg-danger">
+            Registration Cancelled
+        </span>
+    )}
+</td>
+
+<td>
+    {p.cancellationReason || "-"}
+</td>
                     </tr>
                   ))
                 )}

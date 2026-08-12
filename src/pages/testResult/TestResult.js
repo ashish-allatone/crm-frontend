@@ -337,7 +337,8 @@ const handleDelete = async (appointmentId) => {
         </td>
 
         <td>{(currentPage - 1) * entries + index + 1}</td>
-         <td>{a.patientId}</td>
+         {/* <td>{a.patientId}</td> */}
+         <td>{a.lmNo || "-"}</td>
         <td>{a.patientName}</td>
         <td>{a.mobile}</td>
         <td>{a.ageGender}</td>

@@ -1,14 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaChartBar } from "react-icons/fa";
-
+import { hasPermission } from "../../pages/permissionUtil";
 const ReportsDropdown = () => {
   return (
     <div className="master-dropdown">
-
+      {hasPermission("Patients", "VIEW") && (
       <Link to="/report/patients" className="dropdown-item">
         <FaChartBar className="icon" /> Patients
       </Link>
+      )}
 
       {/* <Link to="/report/calling" className="dropdown-item">
         <FaChartBar className="icon" /> Calling

@@ -9,6 +9,8 @@ import { getAllCurrencies } from "../../services/currencyService";
 import { hasPermission } from "../permissionUtil";
 import { useLocation } from "../../hooks/useLocation";
 import { getCurrentUser } from "../../services/userService";
+import { getLatestPrivacyNotice } from "../../services/dpdpService";
+import { FaPlusCircle, FaTrashAlt } from "react-icons/fa";
 
 const AddPatient = () => {
   const canViewOrg = hasPermission("Organization", "VIEW");
@@ -19,7 +21,15 @@ const AddPatient = () => {
   const { countries, states, cities, loadStates, loadCities } = useLocation();
 
   const [currentUser, setCurrentUser] = useState(null);
-const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
+  const [privacyNotice, setPrivacyNotice] = useState(null);
+
+  const [consentChecked, setConsentChecked] = useState(false);
+
+  const [loadingConsent, setLoadingConsent] = useState(false);
 
   const [form, setForm] = useState({
     title: "",
@@ -68,39 +78,33 @@ const [isAdmin, setIsAdmin] = useState(false);
     loadOrgs();
   }, [canViewOrg]);
 
-
   useEffect(() => {
-  const loadCurrentUser = async () => {
-    try {
-      const res = await getCurrentUser();
+    const loadCurrentUser = async () => {
+      try {
+        const res = await getCurrentUser();
 
-      setCurrentUser(res.data.data);
+        setCurrentUser(res.data.data);
 
-      const admin =
-        res.data.data.roles?.some(
-          (r) => r.name?.toLowerCase() === "admin"
+        const admin = res.data.data.roles?.some(
+          (r) => r.name?.toLowerCase() === "admin",
         );
 
-      setIsAdmin(admin);
+        setIsAdmin(admin);
 
-      // Non-admin => organization auto select
-      if (
-        !admin &&
-        res.data.data.organization
-      ) {
-        setForm((prev) => ({
-          ...prev,
-          organizationId:
-            res.data.data.organization.id,
-        }));
+        // Non-admin => organization auto select
+        if (!admin && res.data.data.organization) {
+          setForm((prev) => ({
+            ...prev,
+            organizationId: res.data.data.organization.id,
+          }));
+        }
+      } catch (err) {
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    };
 
-  loadCurrentUser();
-}, []);
+    loadCurrentUser();
+  }, []);
 
   const [insurances, setInsurances] = useState([]);
   // useEffect(() => {
@@ -125,35 +129,27 @@ const [isAdmin, setIsAdmin] = useState(false);
     //   }
     // };
     const loadInsurance = async () => {
-  try {
-    const res = await getAllInsurances();
-    console.log("Insurance API Response => ", res.data);
+      try {
+        const res = await getAllInsurances();
+        console.log("Insurance API Response => ", res.data);
 
-    let insuranceList = res.data.data || [];
+        let insuranceList = res.data.data || [];
 
-    // Non Admin => only own organization insurances
-    if (
-      currentUser &&
-      !isAdmin &&
-      currentUser.organization
-    ) {
-      insuranceList = insuranceList.filter(
-        (i) =>
-          i.organizationId ===
-          currentUser.organization.id
-      );
-    }
+        // Non Admin => only own organization insurances
+        if (currentUser && !isAdmin && currentUser.organization) {
+          insuranceList = insuranceList.filter(
+            (i) => i.organizationId === currentUser.organization.id,
+          );
+        }
 
-    setInsurances(insuranceList);
-
-  } catch (err) {
-    console.warn("Insurance access denied");
-    setInsurances([]);
-  }
-};
+        setInsurances(insuranceList);
+      } catch (err) {
+        console.warn("Insurance access denied");
+        setInsurances([]);
+      }
+    };
     loadInsurance();
-  }, [canViewInsurance , currentUser,
-  isAdmin]);
+  }, [canViewInsurance, currentUser, isAdmin]);
 
   const [allTests, setAllTests] = useState([]);
   // useEffect(() => {
@@ -215,50 +211,48 @@ const [isAdmin, setIsAdmin] = useState(false);
   ]);
 
   const calculateAge = (dob, ageType) => {
-  if (!dob) return "";
+    if (!dob) return "";
 
-  const birthDate = new Date(dob);
-  const today = new Date();
+    const birthDate = new Date(dob);
+    const today = new Date();
 
-  let years = today.getFullYear() - birthDate.getFullYear();
-  let months =
-    (today.getFullYear() - birthDate.getFullYear()) * 12 +
-    (today.getMonth() - birthDate.getMonth());
+    let years = today.getFullYear() - birthDate.getFullYear();
+    let months =
+      (today.getFullYear() - birthDate.getFullYear()) * 12 +
+      (today.getMonth() - birthDate.getMonth());
 
-  if (
-    today.getMonth() < birthDate.getMonth() ||
-    (today.getMonth() === birthDate.getMonth() &&
-      today.getDate() < birthDate.getDate())
-  ) {
-    years--;
-    months--;
-  }
+    if (
+      today.getMonth() < birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() &&
+        today.getDate() < birthDate.getDate())
+    ) {
+      years--;
+      months--;
+    }
 
-  return ageType === "MONTH"
-    ? months
-    : years;
-};
+    return ageType === "MONTH" ? months : years;
+  };
 
   // const handleChange = (e) => {
   //   setForm({ ...form, [e.target.name]: e.target.value });
   // };
   const handleChange = (e) => {
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  let updatedForm = {
-    ...form,
-    [name]: value,
+    let updatedForm = {
+      ...form,
+      [name]: value,
+    };
+
+    if (name === "dob" || name === "ageType") {
+      updatedForm.age = calculateAge(
+        name === "dob" ? value : form.dob,
+        name === "ageType" ? value : form.ageType,
+      );
+    }
+
+    setForm(updatedForm);
   };
-
-  if (name === "dob" || name === "ageType") {
-    updatedForm.age = calculateAge(
-      name === "dob" ? value : form.dob,
-      name === "ageType" ? value : form.ageType
-    );
-  }
-
-  setForm(updatedForm);
-};
 
   const handleTestChange = (index, field, value) => {
     const updated = [...tests];
@@ -278,9 +272,41 @@ const [isAdmin, setIsAdmin] = useState(false);
     setTests(updated);
   };
 
+  // const addTestRow = () => {
+  //   setTests([...tests, { testId: "", testType: "", sampleType: "" }]);
+  // };
   const addTestRow = () => {
-    setTests([...tests, { testId: "", testType: "", sampleType: "" }]);
-  };
+
+    const lastRow = tests[tests.length - 1];
+
+    if (!lastRow.testId) {
+
+        alert("Please select a test before adding another test.");
+
+        return;
+
+    }
+
+    setTests([
+        ...tests,
+        {
+            testId: "",
+            testType: "",
+            sampleType: ""
+        }
+    ]);
+
+};
+
+  const removeTestRow = (index) => {
+
+  const updated = [...tests];
+
+  updated.splice(index, 1);
+
+  setTests(updated);
+
+};
 
   // const handleSubmit = async () => {
   //   const payload = {
@@ -294,7 +320,7 @@ const [isAdmin, setIsAdmin] = useState(false);
 
   //   navigate("/patients");
   // };
-  const handleSubmit = async () => {
+  const savePatient = async () => {
     try {
       const payload = {
         ...form,
@@ -302,10 +328,12 @@ const [isAdmin, setIsAdmin] = useState(false);
           ? Number(form.organizationId)
           : null,
         insuranceId: form.insuranceId ? Number(form.insuranceId) : null,
-        tests: tests,
+        tests: tests
       };
 
       const res = await createPatient(payload);
+
+      setShowPrivacyModal(false);
 
       // ✅ Backend message
       alert(res.data.message); // "Patient created successfully"
@@ -332,6 +360,24 @@ const [isAdmin, setIsAdmin] = useState(false);
     setForm({ ...form, state: stateCode, city: "" });
 
     loadCities(form.country, stateCode);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setLoadingConsent(true);
+
+      const res = await getLatestPrivacyNotice();
+
+      setPrivacyNotice(res.data.data);
+
+      setConsentChecked(false);
+
+      setShowPrivacyModal(true);
+    } catch (e) {
+      alert("Unable to fetch latest Privacy Notice.");
+    } finally {
+      setLoadingConsent(false);
+    }
   };
 
   return (
@@ -398,22 +444,19 @@ const [isAdmin, setIsAdmin] = useState(false);
                   <option>+91</option>
                 </select> */}
                 <select
-  className="form-control code"
-  name="mobileCountryCode"
-  value={form.mobileCountryCode}
-  onChange={handleChange}
->
-  <option value="">Code</option>
+                  className="form-control code"
+                  name="mobileCountryCode"
+                  value={form.mobileCountryCode}
+                  onChange={handleChange}
+                >
+                  <option value="">Code</option>
 
-  {countries.map((country) => (
-    <option
-      key={country.iso2}
-      value={`+${country.phonecode}`}
-    >
-      {country.name} (+{country.phonecode})
-    </option>
-  ))}
-</select>
+                  {countries.map((country) => (
+                    <option key={country.iso2} value={`+${country.phonecode}`}>
+                      {country.name} (+{country.phonecode})
+                    </option>
+                  ))}
+                </select>
 
                 <input
                   type="text"
@@ -442,22 +485,22 @@ const [isAdmin, setIsAdmin] = useState(false);
 
               <div className="d-flex">
                 <input
-  type="text"
-  className="form-control"
-  name="age"
-  value={form.age}
-  readOnly
-/>
+                  type="text"
+                  className="form-control"
+                  name="age"
+                  value={form.age}
+                  readOnly
+                />
 
                 <select
-  className="form-control"
-  name="ageType"
-  value={form.ageType}
-  onChange={handleChange}
->
-  <option value="YEAR">Years</option>
-  <option value="MONTH">Months</option>
-</select>
+                  className="form-control"
+                  name="ageType"
+                  value={form.ageType}
+                  onChange={handleChange}
+                >
+                  <option value="YEAR">Years</option>
+                  <option value="MONTH">Months</option>
+                </select>
               </div>
             </div>
 
@@ -658,43 +701,37 @@ const [isAdmin, setIsAdmin] = useState(false);
               )}
             </div> */}
             <div className="col-md-6">
-  <label>Select Organization</label>
+              <label>Select Organization</label>
 
-  {!canViewOrg ? (
-    <input
-      className="form-control"
-      value="No Organization Access"
-      disabled
-    />
-  ) : isAdmin ? (
+              {!canViewOrg ? (
+                <input
+                  className="form-control"
+                  value="No Organization Access"
+                  disabled
+                />
+              ) : isAdmin ? (
+                <select
+                  className="form-control"
+                  name="organizationId"
+                  value={form.organizationId}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Organization</option>
 
-    <select
-      className="form-control"
-      name="organizationId"
-      value={form.organizationId}
-      onChange={handleChange}
-    >
-      <option value="">Select Organization</option>
-
-      {organizations.map((o) => (
-        <option key={o.id} value={o.id}>
-          {o.organizationName}
-        </option>
-      ))}
-    </select>
-
-  ) : (
-
-    <input
-      className="form-control"
-      value={
-        currentUser?.organization?.organizationName || ""
-      }
-      disabled
-    />
-
-  )}
-</div>
+                  {organizations.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.organizationName}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  className="form-control"
+                  value={currentUser?.organization?.organizationName || ""}
+                  disabled
+                />
+              )}
+            </div>
 
             <div className="col-md-6">
               <label>Insurance Company</label>
@@ -734,7 +771,7 @@ const [isAdmin, setIsAdmin] = useState(false);
                 <th>SELECT TEST</th>
                 <th>TEST TYPE</th>
                 <th>SAMPLE TYPE</th>
-                <th>ADD</th>
+                <th>Action</th>
               </tr>
             </thead>
 
@@ -790,11 +827,36 @@ const [isAdmin, setIsAdmin] = useState(false);
                     />
                   </td>
 
-                  <td>
+                  {/* <td>
                     <button className="btn btn-success" onClick={addTestRow}>
                       +
                     </button>
-                  </td>
+                  </td> */}
+                  <td>
+
+  {index === tests.length - 1 && (
+    <button
+        type="button"
+        className="btn btn-success me-2"
+        onClick={addTestRow}
+        title="Add Test"
+    >
+        <FaPlusCircle />
+    </button>
+)}
+
+{tests.length > 1 && (
+    <button
+        type="button"
+        className="btn btn-danger"
+        onClick={() => removeTestRow(index)}
+        title="Remove Test"
+    >
+        <FaTrashAlt />
+    </button>
+)}
+
+</td>
                 </tr>
               ))}
             </tbody>
@@ -804,8 +866,9 @@ const [isAdmin, setIsAdmin] = useState(false);
             <button
               className="btn btn-primary submit-btn"
               onClick={handleSubmit}
+              disabled={loadingConsent}
             >
-              Submit
+              {loadingConsent ? "Loading..." : "Submit"}
             </button>
 
             <button
@@ -814,6 +877,113 @@ const [isAdmin, setIsAdmin] = useState(false);
             >
               Goto Dashboard
             </button>
+
+            {/* Privacy Notice Modal */}
+
+            {showPrivacyModal && (
+              <>
+                <div
+                  className="modal fade show"
+                  style={{
+                    display: "block",
+                    backgroundColor: "rgba(0,0,0,0.6)",
+                  }}
+                >
+                  <div className="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div className="modal-content">
+                      <div className="modal-header">
+                        <h5 className="modal-title">Privacy Notice</h5>
+
+                        <button
+                          className="btn-close"
+                          onClick={() => {
+                            setConsentChecked(false);
+
+                            setShowPrivacyModal(false);
+                          }}
+                        />
+                      </div>
+
+                      <div className="modal-body">
+                        <div className="alert alert-info">
+                          <h6>
+                            Purpose :<strong> Patient Registration</strong>
+                          </h6>
+
+                          <p className="mb-1">
+                            <strong>Title :</strong> {privacyNotice?.title}
+                          </p>
+
+                          <p className="mb-1">
+                            <strong>Version :</strong> {privacyNotice?.version}
+                          </p>
+                        </div>
+
+                        <div
+                          style={{
+                            maxHeight: "350px",
+                            overflowY: "auto",
+                            border: "1px solid #ddd",
+                            padding: "15px",
+                            borderRadius: "5px",
+                          }}
+                        >
+                          {privacyNotice?.content}
+                        </div>
+
+                        <div className="form-check mt-4">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="privacyConsent"
+                            checked={consentChecked}
+                            onChange={(e) =>
+                              setConsentChecked(e.target.checked)
+                            }
+                          />
+
+                          <label
+                            className="form-check-label"
+                            htmlFor="privacyConsent"
+                          >
+                            I have read and understood the Privacy Notice and I
+                            agree to the processing of my personal data for
+                            Patient Registration.
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="modal-footer">
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => {
+                            setConsentChecked(false);
+
+                            setShowPrivacyModal(false);
+                          }}
+                        >
+                          Cancel
+                        </button>
+
+                        <button
+                          className="btn btn-primary"
+                          disabled={!consentChecked}
+                          onClick={async () => {
+                            await savePatient();
+
+                            setConsentChecked(false);
+                          }}
+                        >
+                          Accept & Continue
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="modal-backdrop fade show"></div>
+              </>
+            )}
           </div>
         </div>
       </div>

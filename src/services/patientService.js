@@ -23,8 +23,19 @@ export const updatePatient = (id, data) =>
   api.put(`/patients/${id}`, data);
 
 // DELETE
-export const deletePatient = (id) => {
-  return api.delete(`/patients/${id}`);
+// export const deletePatient = (id) => {
+//   return api.delete(`/patients/${id}`);
+// };
+
+export const cancelPatientRegistration = (id, reason) => {
+
+  return api.put(
+    `/patients/${id}/cancel-registration`,
+    {
+      reason: reason
+    }
+  );
+
 };
 
 export const getPatientReport = (

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../../styles/allPatients.css";
 import { useNavigate } from "react-router-dom";
 // import { useParams } from "react-router-dom";
-import { getPatients, deletePatient } from "../../services/patientService";
+import { getPatients, cancelPatientRegistration } from "../../services/patientService";
 import { hasPermission } from "../permissionUtil";
 
 const AllPatients = () => {
@@ -35,23 +35,75 @@ const AllPatients = () => {
     }
   };
 
+  // const handleDelete = async (patientId) => {
+  //   // const confirmDelete = window.confirm(
+  //   //   "Are you sure you want to delete this patient?",
+  //   // );
+  //   const confirmDelete = window.confirm(
+  //     "Are you sure you want to cancel this patient's registration?",
+  //   );
+
+  //   if (!confirmDelete) return;
+
+  //   try {
+  //     await deletePatient(patientId);
+
+  //     // alert("Patient deleted successfully.");
+  //     alert("Patient registration cancelled successfully.");
+
+  //     loadPatients();
+  //   } catch (err) {
+  //     alert(err.response?.data?.message || "Unable to delete patient.");
+  //   }
+  // };
+
   const handleDelete = async (patientId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this patient?",
+
+  const confirmDelete = window.confirm(
+    "Are you sure you want to cancel this patient's registration?"
+  );
+
+  if (!confirmDelete) return;
+
+  const reason = window.prompt(
+    "Please enter the reason for cancellation:"
+  );
+
+  if (reason === null) {
+    return;
+  }
+
+  if (reason.trim() === "") {
+
+    alert("Cancellation reason is required.");
+
+    return;
+
+  }
+
+  try {
+
+    await cancelPatientRegistration(
+      patientId,
+      reason
     );
 
-    if (!confirmDelete) return;
+    alert(
+      "Patient cancelled successfully."
+    );
 
-    try {
-      await deletePatient(patientId);
+    loadPatients();
 
-      alert("Patient deleted successfully.");
+  } catch (err) {
 
-      loadPatients();
-    } catch (err) {
-      alert(err.response?.data?.message || "Unable to delete patient.");
-    }
-  };
+    alert(
+      err.response?.data?.message ||
+      "Unable to cancel registration."
+    );
+
+  }
+
+};
 
   useEffect(() => {
     loadPatients();
@@ -152,12 +204,12 @@ const AllPatients = () => {
               <thead>
                 <tr>
                   <th>Action</th>
-                  {/* <th
+                  <th
                     onClick={() => handleSort("status")}
                     style={{ cursor: "pointer" }}
                   >
                     Status {getArrow("status")}
-                  </th> */}
+                  </th>
 
                   <th
                     onClick={() => handleSort("lm")}
@@ -205,6 +257,12 @@ const AllPatients = () => {
                     style={{ cursor: "pointer" }}
                   >
                     Diagnostic Center {getArrow("dc")}
+                  </th>
+                  <th
+                    onClick={() => handleSort("proposal")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    Proposal No. {getArrow("proposal")}
                   </th>
 
                   <th>Insurance</th>
@@ -302,19 +360,22 @@ const AllPatients = () => {
                             </button>
                           </li> */}
                           {/* {hasPermission("Patients", "ADD") && ( */}
-                          {hasPermission("Appointment", "ADD") && !p.hasAppointment && (
-  <li>
-    <button
-      className="dropdown-item"
-      onClick={() => navigate(`/create-appointment/${p.id}`)}
-    >
-      Create Appointment
-    </button>
-  </li>
-)}
+                          {hasPermission("Appointment", "ADD") &&
+                            !p.hasAppointment && (
+                              <li>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() =>
+                                    navigate(`/create-appointment/${p.id}`)
+                                  }
+                                >
+                                  Create Appointment
+                                </button>
+                              </li>
+                            )}
 
-{/* For showing proper alert on click create appointment */}
-{/* {hasPermission("Appointment", "ADD") && (
+                          {/* For showing proper alert on click create appointment */}
+                          {/* {hasPermission("Appointment", "ADD") && (
   <li>
     <button
       className="dropdown-item"
@@ -360,7 +421,7 @@ const AllPatients = () => {
                                 className="dropdown-item text-danger"
                                 onClick={() => handleDelete(p.id)}
                               >
-                                Delete Patient
+                                Cancel Registration
                               </button>
                             )}
                           </li>
@@ -369,7 +430,18 @@ const AllPatients = () => {
                     </td>
 
                     {/* <td>{p.status}</td> */}
-                    <td>{p.id}</td>
+                    {/* <td>{p.id}</td> */}
+
+                    <td>
+                      {p.status === "ACTIVE" ? (
+                        <span className="badge bg-success">Active</span>
+                      ) : (
+                        <span className="badge bg-danger">
+                          Registration Cancelled
+                        </span>
+                      )}
+                    </td>
+                    <td>{p.lmNo}</td>
                     <td className="text-primary">{p.patientName}</td>
                     <td>{p.mobileNumber}</td>
                     <td>
@@ -377,6 +449,7 @@ const AllPatients = () => {
                     </td>
                     <td>{p.organizationName}</td>
                     <td>{p.diagnosticCenterName || "-"}</td>
+                    <td>{p.proposalId || "-"}</td>
                     <td>{p.insuranceName}</td>
                     {/* <td>{p.approval}</td> */}
                     <td>{p.appointmentDate}</td>

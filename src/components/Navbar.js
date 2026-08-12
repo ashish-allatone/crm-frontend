@@ -23,56 +23,57 @@ import ProfileDropdown from "./profileDropdown/ProfileDropdown";
 
 const Navbar = () => {
   const canViewDashboard = hasPermission("Dashboard", "VIEW");
-const canViewPatients = hasPermission("Patients", "VIEW");
-const canViewAppointment = hasPermission("Appointment", "VIEW");
-const canViewTestResult = hasPermission("Test Result", "VIEW");
-const canViewTestReport = hasPermission("Test Report", "VIEW");
-const canViewInvoice = hasPermission("Invoice", "VIEW");
-const canViewMaster = hasPermission("Organization", "VIEW")
-  || hasPermission("Users", "VIEW")
-  || hasPermission("Roles", "VIEW")
-  || hasPermission("Service Provider", "VIEW")
-  || hasPermission("Insurance", "VIEW")
-  || hasPermission("Currency", "VIEW");
+  const canViewPatients = hasPermission("Patients", "VIEW");
+  const canViewAppointment = hasPermission("Appointment", "VIEW");
+  const canViewTestResult = hasPermission("Test Result", "VIEW");
+  const canViewTestReport = hasPermission("Test Report", "VIEW");
+  const canViewInvoice = hasPermission("Invoice", "VIEW");
+  const canViewMaster =
+    hasPermission("Organization", "VIEW") ||
+    hasPermission("Users", "VIEW") ||
+    hasPermission("Roles", "VIEW") ||
+    hasPermission("Service Provider", "VIEW") ||
+    hasPermission("Insurance", "VIEW") ||
+    hasPermission("Currency", "VIEW");
+
+  const canViewReports = hasPermission("Patients", "VIEW");
 
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    api.get("/users/me", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).then(res => {
-      setUser(res.data.data);
-    });
+    api
+      .get("/users/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        setUser(res.data.data);
+      });
   }, []);
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark crm-navbar">
       <div className="container-fluid">
-
         {/* LOGO */}
-        <div className="navbar-brand">
-          CRM
-        </div>
+        <div className="navbar-brand">CRM</div>
 
         {/* LEFT MENU */}
         <ul className="navbar-nav">
-
           {/* <li className="nav-item">
             <Link className="nav-link" to="/">
               <FaHome className="nav-icon" /> Dashboard
             </Link>
           </li> */}
           {canViewDashboard && (
-  <li className="nav-item">
-    <Link className="nav-link" to="/">
-      <FaHome className="nav-icon" /> Dashboard
-    </Link>
-  </li>
-)}
+            <li className="nav-item">
+              <Link className="nav-link" to="/">
+                <FaHome className="nav-icon" /> Dashboard
+              </Link>
+            </li>
+          )}
 
           {/* <li className="nav-item dropdown-menu-wrapper">
             <span className="nav-link">
@@ -81,13 +82,13 @@ const canViewMaster = hasPermission("Organization", "VIEW")
             <MasterDropdown />
           </li> */}
           {canViewMaster && (
-  <li className="nav-item dropdown-menu-wrapper">
-    <span className="nav-link">
-      <FaUsers className="nav-icon" /> Master ▼
-    </span>
-    <MasterDropdown />
-  </li>
-)}
+            <li className="nav-item dropdown-menu-wrapper">
+              <span className="nav-link">
+                <FaUsers className="nav-icon" /> Master ▼
+              </span>
+              <MasterDropdown />
+            </li>
+          )}
 
           {/* <li className="nav-item">
             <Link className="nav-link" to="/patients">
@@ -95,12 +96,12 @@ const canViewMaster = hasPermission("Organization", "VIEW")
             </Link>
           </li> */}
           {canViewPatients && (
-  <li className="nav-item">
-    <Link className="nav-link" to="/patients">
-      <FaUserInjured className="nav-icon" /> All Patients
-    </Link>
-  </li>
-)}
+            <li className="nav-item">
+              <Link className="nav-link" to="/patients">
+                <FaUserInjured className="nav-icon" /> All Patients
+              </Link>
+            </li>
+          )}
 
           {/* <li className="nav-item dropdown-menu-wrapper">
             <span className="nav-link">
@@ -109,13 +110,13 @@ const canViewMaster = hasPermission("Organization", "VIEW")
             <AppointmentDropdown />
           </li> */}
           {canViewAppointment && (
-  <li className="nav-item dropdown-menu-wrapper">
-    <span className="nav-link">
-      <FaCalendarCheck className="nav-icon" /> Appointment ▼
-    </span>
-    <AppointmentDropdown />
-  </li>
-)}
+            <li className="nav-item dropdown-menu-wrapper">
+              <span className="nav-link">
+                <FaCalendarCheck className="nav-icon" /> Appointment ▼
+              </span>
+              <AppointmentDropdown />
+            </li>
+          )}
 
           {/* <li className="nav-item">
             <Link className="nav-link" to="/test-result">
@@ -123,12 +124,12 @@ const canViewMaster = hasPermission("Organization", "VIEW")
             </Link>
           </li> */}
           {canViewTestResult && (
-  <li className="nav-item">
-    <Link className="nav-link" to="/test-result">
-      <FaFlask className="nav-icon" /> Test Result
-    </Link>
-  </li>
-)}
+            <li className="nav-item">
+              <Link className="nav-link" to="/test-result">
+                <FaFlask className="nav-icon" /> Test Result
+              </Link>
+            </li>
+          )}
 
           {/* <li className="nav-item">
             <Link className="nav-link" to="/test-report">
@@ -136,12 +137,12 @@ const canViewMaster = hasPermission("Organization", "VIEW")
             </Link>
           </li> */}
           {canViewTestReport && (
-  <li className="nav-item">
-    <Link className="nav-link" to="/test-report">
-      <FaFileMedical className="nav-icon" /> Test Report
-    </Link>
-  </li>
-)}
+            <li className="nav-item">
+              <Link className="nav-link" to="/test-report">
+                <FaFileMedical className="nav-icon" /> Test Report
+              </Link>
+            </li>
+          )}
 
           {/* <li className="nav-item">
             <Link className="nav-link" to="/invoice">
@@ -149,25 +150,24 @@ const canViewMaster = hasPermission("Organization", "VIEW")
             </Link>
           </li> */}
           {canViewInvoice && (
-  <li className="nav-item">
-    <Link className="nav-link" to="/invoice">
-      <FaFileInvoice className="nav-icon" /> Invoice
-    </Link>
-  </li>
-)}
-
-          <li className="nav-item dropdown-menu-wrapper">
-            <span className="nav-link">
-              <FaChartBar className="nav-icon" /> Reports ▼
-            </span>
-            <ReportsDropdown />
-          </li>
-
+            <li className="nav-item">
+              <Link className="nav-link" to="/invoice">
+                <FaFileInvoice className="nav-icon" /> Invoice
+              </Link>
+            </li>
+          )}
+          {canViewReports && (
+            <li className="nav-item dropdown-menu-wrapper">
+              <span className="nav-link">
+                <FaChartBar className="nav-icon" /> Reports ▼
+              </span>
+              <ReportsDropdown />
+            </li>
+          )}
         </ul>
 
         {/* RIGHT PROFILE */}
         <div className="ms-auto profile-container">
-
           <div className="profile-box">
             <img
               src={
@@ -183,17 +183,13 @@ const canViewMaster = hasPermission("Organization", "VIEW")
                 {user?.firstName} {user?.lastName}
               </span>
 
-              <span className="role">
-                {user?.roles?.[0]?.name}
-              </span>
+              <span className="role">{user?.roles?.[0]?.name}</span>
             </div>
           </div>
 
           {/* HOVER DROPDOWN */}
           {user && <ProfileDropdown user={user} />}
-
         </div>
-
       </div>
     </nav>
   );

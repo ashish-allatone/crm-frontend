@@ -12,6 +12,8 @@ import {
 
 import { getOrganizationsAll } from "../../../services/organizationService";
 
+import { getLatestPrivacyNotice } from "../../../services/dpdpService";
+
 import { hasPermission } from "../../permissionUtil";
 
 const Users = () => {
@@ -34,6 +36,14 @@ const Users = () => {
   const [roles, setRoles] = useState([]);
 
   const [organizations, setOrganizations] = useState([]);
+
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
+  const [privacyNotice, setPrivacyNotice] = useState(null);
+
+  const [consentChecked, setConsentChecked] = useState(false);
+
+  const [loadingConsent, setLoadingConsent] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -170,7 +180,7 @@ const Users = () => {
   //   setCurrentPage(1);
   //   loadUsers();
   // };
-  const handleSubmit = async () => {
+  const saveUser = async () => {
     if (!form.organizationId) {
       alert("Please select Organization");
       return;
@@ -201,6 +211,36 @@ const Users = () => {
       console.error(error);
 
       alert(error.response?.data?.message || "Operation failed ❌");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (editData) {
+      await saveUser();
+      return;
+    }
+
+    if (!form.organizationId) {
+      alert("Please select Organization");
+      return;
+    }
+
+    try {
+      setLoadingConsent(true);
+
+      const res = await getLatestPrivacyNotice();
+
+      setPrivacyNotice(res.data.data);
+
+      setConsentChecked(false);
+
+      setShowPrivacyModal(true);
+    } catch (e) {
+      alert(
+        e.response?.data?.message || "Unable to fetch latest Privacy Notice.",
+      );
+    } finally {
+      setLoadingConsent(false);
     }
   };
 
@@ -667,36 +707,37 @@ const Users = () => {
                       ))}
                     </select>
                   </div>
-                  
-{form.roleName !== "Admin" && (
-  <div className="col-md-12 mb-3">
-    <div className="form-check form-switch">
-      <input
-        className="form-check-input"
-        type="checkbox"
-        role="switch"
-        id="allOrganizations"
-        checked={form.allOrganizations}
-        onChange={(e) =>
-          setForm({
-            ...form,
-            allOrganizations: e.target.checked,
-          })
-        }
-      />
-      <label
-        className="form-check-label fw-semibold"
-        htmlFor="allOrganizations"
-        style={{ cursor: "pointer" }}
-      >
-        Access All Organizations
-      </label>
-    </div>
-    <small className="text-muted ms-4 d-block">
-      Enable this to grant the user access to data across all organizations.
-    </small>
-  </div>
-)}
+
+                  {form.roleName !== "Admin" && (
+                    <div className="col-md-12 mb-3">
+                      <div className="form-check form-switch">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          role="switch"
+                          id="allOrganizations"
+                          checked={form.allOrganizations}
+                          onChange={(e) =>
+                            setForm({
+                              ...form,
+                              allOrganizations: e.target.checked,
+                            })
+                          }
+                        />
+                        <label
+                          className="form-check-label fw-semibold"
+                          htmlFor="allOrganizations"
+                          style={{ cursor: "pointer" }}
+                        >
+                          Access All Organizations
+                        </label>
+                      </div>
+                      <small className="text-muted ms-4 d-block">
+                        Enable this to grant the user access to data across all
+                        organizations.
+                      </small>
+                    </div>
+                  )}
                   <div className="col-md-12 mb-3">
                     <label>Address</label>
                     <textarea
@@ -720,8 +761,13 @@ const Users = () => {
                   <button
                     className="btn btn-primary submit-btn"
                     onClick={handleSubmit}
+                    disabled={loadingConsent}
                   >
-                    {editData ? "Update" : "Submit"}
+                    {loadingConsent
+                      ? "Loading..."
+                      : editData
+                        ? "Update"
+                        : "Submit"}
                   </button>
                 )}
 
@@ -735,6 +781,106 @@ const Users = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {showPrivacyModal && (
+        <>
+          <div
+            className="modal fade show"
+            style={{
+              display: "block",
+              backgroundColor: "rgba(0,0,0,0.6)",
+            }}
+          >
+            <div className="modal-dialog modal-lg modal-dialog-scrollable">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Privacy Notice</h5>
+
+                  <button
+                    className="btn-close"
+                    onClick={() => {
+                      setConsentChecked(false);
+                      setShowPrivacyModal(false);
+                    }}
+                  />
+                </div>
+
+                <div className="modal-body">
+                  <div className="alert alert-info">
+                    <h6>
+                      Purpose :<strong> User Registration</strong>
+                    </h6>
+
+                    <p>
+                      <strong>Title :</strong>
+                      {privacyNotice?.title}
+                    </p>
+
+                    <p>
+                      <strong>Version :</strong>
+                      {privacyNotice?.version}
+                    </p>
+                  </div>
+
+                  <div
+                    style={{
+                      maxHeight: "350px",
+                      overflowY: "auto",
+                      border: "1px solid #ddd",
+                      padding: "15px",
+                      borderRadius: "5px",
+                    }}
+                  >
+                    {privacyNotice?.content}
+                  </div>
+
+                  <div className="form-check mt-4">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={consentChecked}
+                      onChange={(e) => setConsentChecked(e.target.checked)}
+                    />
+
+                    <label className="form-check-label">
+                      I have read and understood the Privacy Notice and agree to
+                      the processing of my personal data for User Registration.
+                    </label>
+                  </div>
+                </div>
+
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setConsentChecked(false);
+                      setShowPrivacyModal(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    className="btn btn-primary"
+                    disabled={!consentChecked}
+                    onClick={async () => {
+                      await saveUser();
+
+                      setConsentChecked(false);
+
+                      setShowPrivacyModal(false);
+                    }}
+                  >
+                    Accept & Continue
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="modal-backdrop fade show"></div>
+        </>
       )}
 
       {showPasswordModal && (
