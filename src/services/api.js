@@ -3,8 +3,8 @@ import axios from "axios";
 const api = axios.create({
   // baseURL: "http://localhost:9090/crm",
   // baseURL: "https://uatdms.healncare.in/api",
-  baseURL: "/crm-api"
-  // baseURL: "http://localhost:9090",
+  // baseURL: "/crm-api"
+  baseURL: "http://localhost:9090",
 });
 
 // 🔥 Request Interceptor (auto token add)

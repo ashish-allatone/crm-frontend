@@ -186,7 +186,11 @@ const exportToExcel = () => {
 
     "Diagnostic Center": p.diagnosticCenterName,
 
+    "Appointment Date": p.appointmentDate,
+
     "QC Status": p.qcStatus,
+
+    "QC Approved Date": p.qcApprovedDate,
 
     "Workflow Status": p.currentStatus,
 
@@ -195,6 +199,8 @@ const exportToExcel = () => {
     "Cancellation Reason": p.cancellationReason || "-",
 
     "TAT": p.tat
+
+
 
   }));
 
@@ -413,6 +419,15 @@ const exportToExcel = () => {
                     Organization Name {getArrow("organization")}
                   </th>
 
+                  <th onClick={() => handleSort("appointmentDate")}>
+                    Appointment Date {getArrow("appointmentDate")}
+                  </th>
+
+                  <th onClick={() => handleSort("qcApproveDate")}>
+                    QC Approved Date {getArrow("qcApproveDate")}
+                  </th>
+
+
                   <th onClick={() => handleSort("provider")}>
                     Diagnostic Center {getArrow("provider")}
                   </th>
@@ -472,6 +487,16 @@ const exportToExcel = () => {
                       <td>{p.country}</td>
                       <td>{p.email}</td>
                       <td>{p.organizationName}</td>
+                      <td>
+  {p.appointmentDate
+    ? new Date(p.appointmentDate).toLocaleDateString("en-GB")
+    : "-"}
+</td>
+<td>
+  {p.qcApprovedDate
+    ? new Date(p.qcApprovedDate).toLocaleString("en-GB")
+    : "-"}
+</td>
                       <td>{p.diagnosticCenterName}</td>
                       <td>{p.insuranceName}</td>
                       <td>{p.nationalIdNumber}</td>

@@ -12,6 +12,9 @@ import { hasPermission } from "../permissionUtil";
 import { useLocation } from "../../hooks/useLocation";
 import { getCurrentUser } from "../../services/userService";
 
+
+import { FaPlusCircle, FaTrashAlt } from "react-icons/fa";
+
 const EditPatient = () => {
   const { countries, states, cities, loadStates, loadCities } = useLocation();
   const canViewOrg = hasPermission("Organization", "VIEW");
@@ -303,33 +306,85 @@ const EditPatient = () => {
     ? months
     : years;
 };
+  // const handleUpdate = async () => {
+  //   try {
+  //     const payload = {
+  //       ...patient,
+  //       organizationId: patient.organizationId
+  //         ? Number(patient.organizationId)
+  //         : null,
+  //       insuranceId: patient.insuranceId ? Number(patient.insuranceId) : null,
+  //       tests: packageTests.map((t) => ({
+  //         testId: t.testId,
+  //         testType: t.testType,
+  //         sampleType: t.sampleType,
+  //       })),
+  //     };
+
+  //     const res = await updatePatient(id, payload);
+
+  //     // ✅ Backend message
+  //     alert(res.data.message); // "Patient updated successfully"
+
+  //     navigate("/patients");
+  //   } catch (error) {
+  //     console.error(error);
+
+  //     alert(error.response?.data?.message || "Failed to update patient ❌");
+  //   }
+  // };
+
   const handleUpdate = async () => {
-    try {
-      const payload = {
-        ...patient,
-        organizationId: patient.organizationId
-          ? Number(patient.organizationId)
-          : null,
-        insuranceId: patient.insuranceId ? Number(patient.insuranceId) : null,
-        tests: packageTests.map((t) => ({
-          testId: t.testId,
-          testType: t.testType,
-          sampleType: t.sampleType,
-        })),
-      };
+  try {
 
-      const res = await updatePatient(id, payload);
+    // ✅ Only selected tests
+    const validTests = packageTests.filter(
+      (t) => t.testId && t.testId !== ""
+    );
 
-      // ✅ Backend message
-      alert(res.data.message); // "Patient updated successfully"
-
-      navigate("/patients");
-    } catch (error) {
-      console.error(error);
-
-      alert(error.response?.data?.message || "Failed to update patient ❌");
+    // ❌ No test selected
+    if (validTests.length === 0) {
+      alert("At least one test is required.");
+      return;
     }
-  };
+
+    const payload = {
+      ...patient,
+
+      organizationId: patient.organizationId
+        ? Number(patient.organizationId)
+        : null,
+
+      insuranceId: patient.insuranceId
+        ? Number(patient.insuranceId)
+        : null,
+
+      proposalId: patient.proposalId?.trim(),
+
+      tests: validTests.map((t) => ({
+        testId: Number(t.testId),
+        testType: t.testType,
+        sampleType: t.sampleType,
+      })),
+    };
+
+    // console.log("UPDATE PATIENT PAYLOAD:", payload);
+
+    const res = await updatePatient(id, payload);
+
+    alert(res.data.message || "Patient updated successfully");
+
+    navigate("/patients");
+
+  } catch (error) {
+    console.error("Update patient error:", error);
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to update patient ❌"
+    );
+  }
+};
 
   const [packageTests, setPackageTests] = useState([
     {
@@ -339,16 +394,42 @@ const EditPatient = () => {
     },
   ]);
 
+  // const addTestRow = () => {
+  //   setPackageTests([
+  //     ...packageTests,
+  //     {
+  //       test: "",
+  //       type: "",
+  //       sample: "",
+  //     },
+  //   ]);
+  // };
+
   const addTestRow = () => {
-    setPackageTests([
-      ...packageTests,
-      {
-        test: "",
-        type: "",
-        sample: "",
-      },
-    ]);
-  };
+  const lastRow = packageTests[packageTests.length - 1];
+
+  if (!lastRow.testId) {
+    alert("Please select a test before adding another test.");
+    return;
+  }
+
+  setPackageTests([
+    ...packageTests,
+    {
+      testId: "",
+      testType: "",
+      sampleType: "",
+    },
+  ]);
+};
+
+const removeTestRow = (index) => {
+  const updated = [...packageTests];
+
+  updated.splice(index, 1);
+
+  setPackageTests(updated);
+};
   const handleTestChange = (index, field, value) => {
     const updated = [...packageTests];
 
@@ -914,11 +995,35 @@ const handleStateChange = (e) => {
                     />
                   </td>
 
-                  <td>
+                  {/* <td>
                     <button className="btn btn-success" onClick={addTestRow}>
                       +
                     </button>
-                  </td>
+                  </td> */}
+
+                 <td>
+  {index === packageTests.length - 1 && (
+    <button
+      type="button"
+      className="btn btn-success me-2"
+      onClick={addTestRow}
+      title="Add Test"
+    >
+      <FaPlusCircle />
+    </button>
+  )}
+
+  {packageTests.length > 1 && (
+    <button
+      type="button"
+      className="btn btn-danger"
+      onClick={() => removeTestRow(index)}
+      title="Remove Test"
+    >
+      <FaTrashAlt />
+    </button>
+  )}
+</td>
                 </tr>
               ))}
             </tbody>

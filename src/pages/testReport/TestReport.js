@@ -3,10 +3,7 @@ import "../../styles/allPatients.css";
 import { getAppointments } from "../../services/appointmentService";
 import { useNavigate } from "react-router-dom";
 import { hasPermission } from "../permissionUtil";
-import {
-    getTestModuleAppointments
-} from "../../services/appointmentService";
-
+import { getTestModuleAppointments } from "../../services/appointmentService";
 
 const TestReport = () => {
   //   const reports = [];
@@ -32,22 +29,21 @@ const TestReport = () => {
   //   setTotalPages(res.data.totalPages);
   // };
   const loadAppointments = async () => {
-  try {
-    const res = await getTestModuleAppointments(
-      currentPage - 1,
-      entries,
-      search
-    );
+    try {
+      const res = await getTestModuleAppointments(
+        currentPage - 1,
+        entries,
+        search,
+      );
 
-    setAppointments(res.data.data.content);
-    setTotalPages(res.data.data.totalPages);
-
-  } catch (err) {
-    if (err.response?.status === 403) {
-      alert("Access Denied ❌");
+      setAppointments(res.data.data.content);
+      setTotalPages(res.data.data.totalPages);
+    } catch (err) {
+      if (err.response?.status === 403) {
+        alert("Access Denied ❌");
+      }
     }
-  }
-};
+  };
 
   const handleSort = (column) => {
     let direction = "asc";
@@ -127,7 +123,7 @@ const TestReport = () => {
               <thead>
                 <tr>
                   <th>Actions</th>
-                   <th
+                  <th
                     onClick={() => handleSort("lm")}
                     style={{ cursor: "pointer" }}
                   >
@@ -170,11 +166,11 @@ const TestReport = () => {
                   </th>
 
                   <th
-  onClick={() => handleSort("dc")}
-  style={{ cursor: "pointer" }}
->
-  Diagnostic Center {getArrow("dc")}
-</th>
+                    onClick={() => handleSort("dc")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    Diagnostic Center {getArrow("dc")}
+                  </th>
 
                   <th
                     onClick={() => handleSort("insurance")}
@@ -207,7 +203,7 @@ const TestReport = () => {
                     </td>
                   </tr>
                 ) : (
-                  appointments.map((a,index) => (
+                  appointments.map((a, index) => (
                     <tr key={a.appointmentId}>
                       <td>
                         {/* <button
@@ -219,15 +215,15 @@ const TestReport = () => {
                           View Test Report
                         </button> */}
                         {hasPermission("Test Report", "VIEW") && (
-  <button
-    className="btn btn-info btn-sm"
-    onClick={() =>
-      navigate(`/test-report-upload/${a.appointmentId}`)
-    }
-  >
-    View Test Report
-  </button>
-)}
+                          <button
+                            className="btn btn-info btn-sm"
+                            onClick={() =>
+                              navigate(`/test-report-upload/${a.appointmentId}`)
+                            }
+                          >
+                            View Test Report
+                          </button>
+                        )}
                       </td>
 
                       <td>{(currentPage - 1) * entries + index + 1}</td>
@@ -237,7 +233,7 @@ const TestReport = () => {
                       <td>{a.mobile}</td>
                       <td>{a.ageGender}</td>
                       <td>{a.organizationName}</td>
-                       <td>{a.diagnosticCenterName || "-"}</td>
+                      <td>{a.diagnosticCenterName || "-"}</td>
                       <td>{a.insuranceName}</td>
                       <td>{a.visitDate}</td>
                     </tr>

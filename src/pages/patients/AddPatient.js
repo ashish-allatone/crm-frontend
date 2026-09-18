@@ -31,6 +31,8 @@ const AddPatient = () => {
 
   const [loadingConsent, setLoadingConsent] = useState(false);
 
+  const [savingPatient, setSavingPatient] = useState(false);
+
   const [form, setForm] = useState({
     title: "",
     patientName: "",
@@ -276,37 +278,31 @@ const AddPatient = () => {
   //   setTests([...tests, { testId: "", testType: "", sampleType: "" }]);
   // };
   const addTestRow = () => {
-
     const lastRow = tests[tests.length - 1];
 
     if (!lastRow.testId) {
+      alert("Please select a test before adding another test.");
 
-        alert("Please select a test before adding another test.");
-
-        return;
-
+      return;
     }
 
     setTests([
-        ...tests,
-        {
-            testId: "",
-            testType: "",
-            sampleType: ""
-        }
+      ...tests,
+      {
+        testId: "",
+        testType: "",
+        sampleType: "",
+      },
     ]);
-
-};
+  };
 
   const removeTestRow = (index) => {
+    const updated = [...tests];
 
-  const updated = [...tests];
+    updated.splice(index, 1);
 
-  updated.splice(index, 1);
-
-  setTests(updated);
-
-};
+    setTests(updated);
+  };
 
   // const handleSubmit = async () => {
   //   const payload = {
@@ -320,31 +316,83 @@ const AddPatient = () => {
 
   //   navigate("/patients");
   // };
+  // const savePatient = async () => {
+  //   try {
+  //     const payload = {
+  //       ...form,
+  //       organizationId: form.organizationId
+  //         ? Number(form.organizationId)
+  //         : null,
+  //       insuranceId: form.insuranceId ? Number(form.insuranceId) : null,
+  //       tests: tests,
+  //     };
+
+  //     const res = await createPatient(payload);
+
+  //     setShowPrivacyModal(false);
+
+  //     // ✅ Backend message
+  //     alert(res.data.message); // "Patient created successfully"
+
+  //     navigate("/patients");
+  //   } catch (error) {
+  //     console.error(error);
+
+  //     alert(error.response?.data?.message || "Failed to create patient ❌");
+  //   }
+  // };
+
   const savePatient = async () => {
-    try {
-      const payload = {
-        ...form,
-        organizationId: form.organizationId
-          ? Number(form.organizationId)
-          : null,
-        insuranceId: form.insuranceId ? Number(form.insuranceId) : null,
-        tests: tests
-      };
 
-      const res = await createPatient(payload);
+  if (savingPatient) return;
 
-      setShowPrivacyModal(false);
-
-      // ✅ Backend message
-      alert(res.data.message); // "Patient created successfully"
-
-      navigate("/patients");
-    } catch (error) {
-      console.error(error);
-
-      alert(error.response?.data?.message || "Failed to create patient ❌");
+   if (!form.proposalId.trim()) {
+        alert("Proposal number is required.");
+        return;
     }
-  };
+
+  try {
+
+    setSavingPatient(true);
+
+    const payload = {
+      ...form,
+
+      proposalId: form.proposalId.trim(),
+
+      organizationId: form.organizationId
+        ? Number(form.organizationId)
+        : null,
+
+      insuranceId: form.insuranceId
+        ? Number(form.insuranceId)
+        : null,
+
+      tests: tests.filter( (t) => t.testId && t.testId !== "" ),
+    };
+
+    const res = await createPatient(payload);
+
+    setShowPrivacyModal(false);
+
+    alert(res.data.message);
+
+    navigate("/patients");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to create patient ❌"
+    );
+
+  } finally {
+
+    setSavingPatient(false);
+  }
+};
 
   const handleCountryChange = (e) => {
     const countryCode = e.target.value;
@@ -833,30 +881,28 @@ const AddPatient = () => {
                     </button>
                   </td> */}
                   <td>
+                    {index === tests.length - 1 && (
+                      <button
+                        type="button"
+                        className="btn btn-success me-2"
+                        onClick={addTestRow}
+                        title="Add Test"
+                      >
+                        <FaPlusCircle />
+                      </button>
+                    )}
 
-  {index === tests.length - 1 && (
-    <button
-        type="button"
-        className="btn btn-success me-2"
-        onClick={addTestRow}
-        title="Add Test"
-    >
-        <FaPlusCircle />
-    </button>
-)}
-
-{tests.length > 1 && (
-    <button
-        type="button"
-        className="btn btn-danger"
-        onClick={() => removeTestRow(index)}
-        title="Remove Test"
-    >
-        <FaTrashAlt />
-    </button>
-)}
-
-</td>
+                    {tests.length > 1 && (
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => removeTestRow(index)}
+                        title="Remove Test"
+                      >
+                        <FaTrashAlt />
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -965,7 +1011,7 @@ const AddPatient = () => {
                           Cancel
                         </button>
 
-                        <button
+                        {/* <button
                           className="btn btn-primary"
                           disabled={!consentChecked}
                           onClick={async () => {
@@ -975,7 +1021,17 @@ const AddPatient = () => {
                           }}
                         >
                           Accept & Continue
-                        </button>
+                        </button> */}
+
+                        <button
+    className="btn btn-primary"
+    disabled={!consentChecked || savingPatient}
+    onClick={savePatient}
+>
+    {savingPatient
+        ? "Registering..."
+        : "Accept & Continue"}
+</button>
                       </div>
                     </div>
                   </div>

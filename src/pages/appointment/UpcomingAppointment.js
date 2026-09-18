@@ -385,7 +385,7 @@ const handleReschedule = async (appointmentId) => {
 
                       {/* ✅ LM NO */}
                       <td>{(currentPage - 1) * entries + index + 1}</td>
-                      <td>{a.patientId}</td>
+                      <td>{a.lmNo}</td>
 
                       {/* ✅ PATIENT NAME */}
                       <td>{a.patientName}</td>

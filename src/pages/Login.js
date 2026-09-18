@@ -1060,53 +1060,156 @@ export default function Login() {
     setErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
   };
 
+  const completeLogin = async (token) => {
+  // JWT
+  localStorage.setItem("token", token);
+
+  // USER DETAILS
+  const userRes = await api.get("/users/me");
+
+  const userData = userRes.data;
+
+  localStorage.setItem(
+    "user",
+    JSON.stringify(userData.data)
+  );
+
+  // PERMISSIONS
+  const roleId = userData.data.roles[0].id;
+
+  const permRes = await api.get(`/permissions/${roleId}`);
+
+  localStorage.setItem(
+    "permissions",
+    JSON.stringify(permRes.data.data || [])
+  );
+
+  setStatus("success");
+
+  setTimeout(() => {
+    window.location.href = "/crm";
+  }, 800);
+};
+
+  // const handleLogin = async () => {
+  //   // validation (UI same)
+  //   const e = {};
+
+  //   if (!form.username.trim()) {
+  //     e.username = "Username is required.";
+  //   }
+
+  //   if (!form.password) {
+  //     e.password = "Password is required.";
+  //   }
+
+  //   if (Object.keys(e).length) {
+  //     setErrors(e);
+  //     return;
+  //   }
+
+  //   setStatus("loading");
+
+  //   try {
+  //     const res = await api.post("/auth/login", form);
+
+  //     if (res.data.success && res.data.otpRequired) {
+  //       setLoginUsername(form.username);
+
+  //       setCountdown(30);
+  //       setCanResend(false);
+
+  //       setShowOtpScreen(true);
+
+  //       setStatus("idle");
+
+  //       alert(res.data.message);
+
+  //       return;
+  //     }
+  //   } catch (err) {
+  //     const errorMessage =
+  //       err.response?.data?.message ||
+  //       err.response?.data ||
+  //       "Server error. Please try again.";
+
+  //     alert(errorMessage);
+
+  //     setStatus("idle");
+  //   }
+  // };
+
   const handleLogin = async () => {
-    // validation (UI same)
-    const e = {};
+  // validation (UI same)
+  const e = {};
 
-    if (!form.username.trim()) {
-      e.username = "Username is required.";
+  if (!form.username.trim()) {
+    e.username = "Username is required.";
+  }
+
+  if (!form.password) {
+    e.password = "Password is required.";
+  }
+
+  if (Object.keys(e).length) {
+    setErrors(e);
+    return;
+  }
+
+  setStatus("loading");
+
+  try {
+    const res = await api.post("/auth/login", form);
+
+    if (!res.data.success) {
+      throw new Error(res.data.message || "Login failed");
     }
 
-    if (!form.password) {
-      e.password = "Password is required.";
-    }
+    // =====================================================
+    // OTHER ORGANIZATIONS
+    // OTP REQUIRED
+    // =====================================================
 
-    if (Object.keys(e).length) {
-      setErrors(e);
+    if (res.data.otpRequired) {
+      setLoginUsername(form.username);
+
+      setCountdown(30);
+      setCanResend(false);
+
+      setShowOtpScreen(true);
+
+      setStatus("idle");
+
+      alert(res.data.message);
+
       return;
     }
 
-    setStatus("loading");
+    // =====================================================
+    // BAJAJ LIFE INSURANCE LIMITED
+    // OTP NOT REQUIRED
+    // DIRECT JWT LOGIN
+    // =====================================================
 
-    try {
-      const res = await api.post("/auth/login", form);
-
-      if (res.data.success && res.data.otpRequired) {
-        setLoginUsername(form.username);
-
-        setCountdown(30);
-        setCanResend(false);
-
-        setShowOtpScreen(true);
-
-        setStatus("idle");
-
-        alert(res.data.message);
-
-        return;
-      }
-    } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.response?.data ||
-        "Server error. Please try again.";
-
-      alert(errorMessage);
-
-      setStatus("idle");
+    if (!res.data.otpRequired && res.data.token) {
+      await completeLogin(res.data.token);
+      return;
     }
-  };
+
+    throw new Error("JWT token was not received from server.");
+
+  } catch (err) {
+    const errorMessage =
+      err.response?.data?.message ||
+      err.response?.data ||
+      err.message ||
+      "Server error. Please try again.";
+
+    alert(errorMessage);
+
+    setStatus("idle");
+  }
+};
 
   const handleOtpChange = (index, value) => {
 
