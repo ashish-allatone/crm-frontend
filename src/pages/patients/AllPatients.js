@@ -2,7 +2,10 @@ import React, { useState, useEffect } from "react";
 import "../../styles/allPatients.css";
 import { useNavigate } from "react-router-dom";
 // import { useParams } from "react-router-dom";
-import { getPatients, cancelPatientRegistration } from "../../services/patientService";
+import {
+  getPatients,
+  cancelPatientRegistration,
+} from "../../services/patientService";
 import { hasPermission } from "../permissionUtil";
 
 const AllPatients = () => {
@@ -16,6 +19,20 @@ const AllPatients = () => {
   const [sortDirection, setSortDirection] = useState("asc");
   const [patients, setPatients] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
+
+  // Pagination - show only 5 pages at a time
+const getPageNumbers = () => {
+  const pages = [];
+
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, currentPage + 2);
+
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+
+  return pages;
+};
 
   // const loadPatients = async () => {
   //   const res = await getPatients(currentPage - 1, entries, search);
@@ -58,52 +75,34 @@ const AllPatients = () => {
   // };
 
   const handleDelete = async (patientId) => {
-
-  const confirmDelete = window.confirm(
-    "Are you sure you want to cancel this patient's registration?"
-  );
-
-  if (!confirmDelete) return;
-
-  const reason = window.prompt(
-    "Please enter the reason for cancellation:"
-  );
-
-  if (reason === null) {
-    return;
-  }
-
-  if (reason.trim() === "") {
-
-    alert("Cancellation reason is required.");
-
-    return;
-
-  }
-
-  try {
-
-    await cancelPatientRegistration(
-      patientId,
-      reason
+    const confirmDelete = window.confirm(
+      "Are you sure you want to cancel this patient's registration?",
     );
 
-    alert(
-      "Patient cancelled successfully."
-    );
+    if (!confirmDelete) return;
 
-    loadPatients();
+    const reason = window.prompt("Please enter the reason for cancellation:");
 
-  } catch (err) {
+    if (reason === null) {
+      return;
+    }
 
-    alert(
-      err.response?.data?.message ||
-      "Unable to cancel registration."
-    );
+    if (reason.trim() === "") {
+      alert("Cancellation reason is required.");
 
-  }
+      return;
+    }
 
-};
+    try {
+      await cancelPatientRegistration(patientId, reason);
+
+      alert("Patient cancelled successfully.");
+
+      loadPatients();
+    } catch (err) {
+      alert(err.response?.data?.message || "Unable to cancel registration.");
+    }
+  };
 
   useEffect(() => {
     loadPatients();
@@ -453,9 +452,40 @@ const AllPatients = () => {
                     <td>{p.insuranceName}</td>
                     {/* <td>{p.approval}</td> */}
                     <td>{p.appointmentDate}</td>
-                    <td>
+                    {/* <td>
                       {p.registered
                         ? new Date(p.registered).toLocaleString()
+                        : "-"}
+                    </td> */}
+                    <td>
+                      {p.registered
+                        ? (() => {
+                            const date = new Date(p.registered);
+
+                            if (Number.isNaN(date.getTime())) return "-";
+
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(
+                              2,
+                              "0",
+                            );
+                            const day = String(date.getDate()).padStart(2, "0");
+
+                            const hours = String(date.getHours()).padStart(
+                              2,
+                              "0",
+                            );
+                            const minutes = String(date.getMinutes()).padStart(
+                              2,
+                              "0",
+                            );
+                            const seconds = String(date.getSeconds()).padStart(
+                              2,
+                              "0",
+                            );
+
+                            return `${year}.${month}.${day}, ${hours}:${minutes}:${seconds}`;
+                          })()
                         : "-"}
                     </td>
                     <td>{p.tat || "-"}</td>
@@ -491,19 +521,21 @@ const AllPatients = () => {
                   </button>
                 </li>
 
-                {pageNumbers.map((num) => (
-                  <li
-                    key={num}
-                    className={`page-item ${currentPage === num ? "active" : ""}`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => setCurrentPage(num)}
-                    >
-                      {num}
-                    </button>
-                  </li>
-                ))}
+                {getPageNumbers().map((num) => (
+  <li
+    key={num}
+    className={`page-item ${
+      currentPage === num ? "active" : ""
+    }`}
+  >
+    <button
+      className="page-link"
+      onClick={() => setCurrentPage(num)}
+    >
+      {num}
+    </button>
+  </li>
+))}
 
                 <li
                   className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}

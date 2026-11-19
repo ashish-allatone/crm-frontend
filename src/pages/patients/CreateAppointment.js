@@ -475,16 +475,42 @@ const CreateAppointment = () => {
   );
 
   // ✅ NEW: Handle DC selection
+  // const handleDiagnosticCenterSelect = (dc) => {
+  //   setForm({
+  //     ...form,
+  //     diagnosticCenterId: dc.id,
+  //     diagnosticCenterName: dc.name,
+  //     medicalAddress: dc.primaryAddress || "",
+  //   });
+  //   setDcSearchQuery(`${dc.name} - ${dc.locationName}`);
+  //   setShowDcDropdown(false);
+  // };
   const handleDiagnosticCenterSelect = (dc) => {
-    setForm({
-      ...form,
-      diagnosticCenterId: dc.id,
-      diagnosticCenterName: dc.name,
-      medicalAddress: dc.primaryAddress || "",
-    });
-    setDcSearchQuery(`${dc.name} - ${dc.locationName}`);
-    setShowDcDropdown(false);
-  };
+  const homeAvailable = dc.isHomeVisitAvailable === true;
+  const centreAvailable = dc.isCentreVisitAvailable === true;
+
+  let visitType = "";
+
+  if (centreAvailable) {
+    visitType = "CENTER_VISIT";
+  } else if (homeAvailable) {
+    visitType = "HOME_VISIT";
+  }
+
+  setForm((prev) => ({
+    ...prev,
+    diagnosticCenterId: dc.id,
+    diagnosticCenterName: dc.name,
+    visitType,
+    medicalAddress:
+      visitType === "CENTER_VISIT"
+        ? dc.primaryAddress || ""
+        : "",
+  }));
+
+  setDcSearchQuery(`${dc.name} - ${dc.locationName}`);
+  setShowDcDropdown(false);
+};
 
   // ✅ NEW: Handle search input change
   const handleDcSearchChange = (e) => {
@@ -579,7 +605,7 @@ const CreateAppointment = () => {
               )}
             </div>
 
-            <div className="col-md-3">
+            {/* <div className="col-md-3">
               <label>Visit Type</label>
               <select
                 className="form-control"
@@ -594,7 +620,79 @@ const CreateAppointment = () => {
                 <option value="CENTER_VISIT">Center Visit</option>
                 <option value="HOME_VISIT">Home Visit</option>
               </select>
-            </div>
+            </div> */}
+
+            <div className="col-md-3">
+  <label>Visit Type</label>
+
+  <select
+    className="form-control"
+    value={form.visitType}
+    disabled={!form.diagnosticCenterId}
+    onChange={(e) => {
+  const visitType = e.target.value;
+
+  const selectedDC = diagnosticCenters.find(
+    (dc) => String(dc.id) === String(form.diagnosticCenterId)
+  );
+
+  setForm((prev) => ({
+    ...prev,
+    visitType,
+    medicalAddress:
+      visitType === "CENTER_VISIT"
+        ? selectedDC?.primaryAddress || ""
+        : "",
+  }));
+}}
+  >
+    <option value="">Select Visit Type</option>
+
+    {(() => {
+      const selectedDC = diagnosticCenters.find(
+        (dc) =>
+          String(dc.id) === String(form.diagnosticCenterId)
+      );
+
+      if (!selectedDC) return null;
+
+      return (
+        <>
+          {selectedDC.isCentreVisitAvailable === true && (
+            <option value="CENTER_VISIT">
+              Centre Visit
+            </option>
+          )}
+
+          {selectedDC.isHomeVisitAvailable === true && (
+            <option value="HOME_VISIT">
+              Home Visit
+            </option>
+          )}
+        </>
+      );
+    })()}
+  </select>
+</div>
+{/* {form.visitType === "HOME_VISIT" && (
+  <div className="col-md-6">
+    <label>Patient Home Address *</label>
+
+    <textarea
+      className="form-control"
+      rows="2"
+      placeholder="Enter patient's complete home address"
+      value={form.medicalAddress}
+      onChange={(e) =>
+        setForm((prev) => ({
+          ...prev,
+          medicalAddress: e.target.value,
+        }))
+      }
+      required
+    />
+  </div>
+)} */}
 
             {/* Date */}
             <div className="col-md-3">

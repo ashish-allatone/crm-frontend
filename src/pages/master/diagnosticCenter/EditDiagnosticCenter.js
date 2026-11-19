@@ -48,6 +48,8 @@ const EditDiagnosticCenter = () => {
 
     longitude: "",
 
+    isCentreVisitAvailable: true,
+
     isHomeVisitAvailable: false,
 
     isPaidHomeVisit: false,
@@ -103,11 +105,14 @@ const EditDiagnosticCenter = () => {
         longitude:
           data.longitude || "",
 
-        isHomeVisitAvailable:
-          data.isHomeVisitAvailable || false,
+        isCentreVisitAvailable:
+  data.isCentreVisitAvailable ?? true,
 
-        isPaidHomeVisit:
-          data.isPaidHomeVisit || false,
+isHomeVisitAvailable:
+  data.isHomeVisitAvailable ?? false,
+
+isPaidHomeVisit:
+  data.isPaidHomeVisit ?? false,
       });
 
     } catch (error) {
@@ -118,18 +123,34 @@ const EditDiagnosticCenter = () => {
     }
   };
 
+  // const handleChange = (e) => {
+
+  //   const { name, value, type, checked } = e.target;
+
+  //   setForm({
+  //     ...form,
+  //     [name]:
+  //       type === "checkbox"
+  //         ? checked
+  //         : value,
+  //   });
+  // };
+
   const handleChange = (e) => {
 
-    const { name, value, type, checked } = e.target;
+  const { name, value, type, checked } = e.target;
 
-    setForm({
-      ...form,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : value,
-    });
-  };
+  setForm((prev) => ({
+    ...prev,
+
+    [name]: type === "checkbox" ? checked : value,
+
+    ...(name === "isHomeVisitAvailable" && !checked
+      ? { isPaidHomeVisit: false }
+      : {}),
+  }));
+
+};
 
   const handleSubmit = async () => {
 
@@ -305,7 +326,7 @@ const EditDiagnosticCenter = () => {
               />
             </div>
 
-            <div className="col-md-6">
+            {/* <div className="col-md-6">
 
               <div className="form-check mt-4">
 
@@ -341,9 +362,75 @@ const EditDiagnosticCenter = () => {
                   Paid Home Visit
                 </label>
 
-              </div>
+              </div> */}
 
-            </div>
+            {/* </div> */}
+
+            {/* VISIT AVAILABILITY */}
+
+<div className="col-md-4">
+
+  <div className="form-check mt-4">
+
+    <input
+      type="checkbox"
+      className="form-check-input"
+      name="isCentreVisitAvailable"
+      checked={form.isCentreVisitAvailable}
+      onChange={handleChange}
+    />
+
+    <label className="form-check-label">
+      Centre Visit Available
+    </label>
+
+  </div>
+
+</div>
+
+<div className="col-md-4">
+
+  <div className="form-check mt-4">
+
+    <input
+      type="checkbox"
+      className="form-check-input"
+      name="isHomeVisitAvailable"
+      checked={form.isHomeVisitAvailable}
+      onChange={handleChange}
+    />
+
+    <label className="form-check-label">
+      Home Visit Available
+    </label>
+
+  </div>
+
+</div>
+
+{form.isHomeVisitAvailable && (
+
+  <div className="col-md-4">
+
+    <div className="form-check mt-4">
+
+      <input
+        type="checkbox"
+        className="form-check-input"
+        name="isPaidHomeVisit"
+        checked={form.isPaidHomeVisit}
+        onChange={handleChange}
+      />
+
+      <label className="form-check-label">
+        Paid Home Visit
+      </label>
+
+    </div>
+
+  </div>
+
+)}
 
           </div>
 

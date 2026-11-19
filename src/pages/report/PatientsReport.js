@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/allPatients.css";
 import { getPatientReport } from "../../services/patientService";
+import { getOrganizationsAll } from "../../services/organizationService";
 import * as XLSX from "xlsx";
 
 const PatientsReport = () => {
@@ -14,6 +15,9 @@ const PatientsReport = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
+  const [organizationId, setOrganizationId] = useState("ALL");
+  const [appliedOrganizationId, setAppliedOrganizationId] = useState("ALL");
+
   const [appliedStatus, setAppliedStatus] = useState("ALL");
   const [appliedFromDate, setAppliedFromDate] = useState("");
   const [appliedToDate, setAppliedToDate] = useState("");
@@ -21,21 +25,31 @@ const PatientsReport = () => {
   const [patients, setPatients] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
 
+  const getPageNumbers = () => {
+  const pages = [];
+
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, currentPage + 2);
+
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+
+  return pages;
+};
+
   const loadPatients = async () => {
     try {
       const res = await getPatientReport(
         currentPage - 1,
-
         entries,
-
         search,
-
         appliedStatus === "ALL" ? "ALL" : appliedStatus,
-
         appliedFromDate || null,
-
         appliedToDate || null,
+        appliedOrganizationId === "ALL" ? null : appliedOrganizationId,
       );
+
 
       setPatients(res.data.content);
       setTotalPages(res.data.totalPages);
@@ -45,20 +59,36 @@ const PatientsReport = () => {
   };
 
   useEffect(() => {
+  const timer = setTimeout(() => {
     loadPatients();
-  }, [
-    currentPage,
+  }, 400);
 
-    entries,
+  return () => clearTimeout(timer);
+}, [
+  currentPage,
+  entries,
+  search,
+  appliedStatus,
+  appliedFromDate,
+  appliedToDate,
+  appliedOrganizationId,
+]);
 
-    search,
+  const [organizations, setOrganizations] = useState([]);
 
-    appliedStatus,
+  useEffect(() => {
+    loadOrganizations();
+  }, []);
 
-    appliedFromDate,
+  const loadOrganizations = async () => {
+    try {
+      const res = await getOrganizationsAll();
 
-    appliedToDate,
-  ]);
+      setOrganizations(res.data.data || res.data || []);
+    } catch (err) {
+      console.error("Failed to load organizations", err);
+    }
+  };
 
   const handleSort = (column) => {
     let direction = "asc";
@@ -92,133 +122,121 @@ const PatientsReport = () => {
     return sortDirection === "asc" ? "▲" : "▼";
   };
 
-//   const exportToExcel = () => {
-//     const exportData = patients.map((p) => ({
+  //   const exportToExcel = () => {
+  //     const exportData = patients.map((p) => ({
 
-//     "Registration Date": p.registrationDate,
+  //     "Registration Date": p.registrationDate,
 
-//     "Patient Id": p.patientId,
+  //     "Patient Id": p.patientId,
 
-//     "Proposal Id": p.proposalId,
+  //     "Proposal Id": p.proposalId,
 
-//     "Patient Name": p.patientName,
+  //     "Patient Name": p.patientName,
 
-//     Gender: p.gender,
+  //     Gender: p.gender,
 
-//     Age: p.age,
+  //     Age: p.age,
 
-//     DOB: p.dob,
+  //     DOB: p.dob,
 
-//     Mobile: p.mobile,
+  //     Mobile: p.mobile,
 
-//     Address: p.address,
+  //     Address: p.address,
 
-//     City: p.city,
+  //     City: p.city,
 
-//     State: p.state,
+  //     State: p.state,
 
-//     Country: p.country,
+  //     Country: p.country,
 
-//     Email: p.email,
+  //     Email: p.email,
 
-//     Organization: p.organizationName,
+  //     Organization: p.organizationName,
 
-//     Insurance: p.insuranceName,
+  //     Insurance: p.insuranceName,
 
-//     DiagnosticCenter: p.diagnosticCenterName,
+  //     DiagnosticCenter: p.diagnosticCenterName,
 
-//     QCStatus: p.qcStatus,
+  //     QCStatus: p.qcStatus,
 
-//     WorkflowStatus: p.currentStatus,
+  //     WorkflowStatus: p.currentStatus,
 
-//     RegistrationStatus: p.patientStatus,
+  //     RegistrationStatus: p.patientStatus,
 
-//     CancellationReason: p.cancellationReason,
+  //     CancellationReason: p.cancellationReason,
 
-//     TAT: p.tat
+  //     TAT: p.tat
 
-// }));
+  // }));
 
-//     const worksheet = XLSX.utils.json_to_sheet(exportData);
+  //     const worksheet = XLSX.utils.json_to_sheet(exportData);
 
-//     const workbook = XLSX.utils.book_new();
+  //     const workbook = XLSX.utils.book_new();
 
-//     XLSX.utils.book_append_sheet(workbook, worksheet, "Patients Report");
+  //     XLSX.utils.book_append_sheet(workbook, worksheet, "Patients Report");
 
-//     XLSX.writeFile(workbook, "Patients_MIS_Report.xlsx");
-//   };
+  //     XLSX.writeFile(workbook, "Patients_MIS_Report.xlsx");
+  //   };
 
-const exportToExcel = () => {
+  const exportToExcel = () => {
+    const exportData = patients.map((p) => ({
+      "Registration Date": p.registrationDate,
 
-  const exportData = patients.map((p) => ({
+      "LM No": p.lmNo,
 
-    "Registration Date": p.registrationDate,
+      "Patient Id": p.patientId,
 
-    "LM No": p.lmNo,
+      "Proposal ID": p.proposalId,
 
-    "Patient Id": p.patientId,
+      "Patient Name": p.patientName,
 
-    "Proposal ID": p.proposalId,
+      Gender: p.gender,
 
-    "Patient Name": p.patientName,
+      Age: p.age,
 
-    "Gender": p.gender,
+      DOB: p.dob,
 
-    "Age": p.age,
+      "Mobile No": p.mobile,
 
-    "DOB": p.dob,
+      Address: p.address,
 
-    "Mobile No": p.mobile,
+      City: p.city,
 
-    "Address": p.address,
+      State: p.state,
 
-    "City": p.city,
+      Country: p.country,
 
-    "State": p.state,
+      Email: p.email,
 
-    "Country": p.country,
+      Organization: p.organizationName,
 
-    "Email": p.email,
+      "Insurance Company": p.insuranceName,
 
-    "Organization": p.organizationName,
+      "Diagnostic Center": p.diagnosticCenterName,
 
-    "Insurance Company": p.insuranceName,
+      "Appointment Date": p.appointmentDate,
 
-    "Diagnostic Center": p.diagnosticCenterName,
+      "QC Status": p.qcStatus,
 
-    "Appointment Date": p.appointmentDate,
+      "QC Approved Date": p.qcApprovedDate,
 
-    "QC Status": p.qcStatus,
+      "Workflow Status": p.currentStatus,
 
-    "QC Approved Date": p.qcApprovedDate,
+      "Registration Status": p.patientStatus,
 
-    "Workflow Status": p.currentStatus,
+      "Cancellation Reason": p.cancellationReason || "-",
 
-    "Registration Status": p.patientStatus,
+      TAT: p.tat,
+    }));
 
-    "Cancellation Reason": p.cancellationReason || "-",
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
 
-    "TAT": p.tat
+    const workbook = XLSX.utils.book_new();
 
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Patients Report");
 
-
-  }));
-
-  const worksheet = XLSX.utils.json_to_sheet(exportData);
-
-  const workbook = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(
-    workbook,
-    worksheet,
-    "Patients Report"
-  );
-
-  XLSX.writeFile(
-    workbook,
-    "Patients_MIS_Report.xlsx"
-  );
-};
+    XLSX.writeFile(workbook, "Patients_MIS_Report.xlsx");
+  };
 
   return (
     <div className="container-fluid mt-3">
@@ -267,6 +285,24 @@ const exportToExcel = () => {
             </div>
 
             <div className="col-md-3">
+              <label>Organization</label>
+
+              <select
+                className="form-control"
+                value={organizationId}
+                onChange={(e) => setOrganizationId(e.target.value)}
+              >
+                <option value="ALL">All Organizations</option>
+
+                {organizations.map((org) => (
+                  <option key={org.id} value={org.id}>
+                    {org.organizationName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="col-md-3">
               <label>From Date</label>
 
               <input
@@ -287,38 +323,48 @@ const exportToExcel = () => {
                 onChange={(e) => setToDate(e.target.value)}
               />
             </div>
-
-            <div className="col-md-3 d-flex align-items-end">
-              <button
-                className="btn btn-primary me-2"
-                onClick={() => {
-                  setAppliedStatus(status);
-                  setAppliedFromDate(fromDate);
-                  setAppliedToDate(toDate);
-                  setCurrentPage(1);
-                }}
-              >
-                Show
-              </button>
-
-              <button
-                className="btn btn-danger"
-                onClick={() => {
-                  setStatus("ALL");
-                  setFromDate("");
-                  setToDate("");
-
-                  setAppliedStatus("ALL");
-                  setAppliedFromDate("");
-                  setAppliedToDate("");
-
-                  setCurrentPage(1);
-                }}
-              >
-                Reset
-              </button>
-            </div>
           </div>
+
+          {/* Show / Reset */}
+<div className="row mt-2 mb-3">
+  <div className="col-12 filter-buttons">
+
+    <button
+      type="button"
+      className="btn btn-primary filter-btn"
+      onClick={() => {
+        setAppliedStatus(status);
+        setAppliedFromDate(fromDate);
+        setAppliedToDate(toDate);
+        setAppliedOrganizationId(organizationId);
+        setCurrentPage(1);
+      }}
+    >
+      Show
+    </button>
+
+    <button
+      type="button"
+      className="btn btn-danger filter-btn"
+      onClick={() => {
+        setStatus("ALL");
+        setFromDate("");
+        setToDate("");
+        setOrganizationId("ALL");
+
+        setAppliedStatus("ALL");
+        setAppliedFromDate("");
+        setAppliedToDate("");
+        setAppliedOrganizationId("ALL");
+
+        setCurrentPage(1);
+      }}
+    >
+      Reset
+    </button>
+
+  </div>
+</div>
 
           {/* Search + Entries */}
 
@@ -336,6 +382,8 @@ const exportToExcel = () => {
                 <option value={5}>5</option>
                 <option value={10}>10</option>
                 <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
               </select>
               entries
             </div>
@@ -376,8 +424,6 @@ const exportToExcel = () => {
                   <th onClick={() => handleSort("name")}>
                     Patient Name {getArrow("name")}
                   </th>
-
-                  
 
                   <th onClick={() => handleSort("gender")}>
                     Gender {getArrow("gender")}
@@ -427,7 +473,6 @@ const exportToExcel = () => {
                     QC Approved Date {getArrow("qcApproveDate")}
                   </th>
 
-
                   <th onClick={() => handleSort("provider")}>
                     Diagnostic Center {getArrow("provider")}
                   </th>
@@ -445,15 +490,11 @@ const exportToExcel = () => {
                   </th>
 
                   <th onClick={() => handleSort("status")}>
-                  Workflow Status {getArrow("status")}
+                    Workflow Status {getArrow("status")}
                   </th>
-                  <th>
-    Registration Status
-</th>
+                  <th>Registration Status</th>
 
-<th>
-    Cancellation Reason
-</th>
+                  <th>Cancellation Reason</th>
                 </tr>
               </thead>
 
@@ -468,10 +509,10 @@ const exportToExcel = () => {
                   patients.map((p) => (
                     <tr key={p.patientId}>
                       <td>
-    {p.registrationDate
-        ? new Date(p.registrationDate).toLocaleDateString()
-        : "-"}
-</td>
+                        {p.registrationDate
+                          ? new Date(p.registrationDate).toLocaleDateString()
+                          : "-"}
+                      </td>
                       <td>{p.lmNo}</td>
                       <td>{p.proposalId}</td>
                       <td>
@@ -488,35 +529,33 @@ const exportToExcel = () => {
                       <td>{p.email}</td>
                       <td>{p.organizationName}</td>
                       <td>
-  {p.appointmentDate
-    ? new Date(p.appointmentDate).toLocaleDateString("en-GB")
-    : "-"}
-</td>
-<td>
-  {p.qcApprovedDate
-    ? new Date(p.qcApprovedDate).toLocaleString("en-GB")
-    : "-"}
-</td>
+                        {p.appointmentDate
+                          ? new Date(p.appointmentDate).toLocaleDateString(
+                              "en-GB",
+                            )
+                          : "-"}
+                      </td>
+                      <td>
+                        {p.qcApprovedDate
+                          ? new Date(p.qcApprovedDate).toLocaleString("en-GB")
+                          : "-"}
+                      </td>
                       <td>{p.diagnosticCenterName}</td>
                       <td>{p.insuranceName}</td>
                       <td>{p.nationalIdNumber}</td>
                       <td>{p.passportNumber}</td>
                       <td>{p.currentStatus}</td>
                       <td>
-    {p.patientStatus === "ACTIVE" ? (
-        <span className="badge bg-success">
-            Active
-        </span>
-    ) : (
-        <span className="badge bg-danger">
-            Registration Cancelled
-        </span>
-    )}
-</td>
+                        {p.patientStatus === "ACTIVE" ? (
+                          <span className="badge bg-success">Active</span>
+                        ) : (
+                          <span className="badge bg-danger">
+                            Registration Cancelled
+                          </span>
+                        )}
+                      </td>
 
-<td>
-    {p.cancellationReason || "-"}
-</td>
+                      <td>{p.cancellationReason || "-"}</td>
                     </tr>
                   ))
                 )}
@@ -526,51 +565,70 @@ const exportToExcel = () => {
 
           {/* Pagination */}
 
-          <div className="d-flex justify-content-between align-items-center mt-3">
-            {/* <div>
-              Showing {startEntry} to {endEntry} of {sortedData.length} entries
-            </div> */}
+          {/* Pagination */}
 
-            <nav>
-              <ul className="pagination mb-0">
-                <li
-                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                  >
-                    Previous
-                  </button>
-                </li>
+<div className="d-flex justify-content-between align-items-center mt-3">
 
-                {pageNumbers.map((num) => (
-                  <li
-                    key={num}
-                    className={`page-item ${currentPage === num ? "active" : ""}`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => setCurrentPage(num)}
-                    >
-                      {num}
-                    </button>
-                  </li>
-                ))}
+  {/* Page Information */}
+  <div>
+    Showing page {currentPage} of {totalPages}
+  </div>
 
-                <li
-                  className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}
-                >
-                  <button
-                    className="page-link"
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                  >
-                    Next
-                  </button>
-                </li>
-              </ul>
-            </nav>
-          </div>
+  {/* Pagination */}
+  <nav>
+    <ul className="pagination mb-0">
+
+      {/* Previous */}
+      <li
+        className={`page-item ${
+          currentPage === 1 ? "disabled" : ""
+        }`}
+      >
+        <button
+          className="page-link"
+          onClick={() => setCurrentPage(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+      </li>
+
+      {/* Page Numbers */}
+      {getPageNumbers().map((num) => (
+  <li
+    key={num}
+    className={`page-item ${
+      currentPage === num ? "active" : ""
+    }`}
+  >
+    <button
+      className="page-link"
+      onClick={() => setCurrentPage(num)}
+    >
+      {num}
+    </button>
+  </li>
+))}
+
+      {/* Next */}
+      <li
+        className={`page-item ${
+          currentPage === totalPages ? "disabled" : ""
+        }`}
+      >
+        <button
+          className="page-link"
+          onClick={() => setCurrentPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </li>
+
+    </ul>
+  </nav>
+
+</div>
         </div>
       </div>
     </div>

@@ -38,6 +38,8 @@ const AddDiagnosticCenter = () => {
 
     isHomeVisitAvailable: false,
 
+    isCentreVisitAvailable: true,
+
     isPaidHomeVisit: false,
   });
 
@@ -236,7 +238,7 @@ const AddDiagnosticCenter = () => {
               />
             </div>
 
-            <div className="col-md-6">
+            {/* <div className="col-md-6">
 
               <div className="form-check mt-4">
 
@@ -274,7 +276,79 @@ const AddDiagnosticCenter = () => {
 
               </div>
 
-            </div>
+            </div> */}
+
+            {/* Visit Type */}
+<div className="col-md-12">
+  <label className="form-label fw-semibold">
+    Visit Type Availability
+  </label>
+
+  <div className="d-flex flex-wrap gap-4 mt-2">
+
+    {/* Centre Visit */}
+    <div className="form-check">
+      <input
+        type="checkbox"
+        className="form-check-input"
+        id="isCentreVisitAvailable"
+        name="isCentreVisitAvailable"
+        checked={form.isCentreVisitAvailable}
+        onChange={handleChange}
+      />
+
+      <label
+        className="form-check-label"
+        htmlFor="isCentreVisitAvailable"
+      >
+        Centre Visit Available
+      </label>
+    </div>
+
+    {/* Home Visit */}
+    <div className="form-check">
+      <input
+        type="checkbox"
+        className="form-check-input"
+        id="isHomeVisitAvailable"
+        name="isHomeVisitAvailable"
+        checked={form.isHomeVisitAvailable}
+        onChange={handleChange}
+      />
+
+      <label
+        className="form-check-label"
+        htmlFor="isHomeVisitAvailable"
+      >
+        Home Visit Available
+      </label>
+    </div>
+
+  </div>
+</div>
+
+{/* Paid Home Visit */}
+{form.isHomeVisitAvailable && (
+  <div className="col-md-6">
+    <div className="form-check mt-3">
+      <input
+        type="checkbox"
+        className="form-check-input"
+        id="isPaidHomeVisit"
+        name="isPaidHomeVisit"
+        checked={form.isPaidHomeVisit}
+        onChange={handleChange}
+      />
+
+      <label
+        className="form-check-label"
+        htmlFor="isPaidHomeVisit"
+      >
+        Paid Home Visit
+      </label>
+    </div>
+  </div>
+)}
 
           </div>
 

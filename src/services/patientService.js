@@ -44,22 +44,19 @@ export const getPatientReport = (
     search,
     status,
     fromDate,
-    toDate
+    toDate,
+    organizationId
 ) => {
 
     return api.get("/reports/patients", {
-
         params: {
-
             page,
             size,
             search,
             status,
             fromDate,
-            toDate
-
+            toDate,
+            organizationId
         }
-
     });
-
 };

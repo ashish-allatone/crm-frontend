@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../../styles/addPatient.css";
 
 import { getOrganizationById } from "../../services/organizationService";
-import { getAppointments } from "../../services/appointmentService";
+import { getInvoiceEligibleAppointments } from "../../services/appointmentService";
 import { getAllCurrencies } from "../../services/currencyService";
 import { createInvoice } from "../../services/invoiceService";
 import { hasPermission } from "../permissionUtil";
@@ -29,40 +29,55 @@ const AddInvoice = () => {
 
   // 🔥 LOAD DATA
   useEffect(() => {
-    loadData();
-  }, []);
+  loadData();
+}, []);
 
-  const loadData = async () => {
-    try {
-      const orgRes = await getOrganizationById(id);
-      const appRes = await getAppointments(0, 100, "", null, id);
-      const currRes = await getAllCurrencies();
+const loadData = async () => {
+  try {
+    const orgRes = await getOrganizationById(id);
 
-      const orgData = orgRes.data.data;
+    const appRes = await getInvoiceEligibleAppointments(
+      0,
+      100,
+      "",
+      id
+    );
 
-      setOrganization(orgData);
-      setAppointments(appRes.data.content || []);
-      setCurrencies(currRes.data.data || []);
+    const currRes = await getAllCurrencies();
 
-      // 🔥 default currency
-      if (orgData.currencyId) {
-        setForm((prev) => ({
-          ...prev,
-          currencyId: orgData.currencyId,
-        }));
-      }
-      const inr = currRes.data.data.find((c) => c.currencyCode === "INR");
+    const orgData = orgRes.data.data;
 
-      if (inr) {
-        setForm((prev) => ({
-          ...prev,
-          currencyId: inr.id, // ✅ IMPORTANT
-        }));
-      }
-    } catch (err) {
-      console.error(err);
+    setOrganization(orgData);
+
+    // Dedicated API already returns
+    // DONE + QC APPROVED appointments
+    setAppointments(appRes.data.data?.content || []);
+
+    setCurrencies(currRes.data.data || []);
+
+    // Default organization currency
+    if (orgData.currencyId) {
+      setForm((prev) => ({
+        ...prev,
+        currencyId: orgData.currencyId,
+      }));
     }
-  };
+
+    // Default INR
+    const inr = (currRes.data.data || []).find(
+      (c) => c.currencyCode === "INR"
+    );
+
+    if (inr) {
+      setForm((prev) => ({
+        ...prev,
+        currencyId: inr.id,
+      }));
+    }
+  } catch (err) {
+    console.error("Failed to load invoice data:", err);
+  }
+};
 
   // 🔥 SELECT CHECKBOX
   const handleSelect = (appointment, checked) => {
@@ -224,6 +239,7 @@ const AddInvoice = () => {
                   <th>Select</th>
                   <th>Patient Name</th>
                   <th>Visit Date</th>
+                  <th>QC Approved Date</th>
                   <th>Package Amount</th>
                 </tr>
               </thead>
@@ -247,6 +263,7 @@ const AddInvoice = () => {
 
                       <td>{a.patientName}</td>
                       <td>{a.visitDate}</td>
+                      <td>{a.qcApprovedDate || "-"}</td>
                       <td>₹ {a.packageAmount || 0}</td>
                     </tr>
                   ))

@@ -201,6 +201,8 @@ const handleDelete = async (id) => {
 
                   <th>Paid Home Visit</th>
 
+                  <th>Centre Visit</th>
+
                   <th>Address</th>
 
                 </tr>
@@ -267,6 +269,10 @@ const handleDelete = async (id) => {
                     <td>
                       {dc.isPaidHomeVisit ? "Yes" : "No"}
                     </td>
+
+                    <td>
+  {dc.isCentreVisitAvailable ? "Yes" : "No"}
+</td>
 
                     <td>{dc.primaryAddress}</td>
 

@@ -21,6 +21,20 @@ const AllAppointment = () => {
   const [entries, setEntries] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Pagination - show maximum 5 pages at a time
+const getPageNumbers = () => {
+  const pages = [];
+
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, currentPage + 2);
+
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+
+  return pages;
+};
+
   const loadAppointments = async () => {
     try {
       // 🔥 type NULL bhej rahe hain
@@ -54,77 +68,65 @@ const AllAppointment = () => {
   };
 
   const handleAppointmentDone = async (appointmentId) => {
-  const confirmDone = window.confirm(
-    "Are you sure this appointment was successfully completed?"
-  );
-
-  if (!confirmDone) return;
-
-  try {
-    await markAppointmentDone(appointmentId);
-
-    alert("Appointment marked as successfully done.");
-
-    loadAppointments();
-  } catch (err) {
-    alert(
-      err.response?.data?.message ||
-        "Unable to mark appointment as done."
-    );
-  }
-};
-
-const handleAppointmentNotDone = async (appointmentId) => {
-  const confirmNotDone = window.confirm(
-    "Are you sure the patient did not attend this appointment?"
-  );
-
-  if (!confirmNotDone) return;
-
-  try {
-    await markAppointmentNotDone(appointmentId);
-
-    alert("Appointment marked as not done.");
-
-    loadAppointments();
-  } catch (err) {
-    alert(
-      err.response?.data?.message ||
-        "Unable to mark appointment as not done."
-    );
-  }
-};
-
-const handleReschedule = async (appointmentId) => {
-  const visitDate = window.prompt(
-    "Enter new appointment date (YYYY-MM-DD):"
-  );
-
-  if (!visitDate) return;
-
-  const visitTime = window.prompt(
-    "Enter new appointment time (HH:mm):"
-  );
-
-  if (!visitTime) return;
-
-  try {
-    await rescheduleAppointment(
-      appointmentId,
-      visitDate,
-      visitTime
+    const confirmDone = window.confirm(
+      "Are you sure this appointment was successfully completed?",
     );
 
-    alert("Appointment rescheduled successfully.");
+    if (!confirmDone) return;
 
-    loadAppointments();
-  } catch (err) {
-    alert(
-      err.response?.data?.message ||
-        "Unable to reschedule appointment."
+    try {
+      await markAppointmentDone(appointmentId);
+
+      alert("Appointment marked as successfully done.");
+
+      loadAppointments();
+    } catch (err) {
+      alert(
+        err.response?.data?.message || "Unable to mark appointment as done.",
+      );
+    }
+  };
+
+  const handleAppointmentNotDone = async (appointmentId) => {
+    const confirmNotDone = window.confirm(
+      "Are you sure the patient did not attend this appointment?",
     );
-  }
-};
+
+    if (!confirmNotDone) return;
+
+    try {
+      await markAppointmentNotDone(appointmentId);
+
+      alert("Appointment marked as not done.");
+
+      loadAppointments();
+    } catch (err) {
+      alert(
+        err.response?.data?.message ||
+          "Unable to mark appointment as not done.",
+      );
+    }
+  };
+
+  const handleReschedule = async (appointmentId) => {
+    const visitDate = window.prompt("Enter new appointment date (YYYY-MM-DD):");
+
+    if (!visitDate) return;
+
+    const visitTime = window.prompt("Enter new appointment time (HH:mm):");
+
+    if (!visitTime) return;
+
+    try {
+      await rescheduleAppointment(appointmentId, visitDate, visitTime);
+
+      alert("Appointment rescheduled successfully.");
+
+      loadAppointments();
+    } catch (err) {
+      alert(err.response?.data?.message || "Unable to reschedule appointment.");
+    }
+  };
 
   useEffect(() => {
     loadAppointments();
@@ -190,6 +192,7 @@ const handleReschedule = async (appointmentId) => {
                   <th>MOBILE NO.</th>
                   <th>ORGANIZATION NAME</th>
                   <th>DIAGNOSTIC CENTER</th>
+                  <th>VISIT TYPE</th>
                   <th>INSURANCE COMPANY</th>
                   <th>VISIT DATE</th>
                   <th>APPOINTMENT STATUS</th>
@@ -199,9 +202,9 @@ const handleReschedule = async (appointmentId) => {
               <tbody>
                 {appointments.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="text-center">
-                      No appointments found
-                    </td>
+                    <td colSpan="11" className="text-center">
+  No appointments found
+</td>
                   </tr>
                 ) : (
                   appointments.map((a, index) => (
@@ -243,83 +246,79 @@ const handleReschedule = async (appointmentId) => {
                           </ul> */}
 
                           <ul className="dropdown-menu">
+                            {/* EDIT */}
+                            {hasPermission("Appointment", "EDIT") && (
+                              <li>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() =>
+                                    navigate(
+                                      `/edit-appointment/${a.appointmentId}`,
+                                    )
+                                  }
+                                >
+                                  Edit Appointment
+                                </button>
+                              </li>
+                            )}
 
-  {/* EDIT */}
-  {hasPermission("Appointment", "EDIT") && (
-    <li>
-      <button
-        className="dropdown-item"
-        onClick={() =>
-          navigate(
-            `/edit-appointment/${a.appointmentId}`
-          )
-        }
-      >
-        Edit Appointment
-      </button>
-    </li>
-  )}
+                            {/* APPOINTMENT DONE */}
+                            {hasPermission("Appointment", "EDIT") &&
+                              a.appointmentOutcome !== "DONE" && (
+                                <li>
+                                  <button
+                                    className="dropdown-item text-success"
+                                    onClick={() =>
+                                      handleAppointmentDone(a.appointmentId)
+                                    }
+                                  >
+                                    Appointment Done
+                                  </button>
+                                </li>
+                              )}
 
-  {/* APPOINTMENT DONE */}
-  {hasPermission("Appointment", "EDIT") &&
-    a.appointmentOutcome !== "DONE" && (
-      <li>
-        <button
-          className="dropdown-item text-success"
-          onClick={() =>
-            handleAppointmentDone(a.appointmentId)
-          }
-        >
-          Appointment Done
-        </button>
-      </li>
-    )}
+                            {/* APPOINTMENT NOT DONE */}
+                            {hasPermission("Appointment", "EDIT") &&
+                              a.appointmentOutcome !== "NOT_DONE" && (
+                                <li>
+                                  <button
+                                    className="dropdown-item text-warning"
+                                    onClick={() =>
+                                      handleAppointmentNotDone(a.appointmentId)
+                                    }
+                                  >
+                                    Appointment Not Done
+                                  </button>
+                                </li>
+                              )}
 
-  {/* APPOINTMENT NOT DONE */}
-  {hasPermission("Appointment", "EDIT") &&
-    a.appointmentOutcome !== "NOT_DONE" && (
-      <li>
-        <button
-          className="dropdown-item text-warning"
-          onClick={() =>
-            handleAppointmentNotDone(a.appointmentId)
-          }
-        >
-          Appointment Not Done
-        </button>
-      </li>
-    )}
+                            {/* RESCHEDULE */}
+                            {hasPermission("Appointment", "EDIT") &&
+                              a.appointmentOutcome === "NOT_DONE" && (
+                                <li>
+                                  <button
+                                    className="dropdown-item text-primary"
+                                    onClick={() =>
+                                      handleReschedule(a.appointmentId)
+                                    }
+                                  >
+                                    Reschedule Appointment
+                                  </button>
+                                </li>
+                              )}
 
-  {/* RESCHEDULE */}
-  {hasPermission("Appointment", "EDIT") &&
-    a.appointmentOutcome === "NOT_DONE" && (
-      <li>
-        <button
-          className="dropdown-item text-primary"
-          onClick={() =>
-            handleReschedule(a.appointmentId)
-          }
-        >
-          Reschedule Appointment
-        </button>
-      </li>
-    )}
-
-  {/* DELETE */}
-  {hasPermission("Appointment", "EDIT") && (
-    <li>
-      <button
-        className="dropdown-item text-danger"
-        onClick={() =>
-          handleDelete(a.appointmentId)
-        }
-      >
-        Delete Appointment
-      </button>
-    </li>
-  )}
-
-</ul>
+                            {/* DELETE */}
+                            {hasPermission("Appointment", "EDIT") && (
+                              <li>
+                                <button
+                                  className="dropdown-item text-danger"
+                                  onClick={() => handleDelete(a.appointmentId)}
+                                >
+                                  Delete Appointment
+                                </button>
+                              </li>
+                            )}
+                          </ul>
                         </div>
                       </td>
 
@@ -331,23 +330,28 @@ const handleReschedule = async (appointmentId) => {
                       <td>{a.mobile}</td>
                       <td>{a.organizationName}</td>
                       <td>{a.diagnosticCenterName || "-"}</td>
+                      <td>
+  {a.visitType === "HOME_VISIT" ? (
+    <span className="badge bg-info text-dark">Home Visit</span>
+  ) : a.visitType === "CENTER_VISIT" ? (
+    <span className="badge bg-primary">Centre Visit</span>
+  ) : (
+    "-"
+  )}
+</td>
                       <td>{a.insuranceName}</td>
                       <td>{a.visitDate}</td>
                       <td>
-  {a.appointmentOutcome === "DONE" ? (
-    <span className="badge bg-success">
-      Done
-    </span>
-  ) : a.appointmentOutcome === "NOT_DONE" ? (
-    <span className="badge bg-warning text-dark">
-      Not Done
-    </span>
-  ) : (
-    <span className="badge bg-secondary">
-      Pending
-    </span>
-  )}
-</td>
+                        {a.appointmentOutcome === "DONE" ? (
+                          <span className="badge bg-success">Done</span>
+                        ) : a.appointmentOutcome === "NOT_DONE" ? (
+                          <span className="badge bg-warning text-dark">
+                            Not Done
+                          </span>
+                        ) : (
+                          <span className="badge bg-secondary">Pending</span>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -373,19 +377,19 @@ const handleReschedule = async (appointmentId) => {
                   </button>
                 </li>
 
-                {pageNumbers.map((num) => (
-                  <li
-                    key={num}
-                    className={`page-item ${currentPage === num ? "active" : ""}`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => setCurrentPage(num)}
-                    >
-                      {num}
-                    </button>
-                  </li>
-                ))}
+                {getPageNumbers().map((num) => (
+  <li
+    key={num}
+    className={`page-item ${currentPage === num ? "active" : ""}`}
+  >
+    <button
+      className="page-link"
+      onClick={() => setCurrentPage(num)}
+    >
+      {num}
+    </button>
+  </li>
+))}
 
                 <li
                   className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}

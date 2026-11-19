@@ -326,27 +326,25 @@ const Invoice = () => {
 
                         {/* <td>₹ {p.paidAmount}</td> */}
                         <td>
-  <div className="d-flex align-items-center gap-2">
-    
-    <input
-      type="number"
-      className="form-control form-control-sm paid-input"
-      disabled={!hasPermission("Invoice", "EDIT")}
-      defaultValue={p.paidAmount}
-      onChange={(e) => setEditPaid(e.target.value)}
-    />
+                          <div className="d-flex align-items-center gap-2">
+                            <input
+                              type="number"
+                              className="form-control form-control-sm paid-input"
+                              disabled={!hasPermission("Invoice", "EDIT")}
+                              defaultValue={p.paidAmount}
+                              onChange={(e) => setEditPaid(e.target.value)}
+                            />
 
-   {hasPermission("Invoice", "EDIT") && (
-  <button
-    className="btn btn-success btn-sm"
-    onClick={() => handleUpdate(p.invoiceId)}
-  >
-    Save
-  </button>
-)}
-
-  </div>
-</td>
+                            {hasPermission("Invoice", "EDIT") && (
+                              <button
+                                className="btn btn-success btn-sm"
+                                onClick={() => handleUpdate(p.invoiceId)}
+                              >
+                                Save
+                              </button>
+                            )}
+                          </div>
+                        </td>
 
                         <td>₹ {dueAmount}</td>
                       </tr>
@@ -393,59 +391,39 @@ const Invoice = () => {
                       <b>Due Date:</b> {selectedInvoice.dueDate}
                     </div>
 
-                    
-
                     <hr />
 
-                    <h6 className="mb-3">
-  Patient Invoice Details
-</h6>
+                    <h6 className="mb-3">Patient Invoice Details</h6>
 
-<table className="table table-bordered">
-  <thead>
-    <tr>
-      <th>Patient Name</th>
-      <th>Visit Date</th>
-      <th>Package Amount</th>
-    </tr>
-  </thead>
+                    <table className="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Patient Name</th>
+                          <th>Visit Date</th>
+                          <th>Package Amount</th>
+                        </tr>
+                      </thead>
 
-  <tbody>
+                      <tbody>
+                        {selectedInvoice.items?.length > 0 ? (
+                          selectedInvoice.items.map((item, index) => (
+                            <tr key={index}>
+                              <td>{item.patientName}</td>
 
-    {selectedInvoice.items?.length > 0 ? (
+                              <td>{item.visitDate}</td>
 
-      selectedInvoice.items.map((item, index) => (
-
-        <tr key={index}>
-
-          <td>
-            {item.patientName}
-          </td>
-
-          <td>
-            {item.visitDate}
-          </td>
-
-          <td>
-            ₹ {item.packageAmount}
-          </td>
-
-        </tr>
-
-      ))
-
-    ) : (
-
-      <tr>
-        <td colSpan="3" className="text-center">
-          No invoice items found
-        </td>
-      </tr>
-
-    )}
-
-  </tbody>
-</table>
+                              <td>₹ {item.packageAmount}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="3" className="text-center">
+                              No invoice items found
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
 
                     <table className="table table-bordered">
                       <thead>

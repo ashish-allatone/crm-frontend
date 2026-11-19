@@ -67,3 +67,18 @@ export const rescheduleAppointment = (
       visitTime,
     },
   });
+
+  export const getInvoiceEligibleAppointments = (
+  page,
+  size,
+  search,
+  organizationId
+) =>
+  api.get("/appointments/invoice-eligible", {
+    params: {
+      page,
+      size,
+      search,
+      organizationId,
+    },
+  });

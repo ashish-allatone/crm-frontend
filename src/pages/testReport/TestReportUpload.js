@@ -26,6 +26,12 @@ const TestReportUpload = () => {
   const canUpdateQc = isAdmin || allOrganizations;
   const { id } = useParams();
 
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+const isaAdmin = user?.roles?.some(
+  (role) => role.name?.toLowerCase() === "admin"
+);
+
   const [patient, setPatient] = useState({});
   const [tests, setTests] = useState([]);
   const [reports, setReports] = useState([]);
@@ -253,7 +259,7 @@ const TestReportUpload = () => {
               />
             </div>
 
-            <div className="col-md-3">
+            {/* <div className="col-md-3">
               <label>Aadhar No.</label>
 
               <input
@@ -261,7 +267,7 @@ const TestReportUpload = () => {
                 placeholder="Aadhar Card Number"
                 readOnly
               />
-            </div>
+            </div> */}
 
             <div className="col-md-3">
               <label>Appointment Time</label>
@@ -281,14 +287,23 @@ const TestReportUpload = () => {
           >
             Upload Report
           </button> */}
-          {canAdd && !allOrganizations && (
+          {/* {canAdd && !allOrganizations && (
             <button
               className="btn btn-primary mb-3"
               onClick={() => setShowModal(true)}
             >
               Upload Report
             </button>
-          )}
+          )} */}
+
+          {isaAdmin && (
+  <button
+    className="btn btn-primary mb-3"
+    onClick={() => setShowModal(true)}
+  >
+    Upload Report
+  </button>
+)}
 
           <table className="table table-bordered">
             <thead>
